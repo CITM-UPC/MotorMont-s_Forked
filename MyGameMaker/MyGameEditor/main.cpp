@@ -12,6 +12,7 @@
 
 
 #include "MyGameEngine/Camera.h"
+#include "MyGameEngine/MyMesh.h"
 using namespace std;
 
 struct Triangle {
@@ -46,33 +47,6 @@ struct Triangle {
 
 	}
 };
-//
-//struct MyMesh {
-//	unsigned int id_index = 0; // index in VRAM 
-//	unsigned int num_index = 0;
-//	unsigned int* index = nullptr;
-//
-//	unsigned int id_vertex = 0; // unique vertex in VRAM 
-//	unsigned int  num_vertex = 0;
-//	float* vertex = nullptr;
-//
-//public:
-//
-//	void InitBuffers() {
-//
-//		vec3 vertex[123];
-//		sizeof(vertex);
-//
-//		glGenBuffers(1, &vertex_data_bufer_id);
-//		glBindBuffer(GL_ARRAY_BUFFER, vertex_data_bufer_id);
-//		glBufferData(GL_ARRAY_BUFFER, vertex_data.size() * sizeof(vec3), vertex_data.data(), GL_STATIC_DRAW);
-//
-//		glGenBuffers(1, &index_data_bufer_id);
-//		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_data_bufer_id);
-//		glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_data.size() * sizeof(unsigned int), index_data.data(), GL_STATIC_DRAW);
-//
-//	}
-//};
 
 struct Cube {
 	Transform transform;
@@ -138,6 +112,7 @@ static Triangle red_triangle;
 static Triangle green_triangle;
 static Triangle blue_triangle;
 static Cube cube;
+static MyMesh loadedMesh;
 
 static std::array<array<glm::u8vec3, 256>, 256> texture;
 
@@ -153,45 +128,7 @@ static void initializeTexture() {
 	}
 
 }
-//
-//static void LoadFile(const char* file_path) {
-//	const aiScene* scene = aiImportFile(file_path, aiProcessPreset_TargetRealtime_MaxQuality);
-//
-//	if (scene != nullptr && scene->HasMeshes())
-//	{
-//		// Use scene->mNumMeshes to iterate on scene->mMeshes array aiReleaseImport(scene);
-//		for (int i = 0; i < scene->mNumMeshes; i++)
-//		{
-//			MyMesh ourMesh;
-//			ourMesh.num_vertex = scene->mMeshes[i]->mNumVertices;
-//			ourMesh.vertex = new float[ourMesh.num_vertex * 3];
-//			memcpy(ourMesh.vertex, scene->mMeshes[i]->mVertices, sizeof(float) * ourMesh.num_vertex * 3);
-//
-//			if (scene->mMeshes[i]->HasFaces())
-//			{
-//				ourMesh.num_index = scene->mMeshes[i]->mNumFaces * 3;
-//				ourMesh.index = new unsigned int[ourMesh.num_index]; // assume each face is a triangle 
-//				for (unsigned int j = 0; j < scene->mMeshes[i]->mNumFaces; ++j)
-//				{
-//					if (scene->mMeshes[i]->mFaces[j].mNumIndices != 3) 
-//					{
-//						cout << "Warning, geometry didnt load" << endl;
-//					}
-//					else
-//					{
-//						memcpy(&ourMesh.index[i * 3], scene->mMeshes[i]->mFaces[j].mIndices, 3 * sizeof(unsigned int));
-//					}
-//				}
-//			}
-//
-//		}
-//	}
-//	else
-//		//LOG(“Error loading scene % s”, file_path);
-//		cout << "Scene doesnt load properly" << endl;
-//
-//
-//}
+
 
 static void drawFloorGrid(int size, double step) {
 	glColor3ub(0, 0, 0);
@@ -212,10 +149,11 @@ static void display_func() {
 	glLoadMatrixd(&camera.view()[0][0]);
 
 	drawFloorGrid(16, 0.25);
-	red_triangle.draw();
-	green_triangle.draw();
-	blue_triangle.draw();
-	cube.draw();
+	//red_triangle.draw();
+	//green_triangle.draw();
+	//blue_triangle.draw();
+	//cube.draw();
+	loadedMesh.Draw();
 
 	glutSwapBuffers();
 }
@@ -274,6 +212,16 @@ int main(int argc, char* argv[]) {
 	camera.transform().pos() = vec3(0, 1, 4);
 	camera.transform().rotate(glm::radians(180.0), vec3(0, 1, 0));
 
+	loadedMesh.LoadFile("Bakerhouse.fbx");
+	loadedMesh.LoadTexture("Baker_House.png");
+	loadedMesh.InitBuffers();
+	
+	if (loadedMesh.num_vertex == 0 || loadedMesh.num_index == 0) {
+		std::cout << "Error: No se pudo cargar la malla correctamente." << std::endl;
+		return EXIT_FAILURE;
+	}
+
+
 	//Init cube
 	cube.InitBuffers();
 
@@ -286,32 +234,29 @@ int main(int argc, char* argv[]) {
 	blue_triangle.color = glm::u8vec3(0, 0, 255);
 
 
-	ilInit();
-	iluInit();
-	auto il_img_id = ilGenImage();
-	ilBindImage(il_img_id);
+	//ilInit();
+	//iluInit();
+	//auto il_img_id = ilGenImage();
+	//ilBindImage(il_img_id);
 	//ilLoadImage("Lenna.png");
 
-	auto img_width = ilGetInteger(IL_IMAGE_WIDTH);
-	auto img_height = ilGetInteger(IL_IMAGE_HEIGHT);
-	auto img_bpp = ilGetInteger(IL_IMAGE_BPP);
-	auto img_format = ilGetInteger(IL_IMAGE_FORMAT);
-	auto img_data = ilGetData();
+	//auto img_width = ilGetInteger(IL_IMAGE_WIDTH);
+	//auto img_height = ilGetInteger(IL_IMAGE_HEIGHT);
+	//auto img_bpp = ilGetInteger(IL_IMAGE_BPP);
+	//auto img_format = ilGetInteger(IL_IMAGE_FORMAT);
+	//auto img_data = ilGetData();
 
-	//Init Texture
-	initializeTexture();
-	unsigned int texture_id = 0;
-	glGenTextures(1, &texture_id);
-	glBindTexture(GL_TEXTURE_2D, texture_id);
-	glTexImage2D(GL_TEXTURE_2D, 0, img_bpp, img_width, img_height, 0, img_format, GL_UNSIGNED_BYTE, img_data);
-	ilDeleteImage(il_img_id);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_NEAREST);
-	/*red_triangle.texture_id = texture_id;
-	blue_triangle.texture_id = texture_id;
-	green_triangle.texture_id = texture_id;*/
+	////Init Texture
+	//initializeTexture();
+	//unsigned int texture_id = 0;
+	//glGenTextures(1, &texture_id);
+	//glBindTexture(GL_TEXTURE_2D, texture_id);
+	//glTexImage2D(GL_TEXTURE_2D, 0, img_bpp, img_width, img_height, 0, img_format, GL_UNSIGNED_BYTE, img_data);
+	//ilDeleteImage(il_img_id);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_NEAREST);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_NEAREST);
 
 	// Set Glut callbacks
 	glutDisplayFunc(display_func);
