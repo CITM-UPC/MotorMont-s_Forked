@@ -114,6 +114,9 @@ static Triangle blue_triangle;
 static Cube cube;
 static MyMesh loadedMesh;
 
+//A bool to get all the keys if pressed
+bool keyStates[256] = { false };
+
 static std::array<array<glm::u8vec3, 256>, 256> texture;
 
 static void initializeTexture() {
@@ -189,8 +192,30 @@ static void mouseWheel_func(int wheel, int direction, int x, int y) {
 	camera.transform().translate(vec3(0, 0, direction * 0.1));
 }
 
+void keyboardDown_func(unsigned char key, int x, int y) {
+	keyStates[key] = true;
+}
+
+void keyboardUp_func(unsigned char key, int x, int y) {
+	keyStates[key] = false;
+}
+//Similar to update function in SDL
 static void idle_func() {
-	//animate triangles
+	const double move_speed = 0.1;
+	if (keyStates['w'] || keyStates['W']) {
+		camera.transform().translate(vec3(0, 0, move_speed));
+	}
+	if (keyStates['s'] || keyStates['S']) {
+		camera.transform().translate(vec3(0, 0, -move_speed));
+	}
+	if (keyStates['a'] || keyStates['A']) {
+		camera.transform().translate(vec3(move_speed, 0, 0));
+	}
+	if (keyStates['d'] || keyStates['D']) {
+		camera.transform().translate(vec3(-move_speed, 0, 0));
+	}
+
+	// Animate triangles
 	red_triangle.transform.rotate(0.001, vec3(0, 1, 0));
 	green_triangle.transform.rotate(0.001, vec3(1, 0, 0));
 	blue_triangle.transform.rotate(0.001, vec3(0, 0, 1));
@@ -262,7 +287,12 @@ int main(int argc, char* argv[]) {
 	glutDisplayFunc(display_func);
 	glutIdleFunc(idle_func);
 	glutReshapeFunc(reshape_func);
-	glutMouseWheelFunc(mouseWheel_func); //Mouse wheel movement 
+
+	//Camera movement
+	glutMouseWheelFunc(mouseWheel_func);
+	glutKeyboardFunc(keyboardDown_func);
+	glutKeyboardUpFunc(keyboardUp_func);
+
 
 	// Enter glut main loop
 	glutMainLoop();
