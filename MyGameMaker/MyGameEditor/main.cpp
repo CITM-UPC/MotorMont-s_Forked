@@ -116,6 +116,8 @@ static MyMesh loadedMesh;
 
 //A bool to get all the keys if pressed
 bool keyStates[256] = { false };
+bool rightMouseButtonDown = false;
+int lastMouseX, lastMouseY;
 
 static std::array<array<glm::u8vec3, 256>, 256> texture;
 
@@ -191,7 +193,31 @@ static void reshape_func(int width, int height) {
 static void mouseWheel_func(int wheel, int direction, int x, int y) {
 	camera.transform().translate(vec3(0, 0, direction * 0.1));
 }
+static void mouse_func(int button, int state, int x, int y) {
+	if (button == GLUT_RIGHT_BUTTON) {
+		rightMouseButtonDown = (state == GLUT_DOWN);
+		lastMouseX = x;
+		lastMouseY = y;
+	}
+}
+static void motion_func(int x, int y) {
+	if (rightMouseButtonDown) {
+		int deltaX = x - lastMouseX;
+		int deltaY = y - lastMouseY;
 
+		
+		const double sensitivity = 0.1;
+		double angleX = deltaX * sensitivity;
+		double angleY = deltaY * sensitivity;
+
+		
+		camera.transform().rotate(glm::radians(-angleX), vec3(0, 1, 0));
+		camera.transform().rotate(glm::radians(-angleY), vec3(1, 0, 0));
+
+		lastMouseX = x;
+		lastMouseY = y;
+	}
+}
 void keyboardDown_func(unsigned char key, int x, int y) {
 	keyStates[key] = true;
 }
@@ -202,6 +228,11 @@ void keyboardUp_func(unsigned char key, int x, int y) {
 //Similar to update function in SDL
 static void idle_func() {
 	const double move_speed = 0.1;
+	int modifiers = glutGetModifiers();
+
+	/*if (modifiers & GLUT_ACTIVE_SHIFT) {
+	
+	}*/
 	if (keyStates['w'] || keyStates['W']) {
 		camera.transform().translate(vec3(0, 0, move_speed));
 	}
@@ -292,6 +323,8 @@ int main(int argc, char* argv[]) {
 	glutMouseWheelFunc(mouseWheel_func);
 	glutKeyboardFunc(keyboardDown_func);
 	glutKeyboardUpFunc(keyboardUp_func);
+	glutMouseFunc(mouse_func);
+	glutMotionFunc(motion_func);
 
 
 	// Enter glut main loop
