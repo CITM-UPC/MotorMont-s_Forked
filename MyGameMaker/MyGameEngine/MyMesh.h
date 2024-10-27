@@ -12,7 +12,9 @@ public:
 
     unsigned int id_vertex = 0;  
     unsigned int num_vertex = 0; 
+    unsigned int id_texcoord = 0;
     float* vertex = nullptr;     
+    float* texcoord = nullptr;     
 
     unsigned int id_texture = 0;
 

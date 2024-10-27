@@ -13,6 +13,9 @@
 
 #include "MyGameEngine/Camera.h"
 #include "MyGameEngine/MyMesh.h"
+#include "MyGameEngine/Mesh.h"
+
+#include <IL/ilut.h>
 using namespace std;
 
 struct Triangle {
@@ -112,7 +115,7 @@ static Triangle red_triangle;
 static Triangle green_triangle;
 static Triangle blue_triangle;
 static Cube cube;
-static MyMesh loadedMesh;
+static Mesh loadedMesh;
 
 //A bool to get all the keys if pressed
 bool keyStates[256] = { false };
@@ -158,7 +161,7 @@ static void display_func() {
 	//green_triangle.draw();
 	//blue_triangle.draw();
 	//cube.draw();
-	loadedMesh.Draw();
+	loadedMesh.draw();
 
 	glutSwapBuffers();
 }
@@ -268,26 +271,22 @@ int main(int argc, char* argv[]) {
 	camera.transform().pos() = vec3(0, 1, 4);
 	camera.transform().rotate(glm::radians(180.0), vec3(0, 1, 0));
 
-	loadedMesh.LoadFile("Bakerhouse.fbx");
-	loadedMesh.LoadTexture("Baker_House.png");
-	loadedMesh.InitBuffers();
+	ilInit();
+	iluInit();
+	ilutInit();
+
+	loadedMesh.loadFile("BakerHouse.fbx");
+	loadedMesh.LoadWhiteTexture();
+	//loadedMesh.loadTexture("Baker_house.png");
 	
-	if (loadedMesh.num_vertex == 0 || loadedMesh.num_index == 0) {
-		std::cout << "Error: No se pudo cargar la malla correctamente." << std::endl;
-		return EXIT_FAILURE;
-	}
-
-
-	//Init cube
-	cube.InitBuffers();
 
 	// Init triangles
-	red_triangle.transform.pos() = vec3(0, 1, 0);
-	red_triangle.color = glm::u8vec3(255, 0, 0);
-	green_triangle.transform.pos() = vec3(1, 1, 0);
-	green_triangle.color = glm::u8vec3(0, 255, 0);
-	blue_triangle.transform.pos() = vec3(0, 1, 1);
-	blue_triangle.color = glm::u8vec3(0, 0, 255);
+	//red_triangle.transform.pos() = vec3(0, 1, 0);
+	//red_triangle.color = glm::u8vec3(255, 0, 0);
+	//green_triangle.transform.pos() = vec3(1, 1, 0);
+	//green_triangle.color = glm::u8vec3(0, 255, 0);
+	//blue_triangle.transform.pos() = vec3(0, 1, 1);
+	//blue_triangle.color = glm::u8vec3(0, 0, 255);
 
 
 	//ilInit();
