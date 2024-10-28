@@ -12,110 +12,17 @@
 
 
 #include "MyGameEngine/Camera.h"
-#include "MyGameEngine/MyMesh.h"
 #include "MyGameEngine/Mesh.h"
+#include "MyGameEngine/GraphicObject.h"
 
 #include <IL/ilut.h>
 using namespace std;
 
-struct Triangle {
-	Transform transform;
-	glm::u8vec3 color;
-	double size = 0.5;
-
-	unsigned int texture_id;
-
-	void draw() const {
 
 
-		glEnable(GL_TEXTURE_2D);
-
-		glPushMatrix(); //Save the modelview values of the matrix
-		glMultMatrixd(&transform.mat()[0][0]);
-		glColor3ub(color.r, color.g, color.b);
-		glBegin(GL_TRIANGLES);
-
-		glTexCoord2d(0.5, 0);
-		glVertex2d(0, size);
-
-		glTexCoord2d(0, 1);
-		glVertex2d(-size, -size);
-
-		glTexCoord2d(1, 1);
-		glVertex2d(size, -size);
-		glEnd();
-		glPopMatrix(); //Recover the last values of the model view matrix
-
-		glDisable(GL_TEXTURE_2D);
-
-	}
-};
-
-struct Cube {
-	Transform transform;
-	glm::u8vec3 color = glm::u8vec3(111, 110, 0);
-	double size = 0.5;
-
-	vector<vec3> vertex_data = {
-		vec3(-1, -1, -1),
-		vec3(1, -1, -1),
-		vec3(1, 1, -1),
-		vec3(-1, 1, -1),
-		vec3(-1, -1, 1),
-		vec3(1, -1, 1),
-		vec3(1, 1, 1),
-		vec3(-1, 1, 1)
-	};
-
-	vector<unsigned int> index_data = {
-		0, 1, 2, 0, 2, 3,
-		1, 5, 6, 1, 6, 2,
-		5, 4, 7, 5, 7, 6,
-		4, 0, 3, 4, 3, 7,
-		3, 2, 6, 3, 6, 7,
-		4, 5, 1, 4, 1, 0
-	};
-
-	unsigned int vertex_data_bufer_id = 0;
-	unsigned int index_data_bufer_id = 0;
-
-	void InitBuffers() {
-
-		vec3 vertex[123];
-		sizeof(vertex);
-
-		glGenBuffers(1, &vertex_data_bufer_id);
-		glBindBuffer(GL_ARRAY_BUFFER, vertex_data_bufer_id);
-		glBufferData(GL_ARRAY_BUFFER, vertex_data.size() * sizeof(vec3), vertex_data.data(), GL_STATIC_DRAW);
-
-		glGenBuffers(1, &index_data_bufer_id);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_data_bufer_id);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_data.size() * sizeof(unsigned int), index_data.data(), GL_STATIC_DRAW);
-
-	}
-
-	void draw() const {
-		glPushMatrix(); //Save the modelview values of the matrix
-		glMultMatrixd(&transform.mat()[0][0]);
-		glColor3ub(color.r, color.g, color.b);
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glBindBuffer(GL_ARRAY_BUFFER, vertex_data_bufer_id);
-		glVertexPointer(3, GL_DOUBLE, 0, 0);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_data_bufer_id);
-		glDrawElements(GL_TRIANGLES, index_data.size(), GL_UNSIGNED_INT, 0);
-		glDisableClientState(GL_VERTEX_ARRAY);
-
-		glPopMatrix(); //Recover the last values of the model view matrix
-	}
-
-};
 
 static Camera camera;
-static Triangle red_triangle;
-static Triangle green_triangle;
-static Triangle blue_triangle;
-static Cube cube;
-static Mesh loadedMesh;
+static GraphicObject loadedMesh;
 
 //A bool to get all the keys if pressed
 bool keyStates[256] = { false };
@@ -231,7 +138,7 @@ void keyboardUp_func(unsigned char key, int x, int y) {
 //Similar to update function in SDL
 static void idle_func() {
 	const double move_speed = 0.1;
-	int modifiers = glutGetModifiers();
+	//int modifiers = glutGetModifiers();
 
 	/*if (modifiers & GLUT_ACTIVE_SHIFT) {
 	
@@ -250,14 +157,13 @@ static void idle_func() {
 	}
 
 	// Animate triangles
-	red_triangle.transform.rotate(0.001, vec3(0, 1, 0));
-	green_triangle.transform.rotate(0.001, vec3(1, 0, 0));
-	blue_triangle.transform.rotate(0.001, vec3(0, 0, 1));
-	cube.transform.rotate(0.001, vec3(0, 1, 1));
 	glutPostRedisplay();
 }
 
 int main(int argc, char* argv[]) {
+	ilInit();
+	iluInit();
+	ilutInit();
 	// Iniit window and context
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
@@ -271,47 +177,20 @@ int main(int argc, char* argv[]) {
 	camera.transform().pos() = vec3(0, 1, 4);
 	camera.transform().rotate(glm::radians(180.0), vec3(0, 1, 0));
 
-	ilInit();
-	iluInit();
-	ilutInit();
 
-	loadedMesh.loadFile("BakerHouse.fbx");
-	loadedMesh.LoadWhiteTexture();
+	auto mesh = make_shared<Mesh>();
+	auto imageTexture = make_shared<Image>();
+
+	mesh->LoadFile("BakerHouse.fbx");
+	loadedMesh.setMesh(mesh);
+	imageTexture->loadTexture("Baker_house.png");
+	loadedMesh.setTextureImage(imageTexture);
+
+	//loadedMesh.loadFile("BakerHouse.fbx");
+	////loadedMesh.CreateDefaultTexture();
 	//loadedMesh.loadTexture("Baker_house.png");
-	
-
-	// Init triangles
-	//red_triangle.transform.pos() = vec3(0, 1, 0);
-	//red_triangle.color = glm::u8vec3(255, 0, 0);
-	//green_triangle.transform.pos() = vec3(1, 1, 0);
-	//green_triangle.color = glm::u8vec3(0, 255, 0);
-	//blue_triangle.transform.pos() = vec3(0, 1, 1);
-	//blue_triangle.color = glm::u8vec3(0, 0, 255);
 
 
-	//ilInit();
-	//iluInit();
-	//auto il_img_id = ilGenImage();
-	//ilBindImage(il_img_id);
-	//ilLoadImage("Lenna.png");
-
-	//auto img_width = ilGetInteger(IL_IMAGE_WIDTH);
-	//auto img_height = ilGetInteger(IL_IMAGE_HEIGHT);
-	//auto img_bpp = ilGetInteger(IL_IMAGE_BPP);
-	//auto img_format = ilGetInteger(IL_IMAGE_FORMAT);
-	//auto img_data = ilGetData();
-
-	////Init Texture
-	//initializeTexture();
-	//unsigned int texture_id = 0;
-	//glGenTextures(1, &texture_id);
-	//glBindTexture(GL_TEXTURE_2D, texture_id);
-	//glTexImage2D(GL_TEXTURE_2D, 0, img_bpp, img_width, img_height, 0, img_format, GL_UNSIGNED_BYTE, img_data);
-	//ilDeleteImage(il_img_id);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_NEAREST);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_NEAREST);
 
 	// Set Glut callbacks
 	glutDisplayFunc(display_func);

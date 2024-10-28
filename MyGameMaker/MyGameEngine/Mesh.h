@@ -1,45 +1,57 @@
 #pragma once
-
+#include <assimp/Importer.hpp>
+#include <assimp/cimport.h>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+#include <IL/il.h>
+#include <IL/ilu.h>
 #include <vector>
 #include <glm/glm.hpp>
 #include "BufferObject.h"
-#include <string>
+#include "BoundingBox.h"
 
-class Mesh {
 
-	BufferObject _texCoordBuffer;
-	BufferObject _normalBuffer;
-	BufferObject _colorBuffer;
-	BufferObject _vertexBuffer;
-	BufferObject _indexBuffer;
 
-	unsigned int id_index = 0;
-	unsigned int num_index = 0;
-	unsigned int* index = nullptr;
-
-	unsigned int id_vertex = 0;
-	unsigned int num_vertex = 0;
-	unsigned int id_texcoord = 0;
-	float* vertex = nullptr;
-	float* texcoord = nullptr;
-
-	unsigned int id_texture = 0;
-
+class Mesh
+{
 	std::vector<glm::vec3> _vertices;
 	std::vector<unsigned int> _indices;
 
+	BufferObject _vertices_buffer;
+	BufferObject _indices_buffer;
+	BufferObject _texCoords_buffer;
+	BufferObject _normals_buffer;
+	BufferObject _colors_buffer;
+
+	unsigned int texture_id = 0;
+
+	BoundingBox _boundingBox;
+
+	//MeshLoader* _meshLoader;
+
 public:
+
+	Mesh();
+
 	const auto& vertices() const { return _vertices; }
 	const auto& indices() const { return _indices; }
+	const auto& boundingBox() const { return _boundingBox; }
+	//const auto& meshLoader() const { return *_meshLoader; }
 
-	void load(const glm::vec3* verts, size_t num_verts, const unsigned int* indexs, size_t num_indexs);
+	void load(const glm::vec3* vertices, size_t num_verts, unsigned int* indices, size_t num_indexs);
 	void loadTexCoords(const glm::vec2* tex_coords, size_t num_tex_coords);
-	void loadNormals(const glm::vec3* normals);
-	void loadColors(const glm::u8vec3* colors);
+	void loadNormals(const glm::vec3* normals, size_t num_normals);
+	void loadColors(const glm::u8vec3* colors, size_t num_colors);
 	void draw() const;
-	void loadFile(const char* file_path);
-	void loadTexture(const std::string& texture_path);
 
-	void LoadCheckerTexture();
-	void LoadWhiteTexture();
+	void LoadFile(const char* filePath);
+
+	//
+	void CheckerTexture();
+
+	// Load Texture
+	void LoadTexture(const std::string& path);
+
+
+
 };
