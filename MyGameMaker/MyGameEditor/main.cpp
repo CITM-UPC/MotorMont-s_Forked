@@ -107,39 +107,61 @@ void mouseButton_func(int button, int state, int x, int y) {
     }
 }
 
+
+float yaw = 0.0f; 
+float pitch = 0.0f;
+const float MAX_PITCH = 89.0f;
+
 void mouseMotion_func(int x, int y) {
     if (rightMouseButtonDown) {
         int deltaX = x - lastMouseX;
         int deltaY = y - lastMouseY;
 
         const double sensitivity = 0.1;
-        camera.transform().rotate(glm::radians(-deltaX * sensitivity), vec3(0, 1, 0));
-        camera.transform().rotate(glm::radians(-deltaY * sensitivity), vec3(1, 0, 0));
+
+        yaw += deltaX * sensitivity;
+        pitch -= deltaY * sensitivity;
+
+        if (pitch > MAX_PITCH) pitch = MAX_PITCH;
+        if (pitch < -MAX_PITCH) pitch = -MAX_PITCH;
+
+        camera.transform().rotate(glm::radians(-deltaX * sensitivity), glm::vec3(0, -1, 0));
+        camera.transform().rotate(glm::radians(deltaY * sensitivity), glm::vec3(-1, 0, 0));
 
         lastMouseX = x;
         lastMouseY = y;
     }
 }
 
-//static void idle_func() {
-//    /*const double move_speed = 0.1;
-//    int modifiers = glutGetModifiers();
-//
-//    if (rightMouseButtonDown) {
-//        if (keyStates['w'] || keyStates['W']) {
-//            camera.transform().translate(vec3(0, 0, move_speed));
-//        }
-//        if (keyStates['s'] || keyStates['S']) {
-//            camera.transform().translate(vec3(0, 0, -move_speed));
-//        }
-//        if (keyStates['a'] || keyStates['A']) {
-//            camera.transform().translate(vec3(move_speed, 0, 0));
-//        }
-//        if (keyStates['d'] || keyStates['D']) {
-//            camera.transform().translate(vec3(-move_speed, 0, 0));
-//        }
-//    }*/
-//}
+
+static void idle_func() {
+    const float move_speed = 0.1f;
+    const Uint8* state = SDL_GetKeyboardState(NULL);
+
+
+    if (rightMouseButtonDown) {
+
+        if (state[SDL_SCANCODE_W]) {
+            std::cout << "Moving camera forward." << std::endl;
+            camera.transform().translate(glm::vec3(0, 0, move_speed));
+        }
+
+        if (state[SDL_SCANCODE_S]) {
+            std::cout << "Moving camera backward." << std::endl;
+            camera.transform().translate(glm::vec3(0, 0, -move_speed));
+        }
+
+        if (state[SDL_SCANCODE_A]) {
+            std::cout << "Moving camera left." << std::endl;
+            camera.transform().translate(glm::vec3(move_speed, 0, 0));
+        }
+
+        if (state[SDL_SCANCODE_D]) {
+            std::cout << "Moving camera right." << std::endl;
+            camera.transform().translate(glm::vec3(-move_speed, 0, 0));
+        }
+    }
+}
 
 void mouseWheel_func(int direction) {
     camera.transform().translate(vec3(0, 0, direction * 0.1));
@@ -160,7 +182,7 @@ int main(int argc, char* argv[]) {
         const auto t0 = hrclock::now();
 
         display_func();
-        //idle_func();
+		idle_func();
         window.swapBuffers();
 
         const auto t1 = hrclock::now();
