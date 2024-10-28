@@ -13,7 +13,7 @@
 
 #include "MyGameEngine/Camera.h"
 #include "MyGameEngine/Mesh.h"
-#include "MyGameEngine/GraphicObject.h"
+#include "MyGameEngine/GameObject.h"
 
 #include <IL/ilut.h>
 using namespace std;
@@ -22,7 +22,7 @@ using namespace std;
 
 
 static Camera camera;
-static GraphicObject loadedMesh;
+static GameObject loadedMesh;
 
 //A bool to get all the keys if pressed
 bool keyStates[256] = { false };
@@ -138,22 +138,21 @@ void keyboardUp_func(unsigned char key, int x, int y) {
 //Similar to update function in SDL
 static void idle_func() {
 	const double move_speed = 0.1;
-	//int modifiers = glutGetModifiers();
+	int modifiers = glutGetModifiers();
 
-	/*if (modifiers & GLUT_ACTIVE_SHIFT) {
-	
-	}*/
-	if (keyStates['w'] || keyStates['W']) {
-		camera.transform().translate(vec3(0, 0, move_speed));
-	}
-	if (keyStates['s'] || keyStates['S']) {
-		camera.transform().translate(vec3(0, 0, -move_speed));
-	}
-	if (keyStates['a'] || keyStates['A']) {
-		camera.transform().translate(vec3(move_speed, 0, 0));
-	}
-	if (keyStates['d'] || keyStates['D']) {
-		camera.transform().translate(vec3(-move_speed, 0, 0));
+	if (rightMouseButtonDown) {
+		if (keyStates['w'] || keyStates['W']) {
+			camera.transform().translate(vec3(0, 0, move_speed));
+		}
+		if (keyStates['s'] || keyStates['S']) {
+			camera.transform().translate(vec3(0, 0, -move_speed));
+		}
+		if (keyStates['a'] || keyStates['A']) {
+			camera.transform().translate(vec3(move_speed, 0, 0));
+		}
+		if (keyStates['d'] || keyStates['D']) {
+			camera.transform().translate(vec3(-move_speed, 0, 0));
+		}
 	}
 
 	// Animate triangles
