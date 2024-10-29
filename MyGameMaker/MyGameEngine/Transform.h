@@ -14,7 +14,7 @@ private:
         };
     };
 
-    // Agregar variables para los ángulos de rotación
+    // Variables para los ángulos de rotación
     double yaw = 0.0;
     double pitch = 0.0;
     double roll = 0.0;
@@ -36,9 +36,12 @@ public:
     void rotateYaw(double radians);
     void rotatePitch(double radians);
     void rotateRoll(double radians);
-	void rotate(double rads, const vec3& v);
-    void updateRotationMatrix(); // Nueva función para actualizar la matriz de rotación
+    void rotate(double rads, const vec3& v);
+    void updateRotationMatrix();
+
+
 
     Transform operator*(const mat4& other) { return Transform(_mat * other); }
     Transform operator*(const Transform& other) { return Transform(_mat * other._mat); }
 };
+

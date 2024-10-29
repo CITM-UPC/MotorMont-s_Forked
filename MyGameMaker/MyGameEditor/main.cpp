@@ -251,10 +251,13 @@ void mouseMotion_func(int x, int y) {
 
 
 static void idle_func() {
-    const float move_speed = 0.1f;
+     float move_speed = 0.1f;
     const Uint8* state = SDL_GetKeyboardState(NULL);
 
 
+    if (state[SDL_SCANCODE_LSHIFT] || state[SDL_SCANCODE_RSHIFT]) {
+        move_speed = 0.2f;
+    }
     if (rightMouseButtonDown) {
 
         if (state[SDL_SCANCODE_W]) {
@@ -275,6 +278,16 @@ static void idle_func() {
         if (state[SDL_SCANCODE_D]) {
             std::cout << "Moving camera right." << std::endl;
             camera.transform().translate(glm::vec3(-move_speed, 0, 0));
+        }
+
+        if (state[SDL_SCANCODE_Q]) {
+            std::cout << "Moving camera up." << std::endl;
+            camera.transform().translate(glm::vec3(0, move_speed, 0));
+        }
+
+        if (state[SDL_SCANCODE_E]) {
+            std::cout << "Moving camera down." << std::endl;
+            camera.transform().translate(glm::vec3(0, -move_speed, 0));
         }
     }
 }

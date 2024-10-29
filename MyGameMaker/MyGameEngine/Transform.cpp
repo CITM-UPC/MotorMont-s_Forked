@@ -3,6 +3,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/glm.hpp>
 
+
 void Transform::translate(const vec3& v) {
     _mat = glm::translate(_mat, v);
 }
@@ -50,3 +51,5 @@ void Transform::updateRotationMatrix() {
     // Combinamos las matrices de rotación
     _mat = pitchMatrix * yawMatrix * _mat; // Aplicamos primero yaw y luego pitch
 }
+
+
