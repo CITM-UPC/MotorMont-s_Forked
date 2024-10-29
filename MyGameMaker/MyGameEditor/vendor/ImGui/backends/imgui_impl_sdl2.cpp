@@ -99,8 +99,13 @@
 #endif
 
 // SDL
-#include <SDL.h>
-#include <SDL_syswm.h>
+#include <SDL2/SDL_video.h>
+#include <SDL2/SDL_events.h>
+#include <SDL2/SDL_syswm.h>
+
+#include <SDL2/SDL.h>
+
+
 #ifdef __APPLE__
 #include <TargetConditionals.h>
 #endif
@@ -115,7 +120,8 @@
 #endif
 #define SDL_HAS_VULKAN                      SDL_VERSION_ATLEAST(2,0,6)
 #if SDL_HAS_VULKAN
-#include <SDL_vulkan.h>
+#include <SDL2//SDL_vulkan.h>
+
 #endif
 
 // SDL Data

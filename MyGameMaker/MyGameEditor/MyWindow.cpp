@@ -5,8 +5,8 @@
 #include "MyWindow.h"
 using namespace std;
 
-MyWindow::MyWindow(const char* title, unsigned short width, unsigned short height){
-	open(title, width, height);
+MyWindow::MyWindow(const char* title, unsigned short width, unsigned short height) {
+    open(title, width, height);
 }
 
 MyWindow::~MyWindow() {
@@ -20,7 +20,7 @@ void MyWindow::open(const char* title, unsigned short width, unsigned short heig
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-    _window = SDL_CreateWindow( title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_OPENGL);
+    _window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_OPENGL);
     if (!_window) throw exception(SDL_GetError());
 
     _ctx = SDL_GL_CreateContext(_window);
@@ -36,7 +36,7 @@ void MyWindow::close() {
     _ctx = nullptr;
 
     SDL_DestroyWindow(static_cast<SDL_Window*>(_window));
-	_window = nullptr;
+    _window = nullptr;
 }
 
 void MyWindow::swapBuffers() const {
@@ -44,12 +44,12 @@ void MyWindow::swapBuffers() const {
 }
 
 bool MyWindow::processEvents(IEventProcessor* event_processor) {
-	SDL_Event e;
-	while (SDL_PollEvent(&e)) {
-		if (event_processor) event_processor->processEvent(e);
-		switch (e.type) {
-		case SDL_QUIT: close(); return false;
-		}
+    SDL_Event e;
+    while (SDL_PollEvent(&e)) {
+        if (event_processor) event_processor->processEvent(e);
+        switch (e.type) {
+        case SDL_QUIT: close(); return false;
+        }
     }
     return true;
 }

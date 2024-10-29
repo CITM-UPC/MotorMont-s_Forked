@@ -42,7 +42,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -141,8 +141,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MyGui.cpp" />
     <ClCompile Include="MyWindow.cpp" />
-    <ClCompile Include="vendor\ImGui\backends\imgui_impl_dx9.cpp" />
+    <ClCompile Include="vendor\ImGui\backends\imgui_impl_dx12.cpp" />
+    <ClCompile Include="vendor\ImGui\backends\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="vendor\ImGui\backends\imgui_impl_sdl2.cpp" />
     <ClCompile Include="vendor\ImGui\backends\imgui_impl_win32.cpp" />
     <ClCompile Include="vendor\ImGui\imgui.cpp" />
     <ClCompile Include="vendor\ImGui\imgui_demo.cpp" />
@@ -151,8 +154,11 @@
     <ClCompile Include="vendor\ImGui\imgui_widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="MyGui.h" />
     <ClInclude Include="MyWindow.h" />
-    <ClInclude Include="vendor\ImGui\backends\imgui_impl_dx9.h" />
+    <ClInclude Include="vendor\ImGui\backends\imgui_impl_dx12.h" />
+    <ClInclude Include="vendor\ImGui\backends\imgui_impl_opengl3.h" />
+    <ClInclude Include="vendor\ImGui\backends\imgui_impl_sdl2.h" />
     <ClInclude Include="vendor\ImGui\backends\imgui_impl_win32.h" />
     <ClInclude Include="vendor\ImGui\imconfig.h" />
     <ClInclude Include="vendor\ImGui\imgui.h" />

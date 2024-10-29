@@ -12,6 +12,7 @@
 #include "MyGameEngine/Mesh.h"
 #include "MyGameEngine/GameObject.h"
 #include "MyWindow.h"
+#include "MyGUI.h"
 
 using namespace std;
 using hrclock = chrono::high_resolution_clock;
@@ -96,6 +97,9 @@ void display_func() {
 
     // Otros elementos de la escena, como la cuadrícula, etc.
     drawFloorGrid(16, 0.25);
+
+
+
 }
 
 // Funciones de manejo de mouse
@@ -172,24 +176,34 @@ int main(int argc, char* argv[]) {
     iluInit();
 
     MyWindow window("SDL2 Simple Example", WINDOW_SIZE.x, WINDOW_SIZE.y);
+
+    MyGUI gui(window.windowPtr(), window.contextPtr());
+
     initOpenGL();
+
+
 
     // Posición inicial de la cámara
     camera.transform().pos() = vec3(0, 1, 4);
     camera.transform().rotate(glm::radians(180.0), vec3(0, 1, 0));
 
-    while (window.processEvents() && window.isOpen()) {
+    while (window.processEvents(&gui) && window.isOpen()) {
         const auto t0 = hrclock::now();
 
         display_func();
 		idle_func();
         window.swapBuffers();
 
+        gui.render();
+    
         const auto t1 = hrclock::now();
         const auto dt = t1 - t0;
         if (dt < FRAME_DT) this_thread::sleep_for(FRAME_DT - dt);
 
         while (SDL_PollEvent(&event)) {
+
+            gui.handleEvent(event);
+
             switch (event.type) {
             case SDL_DROPFILE:
                 handleFileDrop(event.drop.file);
