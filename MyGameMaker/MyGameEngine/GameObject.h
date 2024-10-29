@@ -61,6 +61,8 @@ public:
     // Método para dibujar el objeto
     void draw() const; // Definir en el .cpp
 
+    
+
     // Métodos de ciclo de vida
     //virtual void awake();      // Inicialización
     //virtual void start();      // Llamado al inicio

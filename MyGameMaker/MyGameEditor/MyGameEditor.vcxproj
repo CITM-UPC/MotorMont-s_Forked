@@ -140,6 +140,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BasicShapesManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MyGui.cpp" />
     <ClCompile Include="MyWindow.cpp" />
@@ -154,6 +155,7 @@
     <ClCompile Include="vendor\ImGui\imgui_widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BasicShapesManager.h" />
     <ClInclude Include="MyGui.h" />
     <ClInclude Include="MyWindow.h" />
     <ClInclude Include="vendor\ImGui\backends\imgui_impl_dx12.h" />

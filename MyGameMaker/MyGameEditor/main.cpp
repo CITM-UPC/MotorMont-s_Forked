@@ -10,11 +10,12 @@
 #include <thread>
 #include <vector>
 
-
 #include "MyGameEngine/Camera.h"
 #include "MyGameEngine/Mesh.h"
 #include "MyGameEngine/GameObject.h"
 #include "MyWindow.h"
+#include "BasicShapesManager.h"
+
 
 
 using namespace std;
@@ -28,6 +29,8 @@ static const auto FRAME_DT = 1.0s / FPS;
 static Camera camera;
 
 static vector<GameObject> gameObjects;
+GameObject* selectedObject = nullptr;
+static GameObject scene;
 SDL_Event event;
 bool rightMouseButtonDown = false;
 int lastMouseX, lastMouseY;
@@ -40,7 +43,34 @@ void initOpenGL() {
 }
 
 
+//Mouse relative positions
+glm::vec2 getMousePosition() {
+    int x, y;
+    SDL_GetMouseState(&x, &y);
+    return glm::vec2(static_cast<float>(x), static_cast<float>(y));
+}
+glm::vec3 screenToWorld(const glm::vec2& mousePos, float depth, const glm::mat4& projection, const glm::mat4& view) {
+    // Paso 1: Convertir coordenadas de pantalla a NDC (Normalized Device Coordinates)
+    float x = (2.0f * mousePos.x) / WINDOW_SIZE.x - 1.0f;
+    float y = 1.0f - (2.0f * mousePos.y) / WINDOW_SIZE.y;  // Invertir Y
+    glm::vec4 clipCoords(x, y, -1.0f, 1.0f); // El espacio de clip está en -1 en Z
 
+    // Paso 2: Convertir desde coordenadas de clip a espacio de cámara
+    glm::vec4 eyeCoords = glm::inverse(projection) * clipCoords;
+    eyeCoords = glm::vec4(eyeCoords.x, eyeCoords.y, -1.0f, 0.0f);
+
+    // Paso 3: Convertir a coordenadas de mundo
+    glm::vec3 worldRay = glm::vec3(glm::inverse(view) * eyeCoords);
+    worldRay = glm::normalize(worldRay);
+
+    // Multiplicar el rayo por la profundidad para obtener el punto exacto en el espacio 3D
+    glm::vec3 cameraPosition = glm::vec3(glm::inverse(view)[3]); // Posición de la cámara en el espacio mundial
+    return cameraPosition + worldRay * depth;
+}
+
+
+
+//RayCastFunctions
 
 glm::vec3 getRayFromMouse(int mouseX, int mouseY, const glm::mat4& projection, const glm::mat4& view, const glm::ivec2& viewportSize) {
     float x = (2.0f * mouseX) / viewportSize.x - 1.0f;
@@ -95,47 +125,26 @@ bool intersectRayWithBoundingBox(const glm::vec3& rayOrigin, const glm::vec3& ra
     // Devolver verdadero si el rayo intersecta la AABB en una dirección positiva (tmin >= 0)
     return tmin >= 0.0f;
 }
-
 // Raycast desde el mouse para detectar si está sobre un GameObject
-// Modificación en raycastFromMouse para devolver un puntero
 GameObject* raycastFromMouse(int mouseX, int mouseY, const glm::mat4& projection, const glm::mat4& view, const glm::ivec2& viewportSize) {
     glm::vec3 rayOrigin = glm::vec3(glm::inverse(view) * glm::vec4(0, 0, 0, 1));
     glm::vec3 rayDirection = getRayFromMouse(mouseX, mouseY, projection, view, viewportSize);
 
+    GameObject* hitObject = nullptr;
+
     for (auto& go : gameObjects) {
         if (intersectRayWithBoundingBox(rayOrigin, rayDirection, go.boundingBox())) {
-            // Retornar el puntero del objeto si el rayo lo intersecta
-            return &go;
+            hitObject = &go;
+            break;
         }
     }
-    return nullptr;
+
+    return hitObject;
 }
 
 
 
-void spawnBakerHouse() {
-    GameObject go;
-    auto mesh = make_shared<Mesh>();
-    mesh->LoadFile("BakerHouse.fbx");
-    go.setMesh(mesh);
-    gameObjects.push_back(go);
-
-}
-
-
-
-
-
-
-void configureCamera() {
-    glm::dmat4 projectionMatrix = glm::perspective(glm::radians(45.0), static_cast<double>(WINDOW_SIZE.x) / WINDOW_SIZE.y, 0.1, 100.0);
-    glm::dmat4 viewMatrix = camera.view();
-
-    glMatrixMode(GL_PROJECTION);
-    glLoadMatrixd(glm::value_ptr(projectionMatrix));
-    glMatrixMode(GL_MODELVIEW);
-    glLoadMatrixd(glm::value_ptr(viewMatrix));
-}
+//File drop handler
 std::string getFileExtension(const std::string& filePath) {
     // Find the last dot in the file path
     size_t dotPosition = filePath.rfind('.');
@@ -189,6 +198,7 @@ void handleFileDrop(const std::string& filePath) {
     }
 }
 
+//Renderizado del suelo
 static void drawFloorGrid(int size, double step) {
     glColor3ub(0, 0, 0);
     glBegin(GL_LINES);
@@ -200,7 +210,24 @@ static void drawFloorGrid(int size, double step) {
     }
     glEnd();
 }
+//spawn Initial house
+void spawnBakerHouse() {
+    GameObject go;
+    auto mesh = make_shared<Mesh>();
+    mesh->LoadFile("BakerHouse.fbx");
+    go.setMesh(mesh);
+    gameObjects.push_back(go);
+}
 
+void configureCamera() {
+    glm::dmat4 projectionMatrix = glm::perspective(glm::radians(45.0), static_cast<double>(WINDOW_SIZE.x) / WINDOW_SIZE.y, 0.1, 100.0);
+    glm::dmat4 viewMatrix = camera.view();
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadMatrixd(glm::value_ptr(projectionMatrix));
+    glMatrixMode(GL_MODELVIEW);
+    glLoadMatrixd(glm::value_ptr(viewMatrix));
+}
 // Función de renderizado
 void display_func() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -223,7 +250,7 @@ void mouseButton_func(int button, int state, int x, int y) {
     }
 }
 
-
+//Camera rotation
 float yaw = 0.0f;
 float pitch = 0.0f;
 const float MAX_PITCH = 89.0f;
@@ -248,10 +275,8 @@ void mouseMotion_func(int x, int y) {
         lastMouseY = y;
     }
 }
-
-
 static void idle_func() {
-     float move_speed = 0.1f;
+    float move_speed = 0.1f;
     const Uint8* state = SDL_GetKeyboardState(NULL);
 
 
@@ -291,6 +316,27 @@ static void idle_func() {
         }
     }
 }
+//debug, showing the bounding boxes, not finished
+inline static void glVertex3(const vec3& v) { glVertex3dv(&v.x); }
+static void drawWiredQuad(const vec3& v0, const vec3& v1, const vec3& v2, const vec3& v3) {
+    glBegin(GL_LINE_LOOP);
+    glVertex3(v0);
+    glVertex3(v1);
+    glVertex3(v2);
+    glVertex3(v3);
+    glEnd();
+}
+
+static void drawBoundingBox(const BoundingBox& bbox) {
+    glLineWidth(2.0);
+    drawWiredQuad(bbox.v000(), bbox.v001(), bbox.v011(), bbox.v010());
+    drawWiredQuad(bbox.v100(), bbox.v101(), bbox.v111(), bbox.v110());
+    drawWiredQuad(bbox.v000(), bbox.v001(), bbox.v101(), bbox.v100());
+    drawWiredQuad(bbox.v010(), bbox.v011(), bbox.v111(), bbox.v110());
+    drawWiredQuad(bbox.v000(), bbox.v010(), bbox.v110(), bbox.v100());
+    drawWiredQuad(bbox.v001(), bbox.v011(), bbox.v111(), bbox.v101());
+
+}
 
 void mouseWheel_func(int direction) {
     camera.transform().translate(vec3(0, 0, direction * 0.1));
@@ -306,39 +352,77 @@ int main(int argc, char* argv[]) {
     // Posición inicial de la cámara
     camera.transform().pos() = vec3(0, 1, 4);
     camera.transform().rotate(glm::radians(180.0), vec3(0, 1, 0));
+    spawnBakerHouse();
 
     while (window.processEvents() && window.isOpen()) {
         const auto t0 = hrclock::now();
 
-        spawnBakerHouse();
-        display_func();
-        idle_func();
+        // Obtener la posición actual del mouse
+        glm::vec2 mouseScreenPos = getMousePosition();
+
+        // Obtener matrices de proyección y vista de la cámara
+        glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)WINDOW_SIZE.x / WINDOW_SIZE.y, 0.1f, 100.0f);
+        glm::mat4 view = camera.view();
+
+        display_func(); // Renderizar la escena
+        idle_func();    // Actualizar lógica de juego
+
         window.swapBuffers();
 
         const auto t1 = hrclock::now();
         const auto dt = t1 - t0;
         if (dt < FRAME_DT) this_thread::sleep_for(FRAME_DT - dt);
 
-        while (SDL_PollEvent(&event)) {
-            switch (event.type) {
+        while (SDL_PollEvent(&event))
+        {
+            glm::vec3 mouseWorldPos = screenToWorld(mouseScreenPos, 10.0f, projection, view);
+            switch (event.type)
+            {
             case SDL_DROPFILE:
                 handleFileDrop(event.drop.file);
                 SDL_free(event.drop.file);
                 break;
             case SDL_MOUSEBUTTONDOWN:
+                if (event.button.button == SDL_BUTTON_LEFT) {
+                    // Raycast para detectar el objeto debajo del mouse
+                    selectedObject = raycastFromMouse(mouseScreenPos.x, mouseScreenPos.y, projection, view, WINDOW_SIZE);
+                }
+
             case SDL_MOUSEBUTTONUP:
                 mouseButton_func(event.button.button, event.button.state, event.button.x, event.button.y);
-
                 break;
             case SDL_MOUSEMOTION:
                 mouseMotion_func(event.motion.x, event.motion.y);
+                if (intersectRayWithBoundingBox(camera.transform().pos(), getRayFromMouse(mouseScreenPos.x, mouseScreenPos.y, projection, view, WINDOW_SIZE), gameObjects[0].boundingBox()))
+                {
+                    drawBoundingBox(gameObjects[0].boundingBox());
+                }
                 break;
             case SDL_MOUSEWHEEL:
                 mouseWheel_func(event.wheel.y);
+            case SDL_KEYDOWN:
+
+
+                // Crear figuras en la posición 3D calculada
+                switch (event.key.keysym.sym) {
+                case SDLK_1:  // Crear Triángulo
+                    BasicShapesManager::createFigure(1, gameObjects, 1.0, mouseWorldPos);
+                    break;
+                case SDLK_2:  // Crear Cuadrado
+                    BasicShapesManager::createFigure(2, gameObjects, 1.0, mouseWorldPos);
+                    break;
+                case SDLK_3:  // Crear Cubo
+                    BasicShapesManager::createFigure(3, gameObjects, 1.0, mouseWorldPos);
+                    break;
+                default:
+                    break;
+                }
                 break;
             }
+
+
+
         }
     }
-
     return EXIT_SUCCESS;
 }
