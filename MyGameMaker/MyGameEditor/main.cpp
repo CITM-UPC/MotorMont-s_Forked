@@ -343,7 +343,7 @@ void mouseMotion_func(int x, int y) {
 	}
     
 }
-
+bool fKeyDown = false;
 static void idle_func() {
     float move_speed = 0.1f;
     const Uint8* state = SDL_GetKeyboardState(NULL);
@@ -383,6 +383,16 @@ static void idle_func() {
             std::cout << "Moving camera down." << std::endl;
             camera.transform().translate(glm::vec3(0, -move_speed, 0));
         }
+    }
+
+    if (state[SDL_SCANCODE_F] && !fKeyDown && selectedObject != NULL) {
+        fKeyDown = true;
+        camera.transform().lookAt(selectedObject->transform().pos());
+		camera.transform().pos() = selectedObject->transform().pos() + vec3(0, 1, 4);
+        std::cout << "Camera looking at target." << std::endl;
+    }
+    else if (!state[SDL_SCANCODE_F]) {
+        fKeyDown = false;
     }
 }
 //debug, showing the bounding boxes, not finished
