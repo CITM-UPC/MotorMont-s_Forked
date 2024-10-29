@@ -17,13 +17,13 @@ class Mesh
 	std::vector<glm::vec3> _vertices;
 	std::vector<unsigned int> _indices;
 
-	BufferObject _vertices_buffer;
-	BufferObject _indices_buffer;
-	BufferObject _texCoords_buffer;
-	BufferObject _normals_buffer;
-	BufferObject _colors_buffer;
+	BufferObject _vertexBuffer;
+	BufferObject _indexBuffer;
+	BufferObject _texCoordsBuffer;
+	BufferObject _normalsBuffer;
+	BufferObject _colorsBuffer;
 
-	unsigned int texture_id = 0;
+	unsigned int _idTexture = 0;
 
 	BoundingBox _boundingBox;
 
@@ -45,9 +45,6 @@ public:
 	void draw() const;
 
 	void LoadFile(const char* filePath);
-
-	//
-	void CheckerTexture();
 
 	// Load Texture
 	void LoadTexture(const std::string& path);
