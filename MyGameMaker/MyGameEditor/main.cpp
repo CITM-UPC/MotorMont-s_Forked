@@ -126,7 +126,7 @@ bool intersectRayWithBoundingBox(const glm::vec3& rayOrigin, const glm::vec3& ra
     return tmin >= 0.0f;
 }
 // Raycast desde el mouse para detectar si está sobre un GameObject
-GameObject* raycastFromMouse(int mouseX, int mouseY, const glm::mat4& projection, const glm::mat4& view, const glm::ivec2& viewportSize) {
+GameObject* raycastFromMouseToGameObject(int mouseX, int mouseY, const glm::mat4& projection, const glm::mat4& view, const glm::ivec2& viewportSize) {
     glm::vec3 rayOrigin = glm::vec3(glm::inverse(view) * glm::vec4(0, 0, 0, 1));
     glm::vec3 rayDirection = getRayFromMouse(mouseX, mouseY, projection, view, viewportSize);
 
@@ -183,7 +183,7 @@ void handleFileDrop(const std::string& filePath) {
         SDL_GetMouseState(&mouseX, &mouseY);
 
         // Detectar si el mouse está sobre algún GameObject
-        GameObject* hitObject = raycastFromMouse(mouseX, mouseY, projection, view, WINDOW_SIZE);
+        GameObject* hitObject = raycastFromMouseToGameObject(mouseX, mouseY, projection, view, WINDOW_SIZE);
         if (hitObject) {
             // Si hay un GameObject debajo del mouse, aplicar la textura
             hitObject->setTextureImage(imageTexture);
@@ -254,9 +254,35 @@ void mouseButton_func(int button, int state, int x, int y) {
 float yaw = 0.0f;
 float pitch = 0.0f;
 const float MAX_PITCH = 89.0f;
+bool altKeyDown = false;
 
+
+void handleAltKey() {
+    const Uint8* state = SDL_GetKeyboardState(NULL);
+    altKeyDown = state[SDL_SCANCODE_LALT] || state[SDL_SCANCODE_RALT];
+}
+
+void orbitCamera(const vec3& target, int deltaX, int deltaY) {
+    const float sensitivity = 0.1f;
+
+    
+    yaw += deltaX * sensitivity;
+    pitch -= deltaY * sensitivity;
+    float distance = glm::length(camera.transform().pos() - target);
+
+    vec3 newPosition;
+    newPosition.x = target.x + distance * cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    newPosition.y = target.y + distance * sin(glm::radians(pitch));
+    newPosition.z = target.z + distance * sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+
+   
+    camera.transform().pos() = newPosition;
+    camera.transform().lookAt(target); 
+}
+bool altPressedOnce = false; 
+vec3 target;
 void mouseMotion_func(int x, int y) {
-    if (rightMouseButtonDown) {
+    if (rightMouseButtonDown && altKeyDown == false) {
         int deltaX = x - lastMouseX;
         int deltaY = y - lastMouseY;
 
@@ -274,7 +300,50 @@ void mouseMotion_func(int x, int y) {
         lastMouseX = x;
         lastMouseY = y;
     }
+
+    if (rightMouseButtonDown && altKeyDown) {
+       
+        int deltaX = x - lastMouseX;
+        int deltaY = y - lastMouseY;
+		
+        if (!altPressedOnce) {
+            altPressedOnce = true;
+
+            glm::vec2 mouseScreenPos = getMousePosition();
+
+            glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)WINDOW_SIZE.x / WINDOW_SIZE.y, 0.1f, 100.0f);
+            glm::mat4 view = camera.view();
+			if (selectedObject != nullptr) {
+				target = selectedObject->transform().pos();
+
+			}
+			else {
+				target = glm::vec3(0,0,0);
+			}
+            orbitCamera(target, deltaX, deltaY);
+		}
+        else {
+            orbitCamera(target, deltaX, deltaY);
+        }
+
+      
+       
+
+        lastMouseX = x;
+        lastMouseY = y;
+	}
+	else {
+		altPressedOnce = false; // Reinicia la bandera si Alt no está presionado
+        /*
+        
+        TO DO: ARREGLAR BOOL QUE NO SE EJECUTE CADA FRAME
+        
+        
+        */
+	}
+    
 }
+
 static void idle_func() {
     float move_speed = 0.1f;
     const Uint8* state = SDL_GetKeyboardState(NULL);
@@ -356,7 +425,7 @@ int main(int argc, char* argv[]) {
 
     while (window.processEvents() && window.isOpen()) {
         const auto t0 = hrclock::now();
-
+		handleAltKey();
         // Obtener la posición actual del mouse
         glm::vec2 mouseScreenPos = getMousePosition();
 
@@ -385,7 +454,7 @@ int main(int argc, char* argv[]) {
             case SDL_MOUSEBUTTONDOWN:
                 if (event.button.button == SDL_BUTTON_LEFT) {
                     // Raycast para detectar el objeto debajo del mouse
-                    selectedObject = raycastFromMouse(mouseScreenPos.x, mouseScreenPos.y, projection, view, WINDOW_SIZE);
+                    selectedObject = raycastFromMouseToGameObject(mouseScreenPos.x, mouseScreenPos.y, projection, view, WINDOW_SIZE);
                 }
 
             case SDL_MOUSEBUTTONUP:
