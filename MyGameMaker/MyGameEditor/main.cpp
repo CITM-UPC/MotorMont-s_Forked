@@ -18,6 +18,7 @@
 #include "MyGameEngine/GameObject.h"
 #include "MyWindow.h"
 #include "BasicShapesManager.h"
+#include "MyGui.h"
 
 using namespace std;
 using hrclock = chrono::high_resolution_clock;
@@ -31,7 +32,6 @@ static Camera camera;
 
 static vector<GameObject> gameObjects;
 GameObject* selectedObject = nullptr;
-static GameObject scene;
 SDL_Event event;
 bool rightMouseButtonDown = false;
 int lastMouseX, lastMouseY;
@@ -161,27 +161,27 @@ std::string getFileExtension(const std::string& filePath) {
 
 
 
-void handleFileDrop(const std::string& filePath) {
+void handleFileDrop(const std::string& filePath, mat4 projection, mat4 view) {
     auto extension = getFileExtension(filePath);
     auto mesh = make_shared<Mesh>();
     auto imageTexture = make_shared<Image>();
+    int mouseX, mouseY;
+    SDL_GetMouseState(&mouseX, &mouseY);
 
     if (extension == "obj" || extension == "fbx" || extension == "dae") {
         GameObject go;
         mesh->LoadFile(filePath.c_str());
         go.setMesh(mesh);
+        glm::vec3 mouseWorldPos = screenToWorld(glm::vec2(mouseX,mouseY), 10.0f, projection, view);
+		go.transform().pos() = mouseWorldPos;
         gameObjects.push_back(go);
+
     }
     else if (extension == "png" || extension == "jpg" || extension == "bmp") {
         imageTexture->loadTexture(filePath);
 
-        // Obtener matrices de proyección y vista de la cámara
-        glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)WINDOW_SIZE.x / WINDOW_SIZE.y, 0.1f, 100.0f);
-        glm::mat4 view = camera.view();
-
         // Obtener posición actual del mouse
-        int mouseX, mouseY;
-        SDL_GetMouseState(&mouseX, &mouseY);
+        
 
         // Detectar si el mouse está sobre algún GameObject
         GameObject* hitObject = raycastFromMouseToGameObject(mouseX, mouseY, projection, view, WINDOW_SIZE);
@@ -430,6 +430,7 @@ int main(int argc, char* argv[]) {
     iluInit();
 
     MyWindow window("SDL2 Simple Example", WINDOW_SIZE.x, WINDOW_SIZE.y);
+    MyGUI gui(window.windowPtr(), window.contextPtr());
     initOpenGL();
 
     // Posición inicial de la cámara
@@ -437,32 +438,39 @@ int main(int argc, char* argv[]) {
     camera.transform().rotate(glm::radians(180.0), vec3(0, 1, 0));
     spawnBakerHouse();
 
-    while (window.processEvents() && window.isOpen()) {
+    
+
+    while (window.processEvents(&gui) && window.isOpen()) {
         const auto t0 = hrclock::now();
 		handleAltKey();
         // Obtener la posición actual del mouse
         glm::vec2 mouseScreenPos = getMousePosition();
 
-        // Obtener matrices de proyección y vista de la cámara
-        glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)WINDOW_SIZE.x / WINDOW_SIZE.y, 0.1f, 100.0f);
-        glm::mat4 view = camera.view();
+        
 
         display_func(); // Renderizar la escena
-        idle_func();    // Actualizar lógica de juego
-
+        gui.render();
         window.swapBuffers();
 
         const auto t1 = hrclock::now();
         const auto dt = t1 - t0;
         if (dt < FRAME_DT) this_thread::sleep_for(FRAME_DT - dt);
 
+        SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
+        
         while (SDL_PollEvent(&event))
         {
-            glm::vec3 mouseWorldPos = screenToWorld(mouseScreenPos, 10.0f, projection, view);
+          
+            gui.processEvent(event);
+            
             switch (event.type)
             {
             case SDL_DROPFILE:
-                handleFileDrop(event.drop.file);
+                // Obtener matrices de proyección y vista de la cámara
+                glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)WINDOW_SIZE.x / WINDOW_SIZE.y, 0.1f, 100.0f);
+                glm::mat4 view = camera.view();
+				cout << "File dropped: " << event.drop.file << endl;
+                handleFileDrop(event.drop.file, projection, view);
                 SDL_free(event.drop.file);
                 break;
             case SDL_MOUSEBUTTONDOWN:
@@ -470,7 +478,6 @@ int main(int argc, char* argv[]) {
                     // Raycast para detectar el objeto debajo del mouse
                     selectedObject = raycastFromMouseToGameObject(mouseScreenPos.x, mouseScreenPos.y, projection, view, WINDOW_SIZE);
                 }
-
             case SDL_MOUSEBUTTONUP:
                 mouseButton_func(event.button.button, event.button.state, event.button.x, event.button.y);
                 break;
@@ -483,8 +490,9 @@ int main(int argc, char* argv[]) {
                 break;
             case SDL_MOUSEWHEEL:
                 mouseWheel_func(event.wheel.y);
+                break;
             case SDL_KEYDOWN:
-
+                glm::vec3 mouseWorldPos = screenToWorld(mouseScreenPos, 10.0f, projection, view);
 
                 // Crear figuras en la posición 3D calculada
                 switch (event.key.keysym.sym) {
@@ -501,11 +509,15 @@ int main(int argc, char* argv[]) {
                     break;
                 }
                 break;
+			default:
+				cout << event.type << endl;
+				break;
             }
 
 
 
         }
+        idle_func();    // Actualizar lógica de juego
     }
     return EXIT_SUCCESS;
 }
