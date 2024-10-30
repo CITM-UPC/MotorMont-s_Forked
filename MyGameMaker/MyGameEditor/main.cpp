@@ -1,3 +1,6 @@
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/rotate_vector.hpp> 
+#include <glm/gtx/orthonormalize.hpp>
 #include <iostream>
 #include <string>
 #include <IL/il.h>
@@ -15,8 +18,6 @@
 #include "MyGameEngine/GameObject.h"
 #include "MyWindow.h"
 #include "BasicShapesManager.h"
-
-
 
 using namespace std;
 using hrclock = chrono::high_resolution_clock;
@@ -299,6 +300,7 @@ void mouseMotion_func(int x, int y) {
 
         lastMouseX = x;
         lastMouseY = y;
+        camera.transform().alignToGlobalUp();
     }
 
     if (rightMouseButtonDown && altKeyDown) {

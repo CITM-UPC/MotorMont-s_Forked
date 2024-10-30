@@ -40,7 +40,7 @@ public:
     void updateRotationMatrix();
 
     void lookAt(const vec3& target);
-
+    void alignToGlobalUp(const vec3& worldUp = vec3(0.0f, 1.0f, 0.0f));
     Transform operator*(const mat4& other) { return Transform(_mat * other); }
     Transform operator*(const Transform& other) { return Transform(_mat * other._mat); }
 };

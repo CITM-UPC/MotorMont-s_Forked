@@ -51,7 +51,19 @@ void Transform::updateRotationMatrix() {
     // Combinamos las matrices de rotación
     _mat = pitchMatrix * yawMatrix * _mat; // Aplicamos primero yaw y luego pitch
 }
+void Transform::alignToGlobalUp(const vec3& worldUp) {
 
+    vec3 fwd = glm::normalize(_fwd);
+    vec3 right = glm::normalize(glm::cross(worldUp, fwd));
+    vec3 up = glm::cross(fwd, right);
+
+
+    _left = right;
+    _up = up;
+    _fwd = fwd;
+    _pos = _pos;
+    _mat = mat4(vec4(_left, 0.0f), vec4(_up, 0.0f), vec4(_fwd, 0.0f), vec4(_pos, 1.0f));
+}
 // Implementación de la función lookAt
 void Transform::lookAt(const vec3& target) {
     _fwd = glm::normalize(  _pos- target);
@@ -63,5 +75,6 @@ void Transform::lookAt(const vec3& target) {
     _mat[2] = vec4(-_fwd, 0.0);
     _mat[3] = vec4(_pos, 1.0);
 }
+
 
 
