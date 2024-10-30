@@ -75,6 +75,20 @@ void Transform::lookAt(const vec3& target) {
     _mat[2] = vec4(-_fwd, 0.0);
     _mat[3] = vec4(_pos, 1.0);
 }
+//void Transform::updateMatrix() {
+//    //// Reiniciamos la matriz a identidad
+//    //_mat = glm::mat4(1.0f);
+//
+//    //// Aplicamos las transformaciones
+//    //_mat = glm::translate(_mat, _position);
+//    //_mat = glm::rotate(_mat, _rotation.z, glm::vec3(0, 0, 1));  // Roll
+//    //_mat = glm::rotate(_mat, _rotation.y, glm::vec3(0, 1, 0));  // Yaw
+//    //_mat = glm::rotate(_mat, _rotation.x, glm::vec3(1, 0, 0));  // Pitch
+//
+//
+//    //// Escala
+//    //_mat = glm::scale(_mat, _scale);
+//}
 
 
 

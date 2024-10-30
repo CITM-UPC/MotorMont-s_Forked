@@ -25,7 +25,9 @@ public:
     // Constructor y destructor
     /*GameObject(const std::string& name = "New GameObject");
     ~GameObject();*/
-
+    glm::vec3 getPosition() const;
+    glm::vec3 getRotation() const;
+    glm::vec3 getScale() const;
     // Métodos para acceder y modificar propiedades
     const auto& transform() const { return _transform; }
     auto& transform() { return _transform; }

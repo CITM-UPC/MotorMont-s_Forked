@@ -19,7 +19,17 @@ void GameObject::draw() const {
 
 	glPopMatrix();
 }
+glm::vec3 GameObject::getPosition() const {
+	return _transform.getPosition();
+}
 
+glm::vec3 GameObject::getRotation() const {
+	return _transform.getRotation();
+}
+
+glm::vec3 GameObject::getScale() const {
+	return _transform.getScale();
+}
 BoundingBox GameObject::localBoundingBox() const {
 	if (children().size()) {
 		BoundingBox bbox = _mesh_ptr ? _mesh_ptr->boundingBox() : children().front().boundingBox();

@@ -10,7 +10,7 @@ public:
 	MyGUI& operator=(const MyGUI&) = delete;
 	~MyGUI();
 	void render();
-
+	void renderInspector();
 	void processEvent(const SDL_Event& event) override;
 	void handleEvent(const SDL_Event& event); 
 

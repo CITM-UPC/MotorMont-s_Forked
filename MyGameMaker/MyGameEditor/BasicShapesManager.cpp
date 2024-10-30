@@ -103,6 +103,6 @@ void BasicShapesManager::createFigure(int figureType, std::vector<GameObject>& g
 
     // Establece la posición del GameObject en la posición 3D calculada desde la posición del ratón
     go.transform().translate(mousePosition);
-	
+    go.setName("GameObject (" + std::to_string(gameObjects.size()) + ")");
     gameObjects.push_back(go);
 }

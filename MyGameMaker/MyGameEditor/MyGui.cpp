@@ -127,7 +127,56 @@ void MyGUI::ShowHierarchy()
         ImGui::End();
     }
 }
+void MyGUI::renderInspector() {
+    ImGui::Begin("Inspector");
+    // Obtener el GameObject actualmente seleccionado
+    GameObject* selectedObject = SceneManager::selectedObject;
 
+    if (selectedObject) {
+        // Mostrar información del componente Transform
+        if (ImGui::CollapsingHeader("Transform")) {
+
+            glm::vec3 position = selectedObject->getPosition();
+            glm::vec3 rotation = selectedObject->getRotation();
+            glm::vec3 scale = selectedObject->getScale();
+
+            ImGui::Text("Position: (%.2f, %.2f, %.2f)", position.x, position.y, position.z);
+            ImGui::Text("Rotation: (%.2f, %.2f, %.2f)", rotation.x, rotation.y, rotation.z);
+            ImGui::Text("Scale: (%.2f, %.2f, %.2f)", scale.x, scale.y, scale.z);
+        }
+
+        // Mostrar información del componente Mesh
+        if (selectedObject->hasMesh() && ImGui::CollapsingHeader("Mesh")) {
+            Mesh& mesh = selectedObject->mesh();
+            ImGui::Text("Vertices: %d", mesh.vertices());
+            //ImGui::Text("Triangles: %d", mesh.getTriangleCount());
+
+            static bool showNormalsPerTriangle = false;
+            static bool showNormalsPerFace = false;
+
+            ImGui::Checkbox("Show Normals (Per Triangle)", &showNormalsPerTriangle);
+            ImGui::Checkbox("Show Normals (Per Face)", &showNormalsPerFace);
+
+            // Aquí podríamos añadir la lógica para visualizar las normales en función de las opciones seleccionadas
+        }
+
+        // Mostrar información del componente Texture
+        if (selectedObject->hasTexture() && ImGui::CollapsingHeader("Texture")) {
+            Texture& texture = selectedObject->texture();
+            /* ImGui::Text("Texture Size: %dx%d", texture.getWidth(), texture.getHeight());
+             ImGui::Text("Texture Path: %s", texture.getPath().c_str());
+
+             static bool useCheckerTexture = false;
+             ImGui::Checkbox("Use Checker Texture", &useCheckerTexture);*/
+
+             // Aquí podríamos añadir lógica para aplicar una textura de tablero de ajedrez en caso de que se seleccione la opción
+        }
+    }
+    else {
+        ImGui::Text("No GameObject selected.");
+    }
+    ImGui::End();
+}
 void MyGUI::render() {
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplSDL2_NewFrame();
@@ -135,6 +184,7 @@ void MyGUI::render() {
 
 	ShowMainMenuBar();
     ShowHierarchy();
+    renderInspector();
 
 	//Show debug window hello world
 	ImGui::Begin("Hello, world!");
