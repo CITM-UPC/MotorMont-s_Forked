@@ -300,14 +300,14 @@ void mouseMotion_func(int x, int y) {
 
         lastMouseX = x;
         lastMouseY = y;
-        camera.transform().alignToGlobalUp();
+        camera.transform().alignCamera();
     }
 
     if (rightMouseButtonDown && altKeyDown) {
        
         int deltaX = x - lastMouseX;
         int deltaY = y - lastMouseY;
-		
+
         if (!altPressedOnce) {
             altPressedOnce = true;
 
@@ -333,6 +333,7 @@ void mouseMotion_func(int x, int y) {
 
         lastMouseX = x;
         lastMouseY = y;
+        camera.transform().alignCamera();
 	}
 	else {
 		altPressedOnce = false; // Reinicia la bandera si Alt no está presionado
@@ -388,14 +389,15 @@ static void idle_func() {
     }
 
     if (state[SDL_SCANCODE_F] && !fKeyDown && selectedObject != NULL) {
+        camera.transform().pos() = selectedObject->transform().pos() + vec3(0, 1, 4);
         fKeyDown = true;
         camera.transform().lookAt(selectedObject->transform().pos());
-		camera.transform().pos() = selectedObject->transform().pos() + vec3(0, 1, 4);
         std::cout << "Camera looking at target." << std::endl;
     }
     else if (!state[SDL_SCANCODE_F]) {
         fKeyDown = false;
     }
+    camera.transform().alignCamera();
 }
 //debug, showing the bounding boxes, not finished
 inline static void glVertex3(const vec3& v) { glVertex3dv(&v.x); }
