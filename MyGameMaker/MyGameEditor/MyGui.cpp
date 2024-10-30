@@ -37,15 +37,15 @@ MyGUI::~MyGUI() {
 	ImGui::DestroyContext();
 }
 
-void MyGUI::render() {
-	ImGui_ImplOpenGL3_NewFrame();
-	ImGui_ImplSDL2_NewFrame();
-	ImGui::NewFrame();
-
-    if (ImGui::BeginMainMenuBar()) {
-        if (ImGui::BeginMenu("File")) {
-            if (ImGui::BeginMenu("Import")) {
-                if (ImGui::MenuItem("FBX")) {
+void MyGUI::ShowMainMenuBar() {
+    if (ImGui::BeginMainMenuBar()) 
+    {
+        if (ImGui::BeginMenu("File")) 
+        {
+            if (ImGui::BeginMenu("Import"))
+            {
+                if (ImGui::MenuItem("FBX")) 
+                {
                     const char* filterPatterns[1] = { "*.fbx" };
                     const char* filePath = tinyfd_openFileDialog(
                         "Select an FBX file",
@@ -55,49 +55,67 @@ void MyGUI::render() {
                         NULL,
                         0
                     );
-                    if (filePath) {
+                    if (filePath) 
+                    {
                         SceneManager::LoadGameObject(filePath);
                     }
                 }
                 ImGui::EndMenu();
             }
-            if (ImGui::MenuItem("Quit")) {
+            if (ImGui::MenuItem("Quit")) 
+            {
                 SDL_Quit();
             }
             ImGui::EndMenu();
-
         }
-        if (ImGui::BeginMenu("Help")) {
-            if (ImGui::MenuItem("About")) {
-                
+        if (ImGui::BeginMenu("Help"))
+        {
+            if (ImGui::MenuItem("About"))
+            {
                 const char* url = "https://github.com/CITM-UPC/FreakyEngine_Group5";
                 SDL_OpenURL(url);
             }
-
-            ImGui::EndMenu(); 
+            ImGui::EndMenu();
         }
-        ImGui::EndMainMenuBar(); 
+        ImGui::EndMainMenuBar();
     }
+}
 
+void MyGUI::ShowHierarchy() 
+{
     ImGui::SetNextWindowSize(ImVec2(300, 700), ImGuiCond_Always);
     ImGui::SetNextWindowPos(ImVec2(0, 20), ImGuiCond_Always);
     if (ImGui::Begin("Hierarchy", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove)) {
-        for (auto& go : SceneManager::gameObjectsOnScene) {
-			if (SceneManager::gameObjectsOnScene.size() <1) continue;
+        // Iterar sobre todos los objetos en la escena
+        for (auto& go : SceneManager::gameObjectsOnScene) 
+        {
+            if (SceneManager::gameObjectsOnScene.empty()) continue;
+
             static char newName[128] = "";
             static bool renaming = false;
             static GameObject* renamingObject = nullptr;
 
-            // Flags para el nodo, incluyendo selección y expansión
-            ImGuiTreeNodeFlags nodeFlags = (SceneManager::selectedObject == &go ? ImGuiTreeNodeFlags_Selected : 0) |
-                ImGuiTreeNodeFlags_OpenOnArrow |
-                ImGuiTreeNodeFlags_SpanAvailWidth;
-            bool nodeOpen = ImGui::TreeNodeEx(go.getName().c_str(), nodeFlags);
+            // Selección y resaltado del objeto
+            bool isSelected = (SceneManager::selectedObject == &go);
+            if (ImGui::Selectable(go.getName().c_str(), isSelected))
+            {
+                SceneManager::selectedObject = &go;
+            }
 
-            // Lógica para renombrar
-            if (renaming && renamingObject == &go) {
+            // Iniciar renombrado al hacer doble clic
+            if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) 
+            {
+                renaming = true;
+                renamingObject = &go;
+                strcpy_s(newName, go.getName().c_str());
+            }
+
+            // Lógica para renombrar el objeto seleccionado
+            if (renaming && renamingObject == &go) 
+            {
                 ImGui::SetKeyboardFocusHere();
-                if (ImGui::InputText("##rename", newName, IM_ARRAYSIZE(newName), ImGuiInputTextFlags_EnterReturnsTrue)) {
+                if (ImGui::InputText("##rename", newName, IM_ARRAYSIZE(newName), ImGuiInputTextFlags_EnterReturnsTrue))
+                {
                     go.setName(newName);
                     renaming = false;
                 }
@@ -105,33 +123,20 @@ void MyGUI::render() {
                     renaming = false;
                 }
             }
-            else {
-                if (SceneManager::selectedObject != nullptr) {
-                    if (ImGui::Selectable(go.getName().c_str(), SceneManager::selectedObject == &go)) {
-                        SceneManager::selectedObject = &go;
-                    }
-                }
-                if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
-                    renaming = true;
-                    renamingObject = &go;
-                    strcpy_s(newName, go.getName().c_str());
-                }
-            }
-
-            // Si el nodo está abierto, podemos agregar sub-elementos aquí
-            if (nodeOpen) {
-                // Lógica para sub-elementos (si los tienes, de otro modo se puede omitir)
-                // Ejemplo:
-                // for (auto& child : go.getChildren()) {
-                //     ImGui::Text(child.getName().c_str());
-                // }
-
-                ImGui::TreePop();
-            }
         }
+        ImGui::End();
     }
-    ImGui::End();
+}
 
+void MyGUI::render() {
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplSDL2_NewFrame();
+	ImGui::NewFrame();
+
+	ShowMainMenuBar();
+    ShowHierarchy();
+
+	//Show debug window hello world
 	ImGui::Begin("Hello, world!");
 	ImGui::Text("This is some useful text.");
 	ImGui::End();

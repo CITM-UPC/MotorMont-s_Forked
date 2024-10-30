@@ -14,5 +14,8 @@ public:
 	void processEvent(const SDL_Event& event) override;
 	void handleEvent(const SDL_Event& event); 
 
+	void ShowMainMenuBar();
+	void ShowHierarchy();
+
 };
 
