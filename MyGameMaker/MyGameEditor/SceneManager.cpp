@@ -4,6 +4,7 @@
 #include "MyGameEngine/Image.h"
 
 std::vector<GameObject> SceneManager::gameObjectsOnScene;
+GameObject* SceneManager::selectedObject = nullptr;
 
 void SceneManager::spawnBakerHouse() 
 {
@@ -13,6 +14,7 @@ void SceneManager::spawnBakerHouse()
     go.setMesh(mesh);
 	go.transform().pos() = vec3(4, 0, 0);
     SceneManager::gameObjectsOnScene.push_back(go);
+    go.setName("GameObject (" + std::to_string(gameObjectsOnScene.size()) + ")");
 }
 
 
@@ -23,6 +25,7 @@ void SceneManager::LoadGameObject(const std::string& filePath) {
     mesh->LoadFile(filePath.c_str());
     go.setMesh(mesh);
     gameObjectsOnScene.push_back(go);
+    go.setName("GameObject (" + std::to_string(gameObjectsOnScene.size()) + ")");
 }
 
 GameObject* SceneManager::getGameObject(int index) {

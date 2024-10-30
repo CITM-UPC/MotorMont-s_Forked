@@ -78,7 +78,43 @@ void MyGUI::render() {
         }
         ImGui::EndMainMenuBar(); 
     }
-   
+
+    ImGui::SetNextWindowSize(ImVec2(300, 700), ImGuiCond_Always);
+    ImGui::SetNextWindowPos(ImVec2(0, 20), ImGuiCond_Always);
+    if (ImGui::Begin("Gameobjects", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove)) {
+        for (auto& go : SceneManager::gameObjectsOnScene) {
+            static char newName[128] = "";
+            static bool renaming = false;
+            static GameObject* renamingObject = nullptr;
+
+            if (renaming && renamingObject == &go) {
+                ImGui::SetKeyboardFocusHere();
+                if (ImGui::InputText("##rename", newName, IM_ARRAYSIZE(newName), ImGuiInputTextFlags_EnterReturnsTrue)) {
+                    go.setName(newName);
+                    renaming = false;
+                }
+                if (ImGui::IsItemDeactivated() || ImGui::IsKeyPressed(ImGuiKey_Escape)) {
+                    renaming = false;
+                }
+            }
+            else {
+                if (SceneManager::selectedObject != nullptr) {
+                    if (ImGui::Selectable(go.getName().c_str(), SceneManager::selectedObject == &go)) {
+                        SceneManager::selectedObject = &go;
+                    }
+                }
+					
+                
+                if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) {
+                    renaming = true;
+                    renamingObject = &go;
+                    strcpy_s(newName, go.getName().c_str());
+                }
+            }
+        }
+    }
+
+    ImGui::End();
 
 	ImGui::Begin("Hello, world!");
 	ImGui::Text("This is some useful text.");

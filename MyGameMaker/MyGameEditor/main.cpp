@@ -31,7 +31,7 @@ static const auto FRAME_DT = 1.0s / FPS;
 
 static Camera camera;
 
-GameObject* selectedObject = nullptr;
+
 SDL_Event event;
 bool rightMouseButtonDown = false;
 int lastMouseX, lastMouseY;
@@ -305,8 +305,8 @@ void mouseMotion_func(int x, int y) {
 
             glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)WINDOW_SIZE.x / WINDOW_SIZE.y, 0.1f, 100.0f);
             glm::mat4 view = camera.view();
-			if (selectedObject != nullptr) {
-				target = selectedObject->transform().pos();
+			if (SceneManager::selectedObject != nullptr) {
+				target = SceneManager::selectedObject->transform().pos();
 
 			}
 			else {
@@ -378,10 +378,10 @@ static void idle_func() {
         }
     }
 
-    if (state[SDL_SCANCODE_F] && !fKeyDown && selectedObject != NULL) {
-        camera.transform().pos() = selectedObject->transform().pos() + vec3(0, 1, 4);
+    if (state[SDL_SCANCODE_F] && !fKeyDown && SceneManager::selectedObject != NULL) {
+        camera.transform().pos() = SceneManager::selectedObject->transform().pos() + vec3(0, 1, 4);
         fKeyDown = true;
-        camera.transform().lookAt(selectedObject->transform().pos());
+        camera.transform().lookAt(SceneManager::selectedObject->transform().pos());
         std::cout << "Camera looking at target." << std::endl;
     }
     else if (!state[SDL_SCANCODE_F]) {
@@ -467,7 +467,7 @@ int main(int argc, char* argv[]) {
             case SDL_MOUSEBUTTONDOWN:
                 if (event.button.button == SDL_BUTTON_LEFT) {
                     // Raycast para detectar el objeto debajo del mouse
-                    selectedObject = raycastFromMouseToGameObject(mouseScreenPos.x, mouseScreenPos.y, projection, view, WINDOW_SIZE);
+                    SceneManager::selectedObject = raycastFromMouseToGameObject(mouseScreenPos.x, mouseScreenPos.y, projection, view, WINDOW_SIZE);
                 }
             case SDL_MOUSEBUTTONUP:
                 mouseButton_func(event.button.button, event.button.state, event.button.x, event.button.y);

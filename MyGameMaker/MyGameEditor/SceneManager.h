@@ -14,6 +14,7 @@ public:
 
 public: 
 	static std::vector<GameObject> gameObjectsOnScene;
+	static GameObject* selectedObject;
 
 };
 

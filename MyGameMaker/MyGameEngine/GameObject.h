@@ -9,6 +9,7 @@
 #include "Texture.h"
 #include "BoundingBox.h"
 #include "Mesh.h"
+#include <string>
 
 class GameObject : public TreeExt<GameObject> {
 private:
@@ -18,6 +19,7 @@ private:
     std::shared_ptr<Mesh> _mesh_ptr;           // Puntero a la malla
     //std::vector<std::shared_ptr<Component>> _components; // Lista de componentes
     bool _active = true;                        // Estado de activación
+    std::string name;
 
 public:
     // Constructor y destructor
@@ -36,6 +38,9 @@ public:
 
     const auto& mesh() const { return *_mesh_ptr; }
     auto& mesh() { return *_mesh_ptr; }
+
+    const std::string& getName() const { return name; }
+    void setName(const std::string& newName) { name = newName; }
 
     // Gestión de componentes
     //void addComponent(std::shared_ptr<Component> component);
