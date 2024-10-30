@@ -19,6 +19,7 @@
 #include "MyWindow.h"
 #include "BasicShapesManager.h"
 #include "MyGui.h"
+#include "SceneManager.h"
 
 using namespace std;
 using hrclock = chrono::high_resolution_clock;
@@ -30,7 +31,6 @@ static const auto FRAME_DT = 1.0s / FPS;
 
 static Camera camera;
 
-static vector<GameObject> gameObjects;
 GameObject* selectedObject = nullptr;
 SDL_Event event;
 bool rightMouseButtonDown = false;
@@ -133,7 +133,7 @@ GameObject* raycastFromMouseToGameObject(int mouseX, int mouseY, const glm::mat4
 
     GameObject* hitObject = nullptr;
 
-    for (auto& go : gameObjects) {
+    for (auto& go : SceneManager::gameObjectsOnScene) {
         if (intersectRayWithBoundingBox(rayOrigin, rayDirection, go.boundingBox())) {
             hitObject = &go;
             break;
@@ -163,18 +163,14 @@ std::string getFileExtension(const std::string& filePath) {
 
 void handleFileDrop(const std::string& filePath, mat4 projection, mat4 view) {
     auto extension = getFileExtension(filePath);
-    auto mesh = make_shared<Mesh>();
-    auto imageTexture = make_shared<Image>();
+    auto imageTexture = std::make_shared<Image>();
     int mouseX, mouseY;
     SDL_GetMouseState(&mouseX, &mouseY);
 
     if (extension == "obj" || extension == "fbx" || extension == "dae") {
-        GameObject go;
-        mesh->LoadFile(filePath.c_str());
-        go.setMesh(mesh);
-        glm::vec3 mouseWorldPos = screenToWorld(glm::vec2(mouseX,mouseY), 10.0f, projection, view);
-		go.transform().pos() = mouseWorldPos;
-        gameObjects.push_back(go);
+       
+		SceneManager::LoadGameObject(filePath);
+		SceneManager::getGameObject(SceneManager::gameObjectsOnScene.size() - 1)->transform().pos() = screenToWorld(glm::vec2(mouseX, mouseY), 10.0f, projection, view);
 
     }
     else if (extension == "png" || extension == "jpg" || extension == "bmp") {
@@ -212,13 +208,7 @@ static void drawFloorGrid(int size, double step) {
     glEnd();
 }
 //spawn Initial house
-void spawnBakerHouse() {
-    GameObject go;
-    auto mesh = make_shared<Mesh>();
-    mesh->LoadFile("BakerHouse.fbx");
-    go.setMesh(mesh);
-    gameObjects.push_back(go);
-}
+
 
 void configureCamera() {
     glm::dmat4 projectionMatrix = glm::perspective(glm::radians(45.0), static_cast<double>(WINDOW_SIZE.x) / WINDOW_SIZE.y, 0.1, 100.0);
@@ -234,7 +224,7 @@ void display_func() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     configureCamera();
 
-    for (auto& go : gameObjects) {
+    for (auto& go : SceneManager::gameObjectsOnScene) {
         go.draw();
     }
 
@@ -436,7 +426,7 @@ int main(int argc, char* argv[]) {
     // Posición inicial de la cámara
     camera.transform().pos() = vec3(0, 1, 4);
     camera.transform().rotate(glm::radians(180.0), vec3(0, 1, 0));
-    spawnBakerHouse();
+    SceneManager::spawnBakerHouse();
 
     
 
@@ -494,13 +484,13 @@ int main(int argc, char* argv[]) {
                 // Crear figuras en la posición 3D calculada
                 switch (event.key.keysym.sym) {
                 case SDLK_1:  // Crear Triángulo
-                    BasicShapesManager::createFigure(1, gameObjects, 1.0, mouseWorldPos);
+                    BasicShapesManager::createFigure(1, SceneManager::gameObjectsOnScene, 1.0, mouseWorldPos);
                     break;
                 case SDLK_2:  // Crear Cuadrado
-                    BasicShapesManager::createFigure(2, gameObjects, 1.0, mouseWorldPos);
+                    BasicShapesManager::createFigure(2, SceneManager::gameObjectsOnScene, 1.0, mouseWorldPos);
                     break;
                 case SDLK_3:  // Crear Cubo
-                    BasicShapesManager::createFigure(3, gameObjects, 1.0, mouseWorldPos);
+                    BasicShapesManager::createFigure(3, SceneManager::gameObjectsOnScene, 1.0, mouseWorldPos);
                     break;
                 default:
                     break;

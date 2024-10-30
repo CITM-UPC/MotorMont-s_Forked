@@ -144,30 +144,13 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MyGui.cpp" />
     <ClCompile Include="MyWindow.cpp" />
-    <ClCompile Include="vendor\ImGui\backends\imgui_impl_dx12.cpp" />
-    <ClCompile Include="vendor\ImGui\backends\imgui_impl_opengl3.cpp" />
-    <ClCompile Include="vendor\ImGui\backends\imgui_impl_sdl2.cpp" />
-    <ClCompile Include="vendor\ImGui\backends\imgui_impl_win32.cpp" />
-    <ClCompile Include="vendor\ImGui\imgui.cpp" />
-    <ClCompile Include="vendor\ImGui\imgui_demo.cpp" />
-    <ClCompile Include="vendor\ImGui\imgui_draw.cpp" />
-    <ClCompile Include="vendor\ImGui\imgui_tables.cpp" />
-    <ClCompile Include="vendor\ImGui\imgui_widgets.cpp" />
+    <ClCompile Include="SceneManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BasicShapesManager.h" />
     <ClInclude Include="MyGui.h" />
     <ClInclude Include="MyWindow.h" />
-    <ClInclude Include="vendor\ImGui\backends\imgui_impl_dx12.h" />
-    <ClInclude Include="vendor\ImGui\backends\imgui_impl_opengl3.h" />
-    <ClInclude Include="vendor\ImGui\backends\imgui_impl_sdl2.h" />
-    <ClInclude Include="vendor\ImGui\backends\imgui_impl_win32.h" />
-    <ClInclude Include="vendor\ImGui\imconfig.h" />
-    <ClInclude Include="vendor\ImGui\imgui.h" />
-    <ClInclude Include="vendor\ImGui\imgui_internal.h" />
-    <ClInclude Include="vendor\ImGui\imstb_rectpack.h" />
-    <ClInclude Include="vendor\ImGui\imstb_textedit.h" />
-    <ClInclude Include="vendor\ImGui\imstb_truetype.h" />
+    <ClInclude Include="SceneManager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
