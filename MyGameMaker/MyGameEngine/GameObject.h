@@ -25,9 +25,7 @@ public:
     // Constructor y destructor
     /*GameObject(const std::string& name = "New GameObject");
     ~GameObject();*/
-    glm::vec3 getPosition() const;
-    glm::vec3 getRotation() const;
-    glm::vec3 getScale() const;
+
     // Métodos para acceder y modificar propiedades
     const auto& transform() const { return _transform; }
     auto& transform() { return _transform; }
@@ -67,6 +65,15 @@ public:
 
     // Método para dibujar el objeto
     void draw() const; // Definir en el .cpp
+    std::vector<glm::vec3> calculateNormalsPerTriangle() const;
+    void drawNormals() ;
+    void drawLine( glm::vec3& start,  glm::vec3& end);
+    std::vector<glm::vec3> calculateNormalsPerFace();
+    void drawFaceNormals();
+
+
+
+
 
     
 

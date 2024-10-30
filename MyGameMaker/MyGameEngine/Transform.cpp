@@ -75,20 +75,39 @@ void Transform::lookAt(const vec3& target) {
     _mat[2] = vec4(-_fwd, 0.0);
     _mat[3] = vec4(_pos, 1.0);
 }
-//void Transform::updateMatrix() {
-//    //// Reiniciamos la matriz a identidad
-//    //_mat = glm::mat4(1.0f);
-//
-//    //// Aplicamos las transformaciones
-//    //_mat = glm::translate(_mat, _position);
-//    //_mat = glm::rotate(_mat, _rotation.z, glm::vec3(0, 0, 1));  // Roll
-//    //_mat = glm::rotate(_mat, _rotation.y, glm::vec3(0, 1, 0));  // Yaw
-//    //_mat = glm::rotate(_mat, _rotation.x, glm::vec3(1, 0, 0));  // Pitch
-//
-//
-//    //// Escala
-//    //_mat = glm::scale(_mat, _scale);
-//}
+glm::vec3 Transform::extractEulerAngles(const glm::mat4& mat) {
+    // Extrae los vectores de la matriz de rotación
+    glm::vec3 forward(mat[2][0], mat[2][1], mat[2][2]);
+    glm::vec3 up(mat[1][0], mat[1][1], mat[1][2]);
+    glm::vec3 left(mat[0][0], mat[0][1], mat[0][2]);
+
+    // Calcula yaw (rotación alrededor del eje Y)
+    float yaw = atan2(forward.x, forward.z);
+
+    // Calcula pitch (rotación alrededor del eje X)
+    float pitch = atan2(-forward.y, sqrt(forward.x * forward.x + forward.z * forward.z));
+
+    // Calcula roll (rotación alrededor del eje Z)
+    float roll = atan2(left.y, up.y);
+
+    // Devuelve los ángulos en grados
+    return glm::vec3(glm::degrees(pitch), glm::degrees(yaw), glm::degrees(roll));
+}
+// Función para extraer la escala de una matriz de transformación
+glm::vec3 Transform::extractScale(const glm::mat4& mat) {
+    // Extraer los vectores de orientación de la matriz de transformación
+    glm::vec3 left(mat[0][0], mat[0][1], mat[0][2]);
+    glm::vec3 up(mat[1][0], mat[1][1], mat[1][2]);
+    glm::vec3 forward(mat[2][0], mat[2][1], mat[2][2]);
+
+    // Calcular la escala como la longitud de cada vector de orientación
+    float scaleX = glm::length(left);
+    float scaleY = glm::length(up);
+    float scaleZ = glm::length(forward);
+
+    // Devolver la escala como un vector
+    return glm::vec3(scaleX, scaleY, scaleZ);
+}
 
 
 

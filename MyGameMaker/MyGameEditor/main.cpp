@@ -342,6 +342,10 @@ static void idle_func() {
     const Uint8* state = SDL_GetKeyboardState(NULL);
 
 
+    /*if (state[SDL_SCANCODE_T]) {
+
+        SceneManager::gameObjectsOnScene[0].transform().rotate(glm::radians(10.0f), glm::vec3(0, -1, 0));
+    }*/
     if (state[SDL_SCANCODE_LSHIFT] || state[SDL_SCANCODE_RSHIFT]) {
         move_speed = 0.2f;
     }
@@ -485,12 +489,15 @@ int main(int argc, char* argv[]) {
                 switch (event.key.keysym.sym) {
                 case SDLK_1:  // Crear Triángulo
                     BasicShapesManager::createFigure(1, SceneManager::gameObjectsOnScene, 1.0, mouseWorldPos);
+                    SceneManager::selectedObject = &SceneManager::gameObjectsOnScene.back();
                     break;
                 case SDLK_2:  // Crear Cuadrado
                     BasicShapesManager::createFigure(2, SceneManager::gameObjectsOnScene, 1.0, mouseWorldPos);
+                    SceneManager::selectedObject = &SceneManager::gameObjectsOnScene.back();
                     break;
                 case SDLK_3:  // Crear Cubo
                     BasicShapesManager::createFigure(3, SceneManager::gameObjectsOnScene, 1.0, mouseWorldPos);
+                    SceneManager::selectedObject = &SceneManager::gameObjectsOnScene.back();
                     break;
                 default:
                     break;

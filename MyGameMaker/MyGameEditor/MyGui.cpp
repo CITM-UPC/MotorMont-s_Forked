@@ -127,18 +127,26 @@ void MyGUI::ShowHierarchy()
         ImGui::End();
     }
 }
+//ALGO FALLA , HAY QUE REVISARLO
 void MyGUI::renderInspector() {
+    ImGui::SetNextWindowSize(ImVec2(300, 700), ImGuiCond_Always);
+    ImGui::SetNextWindowPos(ImVec2(980, 20), ImGuiCond_Always);
     ImGui::Begin("Inspector");
-    // Obtener el GameObject actualmente seleccionado
-    GameObject* selectedObject = SceneManager::selectedObject;
 
-    if (selectedObject) {
+    // Obtener el GameObject actualmente seleccionado de forma persistente
+     static GameObject* persistentSelectedObject = nullptr;
+
+    // Actualizar persistentSelectedObject solo si hay un cambio en SceneManager::selectedObject
+    if (SceneManager::selectedObject != nullptr) {
+        persistentSelectedObject = SceneManager::selectedObject;
+    }
+
+    if (persistentSelectedObject) {
         // Mostrar información del componente Transform
         if (ImGui::CollapsingHeader("Transform")) {
-
-            glm::vec3 position = selectedObject->getPosition();
-            glm::vec3 rotation = selectedObject->getRotation();
-            glm::vec3 scale = selectedObject->getScale();
+            glm::vec3 position = persistentSelectedObject->transform().pos();
+			glm::vec3 rotation = glm::vec3(persistentSelectedObject->transform().extractEulerAngles(persistentSelectedObject->transform().mat()));
+			glm::vec3 scale = persistentSelectedObject->transform().extractScale(persistentSelectedObject->transform().mat());
 
             ImGui::Text("Position: (%.2f, %.2f, %.2f)", position.x, position.y, position.z);
             ImGui::Text("Rotation: (%.2f, %.2f, %.2f)", rotation.x, rotation.y, rotation.z);
@@ -146,35 +154,33 @@ void MyGUI::renderInspector() {
         }
 
         // Mostrar información del componente Mesh
-        if (selectedObject->hasMesh() && ImGui::CollapsingHeader("Mesh")) {
-            Mesh& mesh = selectedObject->mesh();
-            ImGui::Text("Vertices: %d", mesh.vertices());
-            //ImGui::Text("Triangles: %d", mesh.getTriangleCount());
+        if (persistentSelectedObject->hasMesh() && ImGui::CollapsingHeader("Mesh")) {
+            Mesh& mesh = persistentSelectedObject->mesh();
+          //  ImGui::Text("Vertices: %d", mesh.vertices());
 
             static bool showNormalsPerTriangle = false;
             static bool showNormalsPerFace = false;
 
             ImGui::Checkbox("Show Normals (Per Triangle)", &showNormalsPerTriangle);
             ImGui::Checkbox("Show Normals (Per Face)", &showNormalsPerFace);
-
-            // Aquí podríamos añadir la lógica para visualizar las normales en función de las opciones seleccionadas
+            if (showNormalsPerTriangle) {
+				persistentSelectedObject->drawNormals();
+            }
+            if (showNormalsPerFace) {
+                persistentSelectedObject->drawFaceNormals();
+            }
         }
 
         // Mostrar información del componente Texture
-        if (selectedObject->hasTexture() && ImGui::CollapsingHeader("Texture")) {
-            Texture& texture = selectedObject->texture();
-            /* ImGui::Text("Texture Size: %dx%d", texture.getWidth(), texture.getHeight());
-             ImGui::Text("Texture Path: %s", texture.getPath().c_str());
-
-             static bool useCheckerTexture = false;
-             ImGui::Checkbox("Use Checker Texture", &useCheckerTexture);*/
-
-             // Aquí podríamos añadir lógica para aplicar una textura de tablero de ajedrez en caso de que se seleccione la opción
+        if (persistentSelectedObject->hasTexture() && ImGui::CollapsingHeader("Texture")) {
+            Texture& texture = persistentSelectedObject->texture();
+            // Aquí puedes incluir la lógica de textura comentada en tu código original
         }
     }
     else {
         ImGui::Text("No GameObject selected.");
     }
+
     ImGui::End();
 }
 void MyGUI::render() {
