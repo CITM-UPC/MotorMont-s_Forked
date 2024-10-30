@@ -440,13 +440,11 @@ int main(int argc, char* argv[]) {
 
     
 
-    while (window.processEvents(&gui) && window.isOpen()) {
+    while (window.isOpen()) {
         const auto t0 = hrclock::now();
 		handleAltKey();
         // Obtener la posición actual del mouse
-        glm::vec2 mouseScreenPos = getMousePosition();
-
-        
+        glm::vec2 mouseScreenPos = getMousePosition();       
 
         display_func(); // Renderizar la escena
         gui.render();
@@ -460,15 +458,18 @@ int main(int argc, char* argv[]) {
         
         while (SDL_PollEvent(&event))
         {
+            // Obtener matrices de proyección y vista de la cámara
+            glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)WINDOW_SIZE.x / WINDOW_SIZE.y, 0.1f, 100.0f);
+            glm::mat4 view = camera.view();
           
             gui.processEvent(event);
             
             switch (event.type)
             {
-            case SDL_DROPFILE:
-                // Obtener matrices de proyección y vista de la cámara
-                glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)WINDOW_SIZE.x / WINDOW_SIZE.y, 0.1f, 100.0f);
-                glm::mat4 view = camera.view();
+			case SDL_QUIT:
+				window.close();
+				break;
+            case SDL_DROPFILE:               
 				cout << "File dropped: " << event.drop.file << endl;
                 handleFileDrop(event.drop.file, projection, view);
                 SDL_free(event.drop.file);
@@ -483,10 +484,6 @@ int main(int argc, char* argv[]) {
                 break;
             case SDL_MOUSEMOTION:
                 mouseMotion_func(event.motion.x, event.motion.y);
-                if (intersectRayWithBoundingBox(camera.transform().pos(), getRayFromMouse(mouseScreenPos.x, mouseScreenPos.y, projection, view, WINDOW_SIZE), gameObjects[0].boundingBox()))
-                {
-                    drawBoundingBox(gameObjects[0].boundingBox());
-                }
                 break;
             case SDL_MOUSEWHEEL:
                 mouseWheel_func(event.wheel.y);
