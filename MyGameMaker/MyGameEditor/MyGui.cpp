@@ -18,7 +18,8 @@
 #include <SDL2/SDL_events.h>
 #include <SDL2/SDL_opengl.h>
 
-
+#include <windows.h>
+#include <psapi.h>
 
 bool show_metrics_window = false;
 
@@ -86,7 +87,10 @@ void MyGUI::ShowMainMenuBar() {
             }
             if (ImGui::MenuItem("Quit")) 
             {
+
                 SDL_Quit();
+                exit(0);
+
             }
             ImGui::EndMenu();
         }
@@ -158,9 +162,11 @@ void MyGUI::ShowSpawnFigures(bool* p_open) {
 }
 
 float GetMemoryUsage() {
-    // Replace this with actual memory usage calculation
-    // Example: on Windows, you could use `PROCESS_MEMORY_COUNTERS` with `GetProcessMemoryInfo`
-    return static_cast<float>(rand() % 2000);  
+    PROCESS_MEMORY_COUNTERS memCounter;
+    if (GetProcessMemoryInfo(GetCurrentProcess(), &memCounter, sizeof(memCounter))) {
+        return static_cast<float>(memCounter.WorkingSetSize) / (1024.0f * 1024.0f); // Convert bytes to MB
+    }
+    return 0.0f; // Return 0 if there's an issue getting the memory info
 }
 
 void MyGUI::ShowMetricsWindow(bool* p_open) 
@@ -193,7 +199,7 @@ void MyGUI::ShowMetricsWindow(bool* p_open)
     ImGui::Separator();  
 
     ImGui::Text("Memory Usage Graph");
-    ImGui::PlotLines("Memory (MB)", memoryHistory.data(), memoryHistory.size(), 0, nullptr, 0.0f, 2000.0f, ImVec2(0, 80));
+    ImGui::PlotLines("Memory (MB)", memoryHistory.data(), memoryHistory.size(), 0, nullptr, 0.0f, 100.0f, ImVec2(0, 80));
     ImGui::Text("Current Memory Usage: %.1f MB", memoryUsage);
 
     ImGui::End();

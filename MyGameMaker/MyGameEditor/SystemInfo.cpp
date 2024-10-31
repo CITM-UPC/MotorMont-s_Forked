@@ -60,41 +60,7 @@ static std::string GetDevILVersion()
 }
 
 
-std::string SystemInfo::GetOSInfo()
-{
-    std::ostringstream os;
 
-    if (IsWindows10OrGreater())
-    {
-        os << "OS: Windows 10 or greater";
-    }
-    else if (IsWindows8Point1OrGreater())
-    {
-        os << "OS: Windows 8.1";
-    }
-    else if (IsWindows8OrGreater())
-    {
-        os << "OS: Windows 8";
-    }
-    else if (IsWindows7OrGreater())
-    {
-        os << "OS: Windows 7";
-    }
-    else if (IsWindowsVistaOrGreater())
-    {
-        os << "OS: Windows Vista";
-    }
-    else if (IsWindowsXPOrGreater())
-    {
-        os << "OS: Windows XP";
-    }
-    else
-    {
-        os << "OS: Unknown version";
-    }
-
-    return os.str();
-}
 
 std::string SystemInfo::GetCPUInfo()
 {
@@ -137,7 +103,7 @@ std::string SystemInfo::GetGPUInfo()
 std::string SystemInfo::GetFullSystemInfo()
 {
     std::ostringstream fullInfo;
-    fullInfo << GetOSInfo() << "\n" << GetCPUInfo() << "\n" << GetRAMInfo() << "\n" << GetGPUInfo();
+    fullInfo  << GetCPUInfo() << "\n" << GetRAMInfo() << "\n" << GetGPUInfo();
 
 
     return fullInfo.str();
