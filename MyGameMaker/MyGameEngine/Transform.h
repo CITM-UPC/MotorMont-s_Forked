@@ -44,7 +44,6 @@ public:
     void updateRotationMatrix();
     void lookAt(const vec3& target);
     void alignCamera(const vec3& worldUp = vec3(0.0f, 1.0f, 0.0f));
-    //void updateMatrix();
 	glm::vec3 extractEulerAngles(const glm::mat4& mat);
 	glm::vec3 extractScale(const glm::mat4& mat);
 

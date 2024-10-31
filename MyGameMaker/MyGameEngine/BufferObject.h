@@ -20,4 +20,5 @@ public:
 	BufferObject(const BufferObject&) = delete;
 	BufferObject& operator=(const BufferObject&) = delete;
 	~BufferObject();
+
 };

@@ -51,29 +51,30 @@ glm::vec2 getMousePosition() {
     SDL_GetMouseState(&x, &y);
     return glm::vec2(static_cast<float>(x), static_cast<float>(y));
 }
-glm::vec3 screenToWorld(const glm::vec2& mousePos, float depth, const glm::mat4& projection, const glm::mat4& view) {
-    // Paso 1: Convertir coordenadas de pantalla a NDC (Normalized Device Coordinates)
-    float x = (2.0f * mousePos.x) / WINDOW_SIZE.x - 1.0f;
-    float y = 1.0f - (2.0f * mousePos.y) / WINDOW_SIZE.y;  // Invertir Y
-    glm::vec4 clipCoords(x, y, -1.0f, 1.0f); // El espacio de clip está en -1 en Z
 
-    // Paso 2: Convertir desde coordenadas de clip a espacio de cámara
+//Funcion para convertir de coordenadas de pantalla a coordenadas del mundo
+glm::vec3 screenToWorld(const glm::vec2& mousePos, float depth, const glm::mat4& projection, const glm::mat4& view) {
+
+    float x = (2.0f * mousePos.x) / WINDOW_SIZE.x - 1.0f;
+    float y = 1.0f - (2.0f * mousePos.y) / WINDOW_SIZE.y;  
+    glm::vec4 clipCoords(x, y, -1.0f, 1.0f); 
+
+
     glm::vec4 eyeCoords = glm::inverse(projection) * clipCoords;
     eyeCoords = glm::vec4(eyeCoords.x, eyeCoords.y, -1.0f, 0.0f);
 
-    // Paso 3: Convertir a coordenadas de mundo
+
     glm::vec3 worldRay = glm::vec3(glm::inverse(view) * eyeCoords);
     worldRay = glm::normalize(worldRay);
 
-    // Multiplicar el rayo por la profundidad para obtener el punto exacto en el espacio 3D
-    glm::vec3 cameraPosition = glm::vec3(glm::inverse(view)[3]); // Posición de la cámara en el espacio mundial
+
+    glm::vec3 cameraPosition = glm::vec3(glm::inverse(view)[3]); 
     return cameraPosition + worldRay * depth;
 }
 
 
 
 //RayCastFunctions
-
 glm::vec3 getRayFromMouse(int mouseX, int mouseY, const glm::mat4& projection, const glm::mat4& view, const glm::ivec2& viewportSize) {
     float x = (2.0f * mouseX) / viewportSize.x - 1.0f;
     float y = 1.0f - (2.0f * mouseY) / viewportSize.y;
@@ -91,40 +92,32 @@ bool intersectRayWithBoundingBox(const glm::vec3& rayOrigin, const glm::vec3& ra
     float tmin = (bbox.min.x - rayOrigin.x) / rayDirection.x;
     float tmax = (bbox.max.x - rayOrigin.x) / rayDirection.x;
 
-    // Asegurarse de que tmin sea el punto de entrada y tmax el punto de salida
     if (tmin > tmax) std::swap(tmin, tmax);
 
     float tymin = (bbox.min.y - rayOrigin.y) / rayDirection.y;
     float tymax = (bbox.max.y - rayOrigin.y) / rayDirection.y;
 
-    // Asegurarse de que tymin sea el punto de entrada y tymax el punto de salida
     if (tymin > tymax) std::swap(tymin, tymax);
 
-    // Verificar si hay alguna superposición en los intervalos de t para las direcciones X e Y
     if ((tmin > tymax) || (tymin > tmax)) {
         return false;
     }
 
-    // Actualizar tmin y tmax para el intervalo combinado
     if (tymin > tmin) tmin = tymin;
     if (tymax < tmax) tmax = tymax;
 
-    // Repetir el mismo proceso para la dimensión Z
     float tzmin = (bbox.min.z - rayOrigin.z) / rayDirection.z;
     float tzmax = (bbox.max.z - rayOrigin.z) / rayDirection.z;
 
     if (tzmin > tzmax) std::swap(tzmin, tzmax);
 
-    // Verificar si hay alguna superposición en los intervalos de t
     if ((tmin > tzmax) || (tzmin > tmax)) {
         return false;
     }
 
-    // Actualizar tmin y tmax para el intervalo final combinado
     if (tzmin > tmin) tmin = tzmin;
     if (tzmax < tmax) tmax = tzmax;
 
-    // Devolver verdadero si el rayo intersecta la AABB en una dirección positiva (tmin >= 0)
     return tmin >= 0.0f;
 }
 // Raycast desde el mouse para detectar si está sobre un GameObject
@@ -140,7 +133,6 @@ GameObject* raycastFromMouseToGameObject(int mouseX, int mouseY, const glm::mat4
             break;
         }
     }
-
     return hitObject;
 }
 
@@ -160,27 +152,22 @@ std::string getFileExtension(const std::string& filePath) {
     return filePath.substr(dotPosition + 1);
 }
 
-
-
 void handleFileDrop(const std::string& filePath, mat4 projection, mat4 view) {
     auto extension = getFileExtension(filePath);
     auto imageTexture = std::make_shared<Image>();
     int mouseX, mouseY;
+    // Obtener posición actual del mouse
     SDL_GetMouseState(&mouseX, &mouseY);
 
     if (extension == "obj" || extension == "fbx" || extension == "dae") {
        
 		SceneManager::LoadGameObject(filePath);
 		SceneManager::getGameObject(SceneManager::gameObjectsOnScene.size() - 1)->transform().pos() = screenToWorld(glm::vec2(mouseX, mouseY), 10.0f, projection, view);
-
+		SceneManager::selectedObject = &SceneManager::gameObjectsOnScene.back();
 
     }
     else if (extension == "png" || extension == "jpg" || extension == "bmp") {
         imageTexture->loadTexture(filePath);
-
-        // Obtener posición actual del mouse
-        
-
         // Detectar si el mouse está sobre algún GameObject
         GameObject* hitObject = raycastFromMouseToGameObject(mouseX, mouseY, projection, view, WINDOW_SIZE);
         if (hitObject) {
@@ -190,12 +177,12 @@ void handleFileDrop(const std::string& filePath, mat4 projection, mat4 view) {
             Console::Instance().Log("Texture applied to GameObject under mouse.");
         }
         else {
-            cerr << "No GameObject under mouse to apply texture." << endl;
+            cout << "No GameObject under mouse to apply texture." << endl;
             Console::Instance().Log("No GameObject under mouse to apply texture.");
         }
     }
     else {
-        cerr << "Unsupported file extension: " << extension << endl;
+        cout << "Unsupported file extension: " << extension << endl;
         Console::Instance().Log("Unsupported file extension: ");
     }
 }
@@ -212,7 +199,6 @@ static void drawFloorGrid(int size, double step) {
     }
     glEnd();
 }
-//spawn Initial house
 
 
 void configureCamera() {
@@ -251,7 +237,8 @@ float yaw = 0.0f;
 float pitch = 0.0f;
 const float MAX_PITCH = 89.0f;
 bool altKeyDown = false;
-
+bool altPressedOnce = false;
+vec3 target;
 
 void handleAltKey() {
     const Uint8* state = SDL_GetKeyboardState(NULL);
@@ -261,7 +248,6 @@ void handleAltKey() {
 void orbitCamera(const vec3& target, int deltaX, int deltaY) {
     const float sensitivity = 0.1f;
 
-    
     yaw += deltaX * sensitivity;
     pitch -= deltaY * sensitivity;
     float distance = glm::length(camera.transform().pos() - target);
@@ -275,8 +261,6 @@ void orbitCamera(const vec3& target, int deltaX, int deltaY) {
     camera.transform().pos() = newPosition;
     camera.transform().lookAt(target); 
 }
-bool altPressedOnce = false; 
-vec3 target;
 void mouseMotion_func(int x, int y) {
     if (rightMouseButtonDown && altKeyDown == false) {
         int deltaX = x - lastMouseX;
@@ -322,10 +306,6 @@ void mouseMotion_func(int x, int y) {
         else {
             orbitCamera(target, deltaX, deltaY);
         }
-
-      
-       
-
         lastMouseX = x;
         lastMouseY = y;
         camera.transform().alignCamera();
@@ -341,12 +321,13 @@ void mouseMotion_func(int x, int y) {
 	}
     
 }
+
 bool fKeyDown = false;
 static void idle_func() {
     float move_speed = 0.1f;
     const Uint8* state = SDL_GetKeyboardState(NULL);
 
-
+    //Debug to rotate the initial baker house
     /*if (state[SDL_SCANCODE_T]) {
 
         SceneManager::gameObjectsOnScene[0].transform().rotate(glm::radians(10.0f), glm::vec3(0, -1, 0));
@@ -399,6 +380,9 @@ static void idle_func() {
     }
     camera.transform().alignCamera();
 }
+void mouseWheel_func(int direction) {
+    camera.transform().translate(vec3(0, 0, direction * 0.1));
+}
 //debug, showing the bounding boxes, not finished
 inline static void glVertex3(const vec3& v) { glVertex3dv(&v.x); }
 static void drawWiredQuad(const vec3& v0, const vec3& v1, const vec3& v2, const vec3& v3) {
@@ -409,7 +393,6 @@ static void drawWiredQuad(const vec3& v0, const vec3& v1, const vec3& v2, const 
     glVertex3(v3);
     glEnd();
 }
-
 static void drawBoundingBox(const BoundingBox& bbox) {
     glLineWidth(2.0);
     drawWiredQuad(bbox.v000(), bbox.v001(), bbox.v011(), bbox.v010());
@@ -418,12 +401,8 @@ static void drawBoundingBox(const BoundingBox& bbox) {
     drawWiredQuad(bbox.v010(), bbox.v011(), bbox.v111(), bbox.v110());
     drawWiredQuad(bbox.v000(), bbox.v010(), bbox.v110(), bbox.v100());
     drawWiredQuad(bbox.v001(), bbox.v011(), bbox.v111(), bbox.v101());
-
 }
 
-void mouseWheel_func(int direction) {
-    camera.transform().translate(vec3(0, 0, direction * 0.1));
-}
 
 int main(int argc, char* argv[]) {
     ilInit();
@@ -437,8 +416,6 @@ int main(int argc, char* argv[]) {
     camera.transform().pos() = vec3(0, 1, 4);
     camera.transform().rotate(glm::radians(180.0), vec3(0, 1, 0));
     SceneManager::spawnBakerHouse();
-
-    
 
     while (window.isOpen()) {
         const auto t0 = hrclock::now();

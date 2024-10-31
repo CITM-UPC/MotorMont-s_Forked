@@ -47,7 +47,6 @@ public:
 	void LoadFile(const char* filePath);
 
 	// Load Texture
-	void LoadTexture(const std::string& path);
 	void drawNormals(const glm::mat4& modelMatrix);
 	void drawNormalsPerFace(const glm::mat4& modelMatrix);
 

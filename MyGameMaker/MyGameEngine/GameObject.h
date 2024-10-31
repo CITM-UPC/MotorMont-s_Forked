@@ -21,7 +21,11 @@ private:
     bool _active = true;                        // Estado de activación
     std::string name;
 
+
+    // Restaura la textura original del objeto
+	
 public:
+    bool hasCheckerTexture = false;
     // Constructor y destructor
     /*GameObject(const std::string& name = "New GameObject");
     ~GameObject();*/
@@ -65,17 +69,6 @@ public:
 
     // Método para dibujar el objeto
     void draw() const; // Definir en el .cpp
-    std::vector<glm::vec3> calculateNormalsPerTriangle() const;
-    void drawNormals() ;
-    void drawLine( glm::vec3& start,  glm::vec3& end);
-    std::vector<glm::vec3> calculateNormalsPerFace();
-    void drawFaceNormals();
-
-
-
-
-
-    
 
     // Métodos de ciclo de vida
     //virtual void awake();      // Inicialización
@@ -86,6 +79,9 @@ public:
     // Activación del objeto
     void setActive(bool active) { _active = active; }
     bool isActive() const { return _active; }
+
+
+   
 };
 
 

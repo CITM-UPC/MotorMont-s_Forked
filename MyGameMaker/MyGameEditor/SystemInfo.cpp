@@ -31,7 +31,6 @@ static std::string GetOpenGLVersion()
 {
     std::ostringstream opengl;
 
-    // Requires an OpenGL context to be created, or this will be NULL
     const GLubyte* version = glGetString(GL_VERSION);
     if (version)
     {
