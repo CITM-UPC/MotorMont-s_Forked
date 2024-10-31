@@ -2,6 +2,7 @@
 #include "MyGameEngine/GameObject.h"
 #include "MyGameEngine/Mesh.h"
 #include "MyGameEngine/Image.h"
+#include "Console.h"
 
 std::vector<GameObject> SceneManager::gameObjectsOnScene;
 GameObject* SceneManager::selectedObject = nullptr;
@@ -26,6 +27,7 @@ void SceneManager::LoadGameObject(const std::string& filePath) {
     go.setMesh(mesh);
     go.setName("GameObject (" + std::to_string(gameObjectsOnScene.size()) + ")");
     gameObjectsOnScene.push_back(go);
+    Console::Instance().Log("Fbx imported succesfully.");
 }
 
 GameObject* SceneManager::getGameObject(int index) {

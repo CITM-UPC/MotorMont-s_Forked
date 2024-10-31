@@ -20,6 +20,7 @@
 #include "BasicShapesManager.h"
 #include "MyGui.h"
 #include "SceneManager.h"
+#include "Console.h"
 
 using namespace std;
 using hrclock = chrono::high_resolution_clock;
@@ -172,6 +173,7 @@ void handleFileDrop(const std::string& filePath, mat4 projection, mat4 view) {
 		SceneManager::LoadGameObject(filePath);
 		SceneManager::getGameObject(SceneManager::gameObjectsOnScene.size() - 1)->transform().pos() = screenToWorld(glm::vec2(mouseX, mouseY), 10.0f, projection, view);
 
+
     }
     else if (extension == "png" || extension == "jpg" || extension == "bmp") {
         imageTexture->loadTexture(filePath);
@@ -185,13 +187,16 @@ void handleFileDrop(const std::string& filePath, mat4 projection, mat4 view) {
             // Si hay un GameObject debajo del mouse, aplicar la textura
             hitObject->setTextureImage(imageTexture);
             cout << "Texture applied to GameObject under mouse." << endl;
+            Console::Instance().Log("Texture applied to GameObject under mouse.");
         }
         else {
             cerr << "No GameObject under mouse to apply texture." << endl;
+            Console::Instance().Log("No GameObject under mouse to apply texture.");
         }
     }
     else {
         cerr << "Unsupported file extension: " << extension << endl;
+        Console::Instance().Log("Unsupported file extension: ");
     }
 }
 
@@ -354,31 +359,32 @@ static void idle_func() {
         if (state[SDL_SCANCODE_W]) {
             std::cout << "Moving camera forward." << std::endl;
             camera.transform().translate(glm::vec3(0, 0, move_speed));
+            Console::Instance().Log("Moving camera forward.");
         }
-
         if (state[SDL_SCANCODE_S]) {
             std::cout << "Moving camera backward." << std::endl;
             camera.transform().translate(glm::vec3(0, 0, -move_speed));
+            Console::Instance().Log("Moving camera backward.");
         }
-
         if (state[SDL_SCANCODE_A]) {
             std::cout << "Moving camera left." << std::endl;
             camera.transform().translate(glm::vec3(move_speed, 0, 0));
+            Console::Instance().Log("Moving camera left.");
         }
-
         if (state[SDL_SCANCODE_D]) {
             std::cout << "Moving camera right." << std::endl;
             camera.transform().translate(glm::vec3(-move_speed, 0, 0));
+            Console::Instance().Log("Moving camera right.");
         }
-
         if (state[SDL_SCANCODE_Q]) {
             std::cout << "Moving camera up." << std::endl;
             camera.transform().translate(glm::vec3(0, move_speed, 0));
+            Console::Instance().Log("Moving camera up.");
         }
-
         if (state[SDL_SCANCODE_E]) {
             std::cout << "Moving camera down." << std::endl;
             camera.transform().translate(glm::vec3(0, -move_speed, 0));
+            Console::Instance().Log("Moving camera down.");
         }
     }
 

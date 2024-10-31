@@ -141,16 +141,20 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BasicShapesManager.cpp" />
+    <ClCompile Include="Console.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MyGui.cpp" />
     <ClCompile Include="MyWindow.cpp" />
     <ClCompile Include="SceneManager.cpp" />
+    <ClCompile Include="SystemInfo.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BasicShapesManager.h" />
+    <ClInclude Include="Console.h" />
     <ClInclude Include="MyGui.h" />
     <ClInclude Include="MyWindow.h" />
     <ClInclude Include="SceneManager.h" />
+    <ClInclude Include="SystemInfo.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
