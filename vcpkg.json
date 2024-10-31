@@ -6,7 +6,6 @@
 		"freeglut",
 		"devil",
 		"assimp",
-		"glfw3",
 		"sdl2",
 		"tinyfiledialogs",
 		{
