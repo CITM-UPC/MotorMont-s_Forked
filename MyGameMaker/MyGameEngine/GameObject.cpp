@@ -5,10 +5,19 @@
 const int CHECKERS_WIDTH = 64;
 const int CHECKERS_HEIGHT = 64;
 GLubyte checkerImage[CHECKERS_HEIGHT][CHECKERS_WIDTH][4];
+GLuint checker_texture_id;
+
+
+void deleteCheckerTexture() {
+    if (checker_texture_id) {
+        glDeleteTextures(1, &checker_texture_id);
+		checker_texture_id = 0;
+    }
+}
 
 // Crea la textura de tablero y devuelve el ID de la textura
 void CheckerTexture(bool hasCreatedCheckerImage) {
-
+    
     for (int i = 0; i < CHECKERS_HEIGHT; i++) {
         for (int j = 0; j < CHECKERS_WIDTH; j++) {
             int c = ((((i & 0x8) == 0) ^ ((j & 0x8) == 0)) * 255);
@@ -18,19 +27,19 @@ void CheckerTexture(bool hasCreatedCheckerImage) {
             checkerImage[i][j][3] = (GLubyte)255; // Opacidad completa
         }
     }
-
-    GLuint texture_id;
-    glGenTextures(1, &texture_id);
-    glBindTexture(GL_TEXTURE_2D, texture_id);
-
+    
+	deleteCheckerTexture();
+    glGenTextures(1, &checker_texture_id);
+    glBindTexture(GL_TEXTURE_2D, checker_texture_id);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, CHECKERS_WIDTH, CHECKERS_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, checkerImage);
 }
+
+
 
 
 
@@ -50,11 +59,12 @@ void GameObject::draw() const {
             CheckerTexture(hasCreatedCheckerTexture);
         }
         else {
-            _texture.bind();
-            if (!hasCreatedCheckerTexture) 
+            if (hasCreatedCheckerTexture)
             {
-                hasCreatedCheckerTexture = true;
+                hasCreatedCheckerTexture = false;
             }
+            _texture.bind();
+            
         }
     }
 

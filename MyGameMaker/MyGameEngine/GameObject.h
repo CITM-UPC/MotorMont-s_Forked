@@ -21,7 +21,6 @@ private:
     bool _active = true;                        // Estado de activación
     std::string name;
 	mutable bool hasCreatedCheckerTexture = false;		// Indica si la textura de cuadros ha sido creada
-
     // Restaura la textura original del objeto
 	
 public:
