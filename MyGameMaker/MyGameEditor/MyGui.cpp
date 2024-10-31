@@ -189,14 +189,17 @@ void MyGUI::ShowSpawnFigures(bool* p_open) {
 
     if (ImGui::Button("Spawn Triangle")) {
         BasicShapesManager::createFigure(1, SceneManager::gameObjectsOnScene, 1.0, vec3(0.0f,0.0f,0.0f) );
+        SceneManager::selectedObject = &SceneManager::gameObjectsOnScene.back();
     }
 
     if (ImGui::Button("Spawn Square")) {
         BasicShapesManager::createFigure(2, SceneManager::gameObjectsOnScene, 1.0, vec3(0.0f, 0.0f, 0.0f));
+        SceneManager::selectedObject = &SceneManager::gameObjectsOnScene.back();
     }
 
     if (ImGui::Button("Spawn Cube")) {
         BasicShapesManager::createFigure(3, SceneManager::gameObjectsOnScene, 1.0, vec3(0.0f, 0.0f, 0.0f));
+        SceneManager::selectedObject = &SceneManager::gameObjectsOnScene.back();
     }
 
     ImGui::End();
@@ -380,10 +383,10 @@ void MyGUI::renderInspector() {
             ImGui::Checkbox("Show Normals (Per Triangle)", &showNormalsPerTriangle);
             ImGui::Checkbox("Show Normals (Per Face)", &showNormalsPerFace);
             if (showNormalsPerTriangle) {
-				persistentSelectedObject->drawNormals();
+				persistentSelectedObject->mesh().drawNormals(persistentSelectedObject->transform().mat());
             }
             if (showNormalsPerFace) {
-                persistentSelectedObject->drawFaceNormals();
+                persistentSelectedObject->mesh().drawNormalsPerFace(persistentSelectedObject->transform().mat());
             }
         }
 

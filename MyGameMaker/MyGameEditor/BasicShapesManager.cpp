@@ -25,11 +25,11 @@ std::shared_ptr<Mesh> BasicShapesManager::MakeTriangleMesh(double size) {
 
 // Cuadrado
 std::shared_ptr<Mesh> BasicShapesManager::MakeQuadMesh(double size) {
-    const glm::vec3 vertices[4] = { glm::vec3(-size, -size, 0), glm::vec3(size, -size, 0), glm::vec3(size, size, 0), glm::vec3(-size, size, 0) };
-    unsigned int indices[6] = { 0, 1, 2, 2, 3, 0 };
-    const glm::vec2 texcoords[4] = { glm::vec2(0, 1), glm::vec2(1, 1), glm::vec2(1, 0), glm::vec2(0, 0) };
-    const glm::vec3 normals[4] = { glm::vec3(0, 0, 1), glm::vec3(0, 0, 1), glm::vec3(0, 0, 1), glm::vec3(0, 0, 1) };
-    const glm::u8vec3 colors[4] = { glm::u8vec3(255, 0, 0), glm::u8vec3(0, 255, 0), glm::u8vec3(0, 0, 255), glm::u8vec3(255, 255, 0) };
+    const glm::vec3 vertices[] = { glm::vec3(-size, -size, 0), glm::vec3(size, -size, 0), glm::vec3(size, size, 0), glm::vec3(-size, size, 0) };
+    unsigned int indices[] = { 0, 1, 2, 2, 3, 0 };
+    const glm::vec2 texcoords[] = { glm::vec2(0, 1), glm::vec2(1, 1), glm::vec2(1, 0), glm::vec2(0, 0) };
+    const glm::vec3 normals[] = { glm::vec3(0, 0, 1), glm::vec3(0, 0, 1), glm::vec3(0, 0, 1), glm::vec3(0, 0, 1) };
+    const glm::u8vec3 colors[] = { glm::u8vec3(255, 0, 0), glm::u8vec3(0, 255, 0), glm::u8vec3(0, 0, 255), glm::u8vec3(255, 255, 0) };
 
     auto mesh_ptr = std::make_shared<Mesh>();
     mesh_ptr->load(vertices, 4, indices, 6);

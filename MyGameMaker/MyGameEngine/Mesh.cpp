@@ -1,6 +1,7 @@
 #include "Mesh.h"
 
 #include <GL/glew.h>
+#include <glm/gtc/type_ptr.hpp>
 using namespace std;
 
 #define CHECKERS_HEIGHT 32
@@ -99,40 +100,167 @@ void Mesh::LoadFile(const char* file_path)
 	const aiScene* scene = aiImportFile(file_path, aiProcessPreset_TargetRealtime_MaxQuality);
 
 	if (scene != nullptr && scene->HasMeshes()) {
+		std::vector<glm::vec3> all_vertices;
+		std::vector<unsigned int> all_indices;
+		std::vector<glm::vec2> all_texCoords;
+		std::vector<glm::vec3> all_normals;
+		std::vector<glm::u8vec3> all_colors;
+
+		unsigned int vertex_offset = 0;
+
+		//for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
+
+		//	aiMesh* mesh = scene->mMeshes[i];
+		//	size_t num_vertices = scene->mMeshes[i]->mNumVertices;
+		//	glm::vec3* vertex = new glm::vec3[num_vertices * 3];
+		//	memcpy(vertex, scene->mMeshes[i]->mVertices, sizeof(float) * num_vertices * 3);
+
+
+		//	if (scene->mMeshes[i]->HasFaces()) {
+
+
+		//		size_t num_index = scene->mMeshes[i]->mNumFaces * 3;
+		//		unsigned int* index = new unsigned int[num_index]; // assume each face is a triangle
+		//		for (unsigned int j = 0; j < scene->mMeshes[i]->mNumFaces; ++j) {
+		//			memcpy(&index[j * 3], scene->mMeshes[i]->mFaces[j].mIndices, 3 * sizeof(unsigned int));
+		//		}
+		//		load(vertex, num_vertices, index, num_index);
+		//	}
+
+		//	if (scene->mMeshes[i]->HasTextureCoords(0)) {
+		//		glm::vec2* texCoords = new glm::vec2[num_vertices];
+		//		for (size_t j = 0; j < num_vertices; ++j) {
+		//			texCoords[j] = glm::vec2(
+		//				scene->mMeshes[i]->mTextureCoords[0][j].x,
+		//				-scene->mMeshes[i]->mTextureCoords[0][j].y
+		//			);
+		//		}
+		//		loadTexCoords(texCoords, num_vertices);
+		//		delete[] texCoords;
+		//	}
+
+
+		//}
+		//aiReleaseImport(scene);
 		for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
-			size_t num_vertices = scene->mMeshes[i]->mNumVertices;
-			glm::vec3* vertex = new glm::vec3[num_vertices * 3];
-			memcpy(vertex, scene->mMeshes[i]->mVertices, sizeof(float) * num_vertices * 3);
+			aiMesh* mesh = scene->mMeshes[i];
 
-
-			if (scene->mMeshes[i]->HasFaces()) {
-				size_t num_index = scene->mMeshes[i]->mNumFaces * 3;
-				unsigned int* index = new unsigned int[num_index]; // assume each face is a triangle
-				for (unsigned int j = 0; j < scene->mMeshes[i]->mNumFaces; ++j) {
-					memcpy(&index[j * 3], scene->mMeshes[i]->mFaces[j].mIndices, 3 * sizeof(unsigned int));
-				}
-				load(vertex, num_vertices, index, num_index);
+			// Copy vertices
+			for (unsigned int j = 0; j < mesh->mNumVertices; j++) {
+				all_vertices.push_back(glm::vec3(mesh->mVertices[j].x, mesh->mVertices[j].y, mesh->mVertices[j].z));
 			}
 
-			if (scene->mMeshes[i]->HasTextureCoords(0)) {
-				glm::vec2* texCoords = new glm::vec2[num_vertices];
-				for (size_t j = 0; j < num_vertices; ++j) {
-					texCoords[j] = glm::vec2(
-						scene->mMeshes[i]->mTextureCoords[0][j].x,
-						-scene->mMeshes[i]->mTextureCoords[0][j].y
-					);
+			// Copy indices
+			for (unsigned int j = 0; j < mesh->mNumFaces; j++) {
+				aiFace& face = mesh->mFaces[j];
+				for (unsigned int k = 0; k < face.mNumIndices; k++) {
+					all_indices.push_back(face.mIndices[k] + vertex_offset);
 				}
-				loadTexCoords(texCoords, num_vertices);
-				delete[] texCoords;
 			}
 
+			// Copy texture coordinates
+			if (mesh->HasTextureCoords(0)) {
+				for (unsigned int j = 0; j < mesh->mNumVertices; j++) {
+					all_texCoords.push_back(glm::vec2(mesh->mTextureCoords[0][j].x, -mesh->mTextureCoords[0][j].y));
+				}
+			}
 
+			// Copy normals
+			if (mesh->HasNormals()) {
+				for (unsigned int j = 0; j < mesh->mNumVertices; j++) {
+					all_normals.push_back(glm::vec3(mesh->mNormals[j].x, mesh->mNormals[j].y, mesh->mNormals[j].z));
+				}
+			}
+
+			// Copy colors
+			if (mesh->HasVertexColors(0)) {
+				for (unsigned int j = 0; j < mesh->mNumVertices; j++) {
+					all_colors.push_back(glm::u8vec3(mesh->mColors[0][j].r * 255, mesh->mColors[0][j].g * 255, mesh->mColors[0][j].b * 255));
+				}
+			}
+
+			vertex_offset += mesh->mNumVertices;
 		}
-		aiReleaseImport(scene);
 
+		// Load the combined mesh data
+		load(all_vertices.data(), all_vertices.size(), all_indices.data(), all_indices.size());
+
+		if (!all_texCoords.empty()) {
+			loadTexCoords(all_texCoords.data(), all_texCoords.size());
+		}
+
+		aiReleaseImport(scene);
 
 	}
 	else {
 		// Handle error
 	}
+}
+
+
+
+
+void Mesh::drawNormals(const glm::mat4& modelMatrix) {
+	glBegin(GL_LINES);
+	glColor3ub(255, 0, 0);
+	for (size_t i = 0; i < _indices.size(); i += 3) {
+		// Transformar cada vértice usando la matriz de transformación del objeto
+		glm::vec3 v0 = glm::vec3(modelMatrix * glm::vec4(_vertices[_indices[i]], 1.0f));
+		glm::vec3 v1 = glm::vec3(modelMatrix * glm::vec4(_vertices[_indices[i + 1]], 1.0f));
+		glm::vec3 v2 = glm::vec3(modelMatrix * glm::vec4(_vertices[_indices[i + 2]], 1.0f));
+
+		// Calcular la normal en el espacio global
+		glm::vec3 normal = glm::normalize(glm::cross(v1 - v0, v2 - v0));
+		glm::vec3 center = (v0 + v1 + v2) / 3.0f;
+
+		// Dibujar la normal desde el centro del triángulo
+		glVertex3fv(glm::value_ptr(center));
+		glVertex3fv(glm::value_ptr(center + normal * 0.2f));
+	}
+	glEnd();
+}
+
+
+void Mesh::drawNormalsPerFace(const glm::mat4& modelMatrix) {
+	glBegin(GL_LINES);
+	glColor3ub(255, 0, 0);
+
+	// Recorre los índices en grupos de 3 o 4 dependiendo de la cantidad de vértices por cara
+	for (size_t i = 0; i < _indices.size();) {
+		glm::vec3 normal, center;
+
+		if (i + 3 < _indices.size() && (_indices.size() - i) % 4 == 0) {  // Caso de un quad
+			glm::vec3 v0 = glm::vec3(modelMatrix * glm::vec4(_vertices[_indices[i]], 1.0f));
+			glm::vec3 v1 = glm::vec3(modelMatrix * glm::vec4(_vertices[_indices[i + 1]], 1.0f));
+			glm::vec3 v2 = glm::vec3(modelMatrix * glm::vec4(_vertices[_indices[i + 2]], 1.0f));
+			glm::vec3 v3 = glm::vec3(modelMatrix * glm::vec4(_vertices[_indices[i + 3]], 1.0f));
+
+			// Calcular la normal del quad usando el promedio de dos triángulos
+			glm::vec3 normal1 = glm::normalize(glm::cross(v1 - v0, v2 - v0));
+			glm::vec3 normal2 = glm::normalize(glm::cross(v3 - v0, v2 - v0));
+			normal = glm::normalize(normal1 + normal2);
+
+			// Calcular el centro del quad
+			center = (v0 + v1 + v2 + v3) / 4.0f;
+			i += 4;  // Avanza 4 índices (quad)
+		}
+		else if (i + 2 < _indices.size()) {  // Caso de un triángulo
+			glm::vec3 v0 = glm::vec3(modelMatrix * glm::vec4(_vertices[_indices[i]], 1.0f));
+			glm::vec3 v1 = glm::vec3(modelMatrix * glm::vec4(_vertices[_indices[i + 1]], 1.0f));
+			glm::vec3 v2 = glm::vec3(modelMatrix * glm::vec4(_vertices[_indices[i + 2]], 1.0f));
+
+			// Calcular la normal del triángulo
+			normal = glm::normalize(glm::cross(v1 - v0, v2 - v0));
+
+			// Calcular el centro del triángulo
+			center = (v0 + v1 + v2) / 3.0f;
+			i += 3;  // Avanza 3 índices (triángulo)
+		}
+
+		// Dibujar la normal desde el centro de la cara
+		glVertex3fv(glm::value_ptr(center));
+		glVertex3fv(glm::value_ptr(center + normal * 0.2f));
+	}
+
+	glEnd();
 }
