@@ -20,7 +20,7 @@ private:
     //std::vector<std::shared_ptr<Component>> _components; // Lista de componentes
     bool _active = true;                        // Estado de activación
     std::string name;
-
+	mutable bool hasCreatedCheckerTexture = false;		// Indica si la textura de cuadros ha sido creada
 
     // Restaura la textura original del objeto
 	
@@ -80,6 +80,7 @@ public:
     void setActive(bool active) { _active = active; }
     bool isActive() const { return _active; }
 
+    void initializeCheckerTexture();
 
    
 };

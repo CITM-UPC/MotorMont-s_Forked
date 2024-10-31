@@ -299,17 +299,12 @@ void MyGUI::renderInspector() {
         }
         if (persistentSelectedObject->hasTexture() && ImGui::CollapsingHeader("Texture")) {
             Texture& texture = persistentSelectedObject->texture();
-
-            static bool showCheckerTexture = false;
+                static bool showCheckerTexture = false;
             if (ImGui::Button("Toggle Checker Texture")) {
                 showCheckerTexture = !showCheckerTexture;
-                if (showCheckerTexture) {
-					persistentSelectedObject->hasCheckerTexture = true;
-                }
-                else {
-                    persistentSelectedObject->hasCheckerTexture = false;
-                }
+                persistentSelectedObject->hasCheckerTexture = showCheckerTexture;
             }
+            
         }
     }
     else {
