@@ -274,8 +274,8 @@ void mouseMotion_func(int x, int y) {
         if (pitch > MAX_PITCH) pitch = MAX_PITCH;
         if (pitch < -MAX_PITCH) pitch = -MAX_PITCH;
 
-        camera.transform().rotate(glm::radians(-deltaX * sensitivity), glm::vec3(0, -1, 0));
-        camera.transform().rotate(glm::radians(deltaY * sensitivity), glm::vec3(-1, 0, 0));
+        camera.transform().rotate(glm::radians(-deltaX * sensitivity), glm::vec3(0, 1, 0));
+        camera.transform().rotate(glm::radians(deltaY * sensitivity), glm::vec3(1, 0, 0));
 
         lastMouseX = x;
         lastMouseY = y;

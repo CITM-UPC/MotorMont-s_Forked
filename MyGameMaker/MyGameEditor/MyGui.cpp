@@ -300,6 +300,9 @@ void MyGUI::renderInspector() {
         if (persistentSelectedObject->hasTexture() && ImGui::CollapsingHeader("Texture")) {
             Texture& texture = persistentSelectedObject->texture();
                 static bool showCheckerTexture = false;
+                ImGui::Text("Width: %d", texture.image().width() );
+                ImGui::Text("Heiht: %d", texture.image().height() );
+				
             if (ImGui::Button("Toggle Checker Texture")) {
                 showCheckerTexture = !showCheckerTexture;
                 persistentSelectedObject->hasCheckerTexture = showCheckerTexture;
