@@ -498,3 +498,54 @@ int main(int argc, char* argv[]) {
     }
     return EXIT_SUCCESS;
 }
+
+
+
+
+/*
+Notes:
+implement this functions for the frustrum culling
+sign sideOfPlane(const vec3& point, const vec4& plane) {
+    return glm::sign(glm::dot(vec4(point, 1.0), plane));
+}
+sign sideOfPlane(const vec4& plane, const BoundingBox& bbox) {
+    const vec3& min = bbox.min;
+    const vec3& max = bbox.max;
+
+    vec3 p(min.x, min.y, min.z);
+    if (sideOfPlane(p, plane) > 0) return 1;
+
+    p = vec3(max.x, min.y, min.z);
+    if (sideOfPlane(p, plane) > 0) return 1;
+
+    p = vec3(min.x, max.y, min.z);
+    if (sideOfPlane(p, plane) > 0) return 1;
+
+    p = vec3(max.x, max.y, min.z);
+    if (sideOfPlane(p, plane) > 0) return 1;
+
+    p = vec3(min.x, min.y, max.z);
+    if (sideOfPlane(p, plane) > 0) return 1;
+
+    p = vec3(max.x, min.y, max.z);
+    if (sideOfPlane(p, plane) > 0) return 1;
+
+    p = vec3(min.x, max.y, max.z);
+    if (sideOfPlane(p, plane) > 0) return 1;
+
+    p = vec3(max.x, max.y, max.z);
+    if (sideOfPlane(p, plane) > 0) return 1;
+
+    return -1;
+}
+
+sign sideOfPlanes(const vec3& point, const std::vector<vec4>& planes) {
+    sign result = 1;
+    for (const auto& plane : planes) {
+        if (sideOfPlane(point, plane) < 0) return -1;
+    }
+    return result;
+}
+
+
+*/
