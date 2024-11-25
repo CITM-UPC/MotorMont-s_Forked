@@ -200,6 +200,24 @@ static void drawFloorGrid(int size, double step) {
     glEnd();
 }
 
+inline static void glVertex3(const vec3& v) { glVertex3dv(&v.x); }
+static void drawWiredQuad(const vec3& v0, const vec3& v1, const vec3& v2, const vec3& v3) {
+    glBegin(GL_LINE_LOOP);
+    glVertex3(v0);
+    glVertex3(v1);
+    glVertex3(v2);
+    glVertex3(v3);
+    glEnd();
+}
+static void drawBoundingBox(const BoundingBox& bbox) {
+    glLineWidth(2.0);
+    drawWiredQuad(bbox.v000(), bbox.v001(), bbox.v011(), bbox.v010());
+    drawWiredQuad(bbox.v100(), bbox.v101(), bbox.v111(), bbox.v110());
+    drawWiredQuad(bbox.v000(), bbox.v001(), bbox.v101(), bbox.v100());
+    drawWiredQuad(bbox.v010(), bbox.v011(), bbox.v111(), bbox.v110());
+    drawWiredQuad(bbox.v000(), bbox.v010(), bbox.v110(), bbox.v100());
+    drawWiredQuad(bbox.v001(), bbox.v011(), bbox.v111(), bbox.v101());
+}
 
 void configureCamera() {
     glm::dmat4 projectionMatrix = glm::perspective(glm::radians(45.0), static_cast<double>(WINDOW_SIZE.x) / WINDOW_SIZE.y, 0.1, 100.0);
@@ -216,12 +234,17 @@ void display_func() {
     configureCamera();
 
     for (auto& go : SceneManager::gameObjectsOnScene) {
-        go.draw();
+        if (go.isRoot()) { // Solo objetos raíz
+            // Dibuja el objeto raíz (y sus hijos automáticamente desde GameObject::draw)
+            go.draw();
+            drawBoundingBox(go.boundingBox());
+        }
     }
 
     // Otros elementos de la escena, como la cuadrícula, etc.
     drawFloorGrid(16, 0.25);
 }
+
 
 // Funciones de manejo de mouse
 void mouseButton_func(int button, int state, int x, int y) {
@@ -327,11 +350,38 @@ static void idle_func() {
     float move_speed = 0.1f;
     const Uint8* state = SDL_GetKeyboardState(NULL);
 
-    //Debug to rotate the initial baker house
-    /*if (state[SDL_SCANCODE_T]) {
+    //Debug to rotate the initial baker house and parent it 
+    if (state[SDL_SCANCODE_T]) {
 
         SceneManager::gameObjectsOnScene[0].transform().rotate(glm::radians(10.0f), glm::vec3(0, -1, 0));
-    }*/
+        //SceneManager::gameObjectsOnScene[0].children().front().transform().rotate(glm::radians(10.0f), glm::vec3(0, -1, 0));
+    }
+
+    if (state[SDL_SCANCODE_I]) {
+        // Verificar si hay un objeto seleccionado y al menos un objeto en la escena
+        if (!SceneManager::gameObjectsOnScene.empty() && SceneManager::selectedObject) {
+
+                glm::mat4 parentWorldInverse = glm::inverse(SceneManager::gameObjectsOnScene[0].worldTransform().mat()); // Matriz inversa del padre
+                glm::mat4 selectedWorldTransform = SceneManager::selectedObject->worldTransform().mat();        // Transformación mundial del seleccionado
+                glm::mat4 localTransform = parentWorldInverse * selectedWorldTransform;     // Transformación local al padre
+
+                // Desparentar del padre anterior (si aplica)
+                
+
+                // Parentear al nuevo padre
+                SceneManager::gameObjectsOnScene[0].emplaceChild(*SceneManager::selectedObject);
+
+                // Actualizar la transformación local del seleccionado
+                //selected->transform().mat() = localTransform; // Ajustar su transformación local al nuevo padre
+
+                std::cout << "Object parented to root." << std::endl;
+
+        }
+        else {
+            std::cout << "No selected object or no objects in scene." << std::endl;
+        }
+    }
+
     if (state[SDL_SCANCODE_LSHIFT] || state[SDL_SCANCODE_RSHIFT]) {
         move_speed = 0.2f;
     }
@@ -384,24 +434,6 @@ void mouseWheel_func(int direction) {
     camera.transform().translate(vec3(0, 0, direction * 0.1));
 }
 //debug, showing the bounding boxes, not finished
-inline static void glVertex3(const vec3& v) { glVertex3dv(&v.x); }
-static void drawWiredQuad(const vec3& v0, const vec3& v1, const vec3& v2, const vec3& v3) {
-    glBegin(GL_LINE_LOOP);
-    glVertex3(v0);
-    glVertex3(v1);
-    glVertex3(v2);
-    glVertex3(v3);
-    glEnd();
-}
-static void drawBoundingBox(const BoundingBox& bbox) {
-    glLineWidth(2.0);
-    drawWiredQuad(bbox.v000(), bbox.v001(), bbox.v011(), bbox.v010());
-    drawWiredQuad(bbox.v100(), bbox.v101(), bbox.v111(), bbox.v110());
-    drawWiredQuad(bbox.v000(), bbox.v001(), bbox.v101(), bbox.v100());
-    drawWiredQuad(bbox.v010(), bbox.v011(), bbox.v111(), bbox.v110());
-    drawWiredQuad(bbox.v000(), bbox.v010(), bbox.v110(), bbox.v100());
-    drawWiredQuad(bbox.v001(), bbox.v011(), bbox.v111(), bbox.v101());
-}
 
 
 int main(int argc, char* argv[]) {

@@ -4,6 +4,7 @@
 #include "MyGameEngine/Mesh.h"
 #include "MyGameEngine/GameObject.h"
 #include "BasicShapesManager.h"
+#include "SceneManager.h"
 
 // Gestor de figuras geométricas básicas
 
@@ -83,26 +84,39 @@ std::shared_ptr<Mesh> BasicShapesManager::MakeCubeMesh(double size) {
 }
 
 void BasicShapesManager::createFigure(int figureType, std::vector<GameObject>& gameObjects, double size, glm::vec3 mousePosition) {
-    GameObject go;
+    GameObject* parent = SceneManager::selectedObject; 
+    GameObject* go = nullptr;
 
-    // Dependiendo del tipo de figura
+    if (parent) {
+        // Crear un hijo del objeto seleccionado
+        
+        go = &parent->emplaceChild();
+        go->worldTransform();
+    }
+    else {
+        // Crear un nuevo objeto raíz
+        gameObjects.emplace_back(); // Agregar al vector
+        go = &gameObjects.back();
+        
+    }
+
+    // Configurar la malla según el tipo de figura
     switch (figureType) {
     case 1:  // Triángulo
-        go.setMesh(MakeTriangleMesh(size));
+        go->setMesh(MakeTriangleMesh(size));
         break;
     case 2:  // Cuadrado
-        go.setMesh(MakeQuadMesh(size));
+        go->setMesh(MakeQuadMesh(size));
         break;
     case 3:  // Cubo
-        go.setMesh(MakeCubeMesh(size));
+        go->setMesh(MakeCubeMesh(size));
         break;
     default:
         std::cout << "Figure type not recognized." << std::endl;
         return;
     }
 
-    // Establece la posición del GameObject en la posición 3D calculada desde la posición del ratón
-    go.transform().translate(mousePosition);
-    go.setName("GameObject (" + std::to_string(gameObjects.size()) + ")");
-    gameObjects.push_back(go);
+    // Configurar posición inicial y nombre
+    go->transform().translate(vec3(mousePosition));
+    go->setName("GameObject (" + std::to_string(gameObjects.size()) + ")");
 }
