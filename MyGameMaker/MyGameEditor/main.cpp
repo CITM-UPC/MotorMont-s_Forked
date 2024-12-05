@@ -274,7 +274,7 @@ void orbitCamera(const vec3& target, int deltaX, int deltaY) {
 
     yaw += deltaX * sensitivity;
     pitch -= deltaY * sensitivity;
-    float distance = glm::length(mainCamera.transform().pos() - target);
+    float distance = glm::length(mainCamera.GetComponent<CameraComponent>()->camera().transform().pos() - target);
 
     vec3 newPosition;
     newPosition.x = target.x + distance * cos(glm::radians(yaw)) * cos(glm::radians(pitch));

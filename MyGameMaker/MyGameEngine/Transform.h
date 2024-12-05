@@ -37,6 +37,11 @@ public:
    
 
     void translate(const vec3& v);
+	void setPos(float x, float y, float z);
+    double getYaw() const;
+    double getPitch() const;
+    double getRoll() const;
+    void setRotation(float newPitch, float newYaw, float newRoll);
     void rotateYaw(double radians);
     void rotatePitch(double radians);
     void rotateRoll(double radians);

@@ -280,12 +280,57 @@ void MyGUI::renderInspector() {
     if (persistentSelectedObject) {
         if (ImGui::CollapsingHeader("Transform")) {
             glm::vec3 position = persistentSelectedObject->transform().pos();
-			glm::vec3 rotation = glm::vec3(persistentSelectedObject->transform().extractEulerAngles(persistentSelectedObject->transform().mat()));
+            glm::vec3 rotation(
+                glm::degrees(persistentSelectedObject->transform().getPitch()),
+                glm::degrees(persistentSelectedObject->transform().getYaw()),
+                glm::degrees(persistentSelectedObject->transform().getRoll())
+            );
 			glm::vec3 scale = persistentSelectedObject->transform().extractScale(persistentSelectedObject->transform().mat());
 
-            ImGui::Text("Position: (%.2f, %.2f, %.2f)", position.x, position.y, position.z);
+            // Controles para la posición
+            ImGui::Text("Position:");
+            ImGui::PushItemWidth(100);
+            if (ImGui::DragFloat("X##pos", &position.x, 0.1f)) {
+                persistentSelectedObject->transform().setPos(position.x,position.y,position.z);
+            }
+            ImGui::NewLine();
+            if (ImGui::DragFloat("Y##pos", &position.y, 0.1f)) {
+                persistentSelectedObject->transform().setPos(position.x, position.y, position.z);
+            }
+            ImGui::NewLine();
+            if (ImGui::DragFloat("Z##pos", &position.z, 0.1f)) {
+                persistentSelectedObject->transform().setPos(position.x, position.y, position.z);
+            }
+            ImGui::PopItemWidth();
+            // Controles para la rotación
+
+            ImGui::Text("Rotation:");
+            ImGui::PushItemWidth(100);
+            if (ImGui::DragFloat("X##rot", &rotation.x, 0.1f)) {
+                persistentSelectedObject->transform().setRotation(
+                    glm::radians(rotation.x),
+                    persistentSelectedObject->transform().getYaw(),
+                    persistentSelectedObject->transform().getRoll()
+                );
+            }
+            if (ImGui::DragFloat("Y##rot", &rotation.y, 0.1f)) {
+                persistentSelectedObject->transform().setRotation(
+                    persistentSelectedObject->transform().getPitch(),
+                    glm::radians(rotation.y),
+                    persistentSelectedObject->transform().getRoll()
+                );
+            }
+            if (ImGui::DragFloat("Z##rot", &rotation.z, 0.1f)) {
+                persistentSelectedObject->transform().setRotation(
+                    persistentSelectedObject->transform().getPitch(),
+                    persistentSelectedObject->transform().getYaw(),
+                    glm::radians(rotation.z)
+                );
+            }
+            ImGui::PopItemWidth();
+          /*  ImGui::Text("Position: (%.2f, %.2f, %.2f)", position.x, position.y, position.z);
             ImGui::Text("Rotation: (%.2f, %.2f, %.2f)", rotation.x, rotation.y, rotation.z);
-            ImGui::Text("Scale: (%.2f, %.2f, %.2f)", scale.x, scale.y, scale.z);
+            ImGui::Text("Scale: (%.2f, %.2f, %.2f)", scale.x, scale.y, scale.z);*/
         }
 
         if (persistentSelectedObject->hasMesh() && ImGui::CollapsingHeader("Mesh")) {

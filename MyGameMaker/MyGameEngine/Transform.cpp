@@ -12,12 +12,23 @@ void Transform::rotateYaw(double radians) {
     yaw += radians; 
     updateRotationMatrix(); 
 }
+void Transform::setPos(float x, float y, float z) {
+    // Actualiza la posición del transform
+    _pos = glm::vec3(x, y, z);
 
+    // Recalcula la matriz de transformación usando la nueva posición
+    updateRotationMatrix();
+}
 void Transform::rotatePitch(double radians) {
     pitch += radians; 
     updateRotationMatrix(); 
 }
-
+void Transform::setRotation(float newPitch, float newYaw, float newRoll) {
+    pitch = newPitch;
+    yaw = newYaw;
+    roll = newRoll;
+    updateRotationMatrix();
+}
 void Transform::rotateRoll(double radians) {
     roll += radians;
     updateRotationMatrix(); 
@@ -30,6 +41,8 @@ void Transform::updateRotationMatrix() {
     float sinYaw = sin(yaw);
     float cosPitch = cos(pitch);
     float sinPitch = sin(pitch);
+    float cosRoll = cos(roll);
+    float sinRoll = sin(roll);
 
     mat4 yawMatrix = {
         cosYaw, 0, sinYaw, 0,
@@ -45,7 +58,26 @@ void Transform::updateRotationMatrix() {
         0, 0, 0, 1
     };
 
+    mat4 rollMatrix = {
+        cosRoll, -sinRoll, 0, 0,
+        sinRoll, cosRoll, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1
+    };
+
+    //_mat = glm::translate(glm::mat4(1.0f), _pos) * (yawMatrix * pitchMatrix * rollMatrix) * glm::scale(glm::mat4(1.0f), _scale);
     _mat = pitchMatrix * yawMatrix * _mat; 
+}
+double Transform::getYaw() const {
+    return yaw;
+}
+
+double Transform::getPitch() const {
+    return pitch;
+}
+
+double Transform::getRoll() const {
+    return roll;
 }
 void Transform::alignCamera(const vec3& worldUp) {
 
