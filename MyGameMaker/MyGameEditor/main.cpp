@@ -32,7 +32,6 @@ static const auto FRAME_DT = 1.0s / FPS;
 
 static Camera camera;
 
-
 SDL_Event event;
 bool rightMouseButtonDown = false;
 int lastMouseX, lastMouseY;
@@ -229,15 +228,37 @@ void configureCamera() {
     glLoadMatrixd(glm::value_ptr(viewMatrix));
 }
 // Función de renderizado
+
+bool isInsideFrustum(const BoundingBox& bbox, const std::list<Plane>& frustumPlanes) {
+    for (const auto& plane : frustumPlanes) {
+        if (plane.distance(bbox.v000()) < 0 &&
+            plane.distance(bbox.v001()) < 0 &&
+            plane.distance(bbox.v010()) < 0 &&
+            plane.distance(bbox.v011()) < 0 &&
+            plane.distance(bbox.v100()) < 0 &&
+            plane.distance(bbox.v101()) < 0 &&
+            plane.distance(bbox.v110()) < 0 &&
+            plane.distance(bbox.v111()) < 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
 void display_func() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     configureCamera();
 
+	auto frustumPlanes = camera.frustumPlanes();
+
     for (auto& go : SceneManager::gameObjectsOnScene) {
         if (go.isRoot()) { // Solo objetos raíz
             // Dibuja el objeto raíz (y sus hijos automáticamente desde GameObject::draw)
-            go.draw();
-            drawBoundingBox(go.boundingBox());
+            if (isInsideFrustum(go.boundingBox(), frustumPlanes)) {
+                // Dibuja el objeto raíz (y sus hijos automáticamente desde GameObject::draw)
+                go.draw();
+                drawBoundingBox(go.boundingBox());
+            }
         }
     }
 
