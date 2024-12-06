@@ -497,27 +497,27 @@ int main(int argc, char* argv[]) {
             case SDL_MOUSEWHEEL:
                 mouseWheel_func(event.wheel.y);
                 break;
-            case SDL_KEYDOWN:
-                glm::vec3 mouseWorldPos = screenToWorld(mouseScreenPos, 10.0f, projection, view);
+            //case SDL_KEYDOWN:
+            //    glm::vec3 mouseWorldPos = screenToWorld(mouseScreenPos, 10.0f, projection, view);
 
-                // Crear figuras en la posición 3D calculada
-                switch (event.key.keysym.sym) {
-                case SDLK_1:  // Crear Triángulo
-                    BasicShapesManager::createFigure(1, SceneManager::gameObjectsOnScene, 1.0, mouseWorldPos);
-                    SceneManager::selectedObject = &SceneManager::gameObjectsOnScene.back();
-                    break;
-                case SDLK_2:  // Crear Cuadrado
-                    BasicShapesManager::createFigure(2, SceneManager::gameObjectsOnScene, 1.0, mouseWorldPos);
-                    SceneManager::selectedObject = &SceneManager::gameObjectsOnScene.back();
-                    break;
-                case SDLK_3:  // Crear Cubo
-                    BasicShapesManager::createFigure(3, SceneManager::gameObjectsOnScene, 1.0, mouseWorldPos);
-                    SceneManager::selectedObject = &SceneManager::gameObjectsOnScene.back();
-                    break;
-                default:
-                    break;
-                }
-                break;
+            //    // Crear figuras en la posición 3D calculada
+            //    switch (event.key.keysym.sym) {
+            //    case SDLK_1:  // Crear Triángulo
+            //        BasicShapesManager::createFigure(1, SceneManager::gameObjectsOnScene, 1.0, mouseWorldPos);
+            //        SceneManager::selectedObject = &SceneManager::gameObjectsOnScene.back();
+            //        break;
+            //    case SDLK_2:  // Crear Cuadrado
+            //        BasicShapesManager::createFigure(2, SceneManager::gameObjectsOnScene, 1.0, mouseWorldPos);
+            //        SceneManager::selectedObject = &SceneManager::gameObjectsOnScene.back();
+            //        break;
+            //    case SDLK_3:  // Crear Cubo
+            //        BasicShapesManager::createFigure(3, SceneManager::gameObjectsOnScene, 1.0, mouseWorldPos);
+            //        SceneManager::selectedObject = &SceneManager::gameObjectsOnScene.back();
+            //        break;
+            //    default:
+            //        break;
+            //    }
+            //    break;
 			default:
 				cout << event.type << endl;
 				break;

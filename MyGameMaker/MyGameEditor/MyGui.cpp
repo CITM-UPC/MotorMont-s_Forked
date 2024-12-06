@@ -12,7 +12,8 @@
 #include <imgui_impl_sdl2.h>
 #include <imgui_impl_opengl3.h>
 #include <tinyfiledialogs/tinyfiledialogs.h> 
- 
+#include <glm/gtc/type_ptr.hpp>
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_video.h>
 #include <SDL2/SDL_events.h>
@@ -269,7 +270,7 @@ void MyGUI::renderInspector() {
     ImGui::SetNextWindowPos(ImVec2(980, 20), ImGuiCond_Always);
     ImGui::Begin("Inspector");
 
-     static GameObject* persistentSelectedObject = nullptr;
+    static GameObject* persistentSelectedObject = nullptr;
 
     if (SceneManager::selectedObject != nullptr) {
         persistentSelectedObject = SceneManager::selectedObject;
@@ -277,12 +278,21 @@ void MyGUI::renderInspector() {
 
     if (persistentSelectedObject) {
         if (ImGui::CollapsingHeader("Transform")) {
-            glm::vec3 position = persistentSelectedObject->transform().pos();
-			glm::vec3 rotation = glm::vec3(persistentSelectedObject->transform().extractEulerAngles(persistentSelectedObject->transform().mat()));
-			glm::vec3 scale = persistentSelectedObject->transform().extractScale(persistentSelectedObject->transform().mat());
+            Transform& transform = persistentSelectedObject->transform();
 
-            ImGui::Text("Position: (%.2f, %.2f, %.2f)", position.x, position.y, position.z);
+            glm::vec3 position = transform.pos();  // Get current position
+            glm::vec3 rotation = glm::vec3(transform.extractEulerAngles(transform.mat()));
+            glm::vec3 scale = transform.extractScale(transform.mat());
+
+            // Editable Position
+            if (ImGui::InputFloat3("Position", glm::value_ptr(position))) {
+                transform.pos() = position;  // Update position in Transform
+            }
+
+            // Display Rotation (read-only for now)
             ImGui::Text("Rotation: (%.2f, %.2f, %.2f)", rotation.x, rotation.y, rotation.z);
+
+            // Display Scale (read-only for now)
             ImGui::Text("Scale: (%.2f, %.2f, %.2f)", scale.x, scale.y, scale.z);
         }
 
@@ -295,23 +305,23 @@ void MyGUI::renderInspector() {
             ImGui::Checkbox("Show Normals (Per Triangle)", &showNormalsPerTriangle);
             ImGui::Checkbox("Show Normals (Per Face)", &showNormalsPerFace);
             if (showNormalsPerTriangle) {
-				persistentSelectedObject->mesh().drawNormals(persistentSelectedObject->transform().mat());
+                persistentSelectedObject->mesh().drawNormals(persistentSelectedObject->transform().mat());
             }
             if (showNormalsPerFace) {
                 persistentSelectedObject->mesh().drawNormalsPerFace(persistentSelectedObject->transform().mat());
             }
         }
+
         if (persistentSelectedObject->hasTexture() && ImGui::CollapsingHeader("Texture")) {
             Texture& texture = persistentSelectedObject->texture();
-                static bool showCheckerTexture = false;
-                ImGui::Text("Width: %d", texture.image().width() );
-                ImGui::Text("Heiht: %d", texture.image().height() );
-				
+            static bool showCheckerTexture = false;
+            ImGui::Text("Width: %d", texture.image().width());
+            ImGui::Text("Height: %d", texture.image().height());
+
             if (ImGui::Button("Toggle Checker Texture")) {
                 showCheckerTexture = !showCheckerTexture;
                 persistentSelectedObject->hasCheckerTexture = showCheckerTexture;
             }
-            
         }
     }
     else {
@@ -320,6 +330,7 @@ void MyGUI::renderInspector() {
 
     ImGui::End();
 }
+
 void MyGUI::render() {
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplSDL2_NewFrame();
