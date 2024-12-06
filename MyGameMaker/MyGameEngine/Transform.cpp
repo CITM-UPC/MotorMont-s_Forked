@@ -68,6 +68,16 @@ void Transform::setRotation(float yawRadians, float pitchRadians, float rollRadi
     updateRotationMatrix();
 }
 
+void Transform::setScale(const glm::vec3& scale) {
+    glm::vec3 currentScale = extractScale(_mat);
+
+    glm::vec3 newScale = scale;
+
+    _mat[0] = glm::vec4(newScale.x, _mat[0][1], _mat[0][2], _mat[0][3]); // Scale x
+    _mat[1] = glm::vec4(_mat[1][0], newScale.y, _mat[1][2], _mat[1][3]); // Scale y
+    _mat[2] = glm::vec4(_mat[2][0], _mat[2][1], newScale.z, _mat[2][3]); // Scale z
+}
+
 
 void Transform::alignCamera(const vec3& worldUp) {
     vec3 fwd = glm::normalize(_fwd);

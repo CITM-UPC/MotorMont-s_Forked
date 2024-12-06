@@ -295,9 +295,10 @@ void MyGUI::renderInspector() {
                 transform.setRotation(glm::radians(inputRotation.x), glm::radians(inputRotation.y), glm::radians(inputRotation.z));
             }
 
-
-            // Display Scale (read-only for now)
-            ImGui::Text("Scale: (%.2f, %.2f, %.2f)", scale.x, scale.y, scale.z);
+			// Editable Scale
+            if (ImGui::InputFloat3("Scale", glm::value_ptr(scale))) {
+                transform.setScale(scale);
+            }
         }
 
         if (persistentSelectedObject->hasMesh() && ImGui::CollapsingHeader("Mesh")) {
