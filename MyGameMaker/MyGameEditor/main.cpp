@@ -53,7 +53,7 @@ glm::vec2 getMousePosition() {
 }
 
 //Funcion para convertir de coordenadas de pantalla a coordenadas del mundo
-glm::vec3 screenToWorld(const glm::vec2& mousePos, float depth, const glm::mat4& projection, const glm::mat4& view) {
+glm::vec3 screenToWorld(const glm::vec2& mousePos, float depth, const glm::mat4& projection, const glm::mat4& view) { // Convertir de coordenadas de pantalla a coordenadas del mundo
 
     float x = (2.0f * mousePos.x) / WINDOW_SIZE.x - 1.0f;
     float y = 1.0f - (2.0f * mousePos.y) / WINDOW_SIZE.y;  
@@ -75,7 +75,7 @@ glm::vec3 screenToWorld(const glm::vec2& mousePos, float depth, const glm::mat4&
 
 
 //RayCastFunctions
-glm::vec3 getRayFromMouse(int mouseX, int mouseY, const glm::mat4& projection, const glm::mat4& view, const glm::ivec2& viewportSize) {
+glm::vec3 getRayFromMouse(int mouseX, int mouseY, const glm::mat4& projection, const glm::mat4& view, const glm::ivec2& viewportSize) { // Obtener un rayo desde el mouse
     float x = (2.0f * mouseX) / viewportSize.x - 1.0f;
     float y = 1.0f - (2.0f * mouseY) / viewportSize.y;
     glm::vec4 rayClip = glm::vec4(x, y, -1.0f, 1.0f);
@@ -88,7 +88,7 @@ glm::vec3 getRayFromMouse(int mouseX, int mouseY, const glm::mat4& projection, c
 }
 
 
-bool intersectRayWithBoundingBox(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, const BoundingBox& bbox) {
+bool intersectRayWithBoundingBox(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, const BoundingBox& bbox) { // Intersectar un rayo con un bounding box
     float tmin = (bbox.min.x - rayOrigin.x) / rayDirection.x;
     float tmax = (bbox.max.x - rayOrigin.x) / rayDirection.x;
 
@@ -121,7 +121,7 @@ bool intersectRayWithBoundingBox(const glm::vec3& rayOrigin, const glm::vec3& ra
     return tmin >= 0.0f;
 }
 // Raycast desde el mouse para detectar si está sobre un GameObject
-GameObject* raycastFromMouseToGameObject(int mouseX, int mouseY, const glm::mat4& projection, const glm::mat4& view, const glm::ivec2& viewportSize) {
+GameObject* raycastFromMouseToGameObject(int mouseX, int mouseY, const glm::mat4& projection, const glm::mat4& view, const glm::ivec2& viewportSize) { // Raycast desde el mouse para detectar si está sobre un GameObject
     glm::vec3 rayOrigin = glm::vec3(glm::inverse(view) * glm::vec4(0, 0, 0, 1));
     glm::vec3 rayDirection = getRayFromMouse(mouseX, mouseY, projection, view, viewportSize);
 
@@ -139,7 +139,7 @@ GameObject* raycastFromMouseToGameObject(int mouseX, int mouseY, const glm::mat4
 
 
 //File drop handler
-std::string getFileExtension(const std::string& filePath) {
+std::string getFileExtension(const std::string& filePath) { // Obtener la extensión de un archivo
     // Find the last dot in the file path
     size_t dotPosition = filePath.rfind('.');
 
@@ -152,7 +152,7 @@ std::string getFileExtension(const std::string& filePath) {
     return filePath.substr(dotPosition + 1);
 }
 
-void handleFileDrop(const std::string& filePath, mat4 projection, mat4 view) {
+void handleFileDrop(const std::string& filePath, mat4 projection, mat4 view) { // Manejar el archivo que se arrastra al editor
     auto extension = getFileExtension(filePath);
     auto imageTexture = std::make_shared<Image>();
     int mouseX, mouseY;
@@ -188,7 +188,7 @@ void handleFileDrop(const std::string& filePath, mat4 projection, mat4 view) {
 }
 
 //Renderizado del suelo
-static void drawFloorGrid(int size, double step) {
+static void drawFloorGrid(int size, double step) { // Dibujar una cuadrícula en el suelo
     glColor3ub(0, 150, 0);
     glBegin(GL_LINES);
     for (double i = -size; i <= size; i += step) {
@@ -200,8 +200,8 @@ static void drawFloorGrid(int size, double step) {
     glEnd();
 }
 
-inline static void glVertex3(const vec3& v) { glVertex3dv(&v.x); }
-static void drawWiredQuad(const vec3& v0, const vec3& v1, const vec3& v2, const vec3& v3) {
+inline static void glVertex3(const vec3& v) { glVertex3dv(&v.x); } // Dibujar un vértice
+static void drawWiredQuad(const vec3& v0, const vec3& v1, const vec3& v2, const vec3& v3) { // Dibujar un cuadrilátero alambrado
     glBegin(GL_LINE_LOOP);
     glVertex3(v0);
     glVertex3(v1);
@@ -209,7 +209,7 @@ static void drawWiredQuad(const vec3& v0, const vec3& v1, const vec3& v2, const 
     glVertex3(v3);
     glEnd();
 }
-static void drawBoundingBox(const BoundingBox& bbox) {
+static void drawBoundingBox(const BoundingBox& bbox) { // Dibujar el bounding box de un objeto
     glLineWidth(2.0);
     drawWiredQuad(bbox.v000(), bbox.v001(), bbox.v011(), bbox.v010());
     drawWiredQuad(bbox.v100(), bbox.v101(), bbox.v111(), bbox.v110());
@@ -219,7 +219,7 @@ static void drawBoundingBox(const BoundingBox& bbox) {
     drawWiredQuad(bbox.v001(), bbox.v011(), bbox.v111(), bbox.v101());
 }
 
-void configureCamera() {
+void configureCamera() { // Configurar la cámara
     glm::dmat4 projectionMatrix = glm::perspective(glm::radians(45.0), static_cast<double>(WINDOW_SIZE.x) / WINDOW_SIZE.y, 0.1, 100.0);
     glm::dmat4 viewMatrix = camera.view();
 
@@ -233,22 +233,20 @@ void display_func() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     configureCamera();
 
-    for (auto& go : SceneManager::gameObjectsOnScene) {
-        if (go.isRoot()) { // Solo objetos raíz
-            // Dibuja el objeto raíz (y sus hijos automáticamente desde GameObject::draw)
+	for (auto& go : SceneManager::gameObjectsOnScene) { // Renderizar todos los GameObjects
+        if (go.isRoot()) {
             go.draw();
             drawBoundingBox(go.boundingBox());
         }
     }
 
-    // Otros elementos de la escena, como la cuadrícula, etc.
     drawFloorGrid(16, 0.25);
 }
 
 
 // Funciones de manejo de mouse
 void mouseButton_func(int button, int state, int x, int y) {
-    if (button == SDL_BUTTON_RIGHT) {
+	if (button == SDL_BUTTON_RIGHT) { // Botón derecho del mouse
         rightMouseButtonDown = (state == SDL_PRESSED);
         lastMouseX = x;
         lastMouseY = y;
@@ -263,12 +261,12 @@ bool altKeyDown = false;
 bool altPressedOnce = false;
 vec3 target;
 
-void handleAltKey() {
+void handleAltKey() { // Verificar si la tecla Alt está presionada
     const Uint8* state = SDL_GetKeyboardState(NULL);
     altKeyDown = state[SDL_SCANCODE_LALT] || state[SDL_SCANCODE_RALT];
 }
 
-void orbitCamera(const vec3& target, int deltaX, int deltaY) {
+void orbitCamera(const vec3& target, int deltaX, int deltaY) { // Orbitar la cámara alrededor de un target
     const float sensitivity = 0.1f;
 
     yaw += deltaX * sensitivity;
@@ -284,7 +282,7 @@ void orbitCamera(const vec3& target, int deltaX, int deltaY) {
     camera.transform().pos() = newPosition;
     camera.transform().lookAt(target); 
 }
-void mouseMotion_func(int x, int y) {
+void mouseMotion_func(int x, int y) { // Movimiento del mouse
     if (rightMouseButtonDown && altKeyDown == false) {
         int deltaX = x - lastMouseX;
         int deltaY = y - lastMouseY;
@@ -305,7 +303,7 @@ void mouseMotion_func(int x, int y) {
         camera.transform().alignCamera();
     }
 
-    if (rightMouseButtonDown && altKeyDown) {
+	if (rightMouseButtonDown && altKeyDown) { // Orbitar la cámara alrededor de un target
        
         int deltaX = x - lastMouseX;
         int deltaY = y - lastMouseY;
