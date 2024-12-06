@@ -1,14 +1,12 @@
+# MOTOR MONT-S GAME ENGINE
 
-Freaky Engine (The freakiest engine for the freakiest people 😉)
+Version 1.0 of the Motor Montés. Developed with love and care. Forked from the Freakiest Engine ever
 
-https://github.com/CITM-UPC/FreakyEngine_Group5
+### The developers
 
-
-List of team members
-
-Alex Becerra https://github.com/Bonnie041008
-Samuel Martinez https://github.com/Samu163
-Oliver Santos https://github.com/Esnaiper
+- [Sergi Gantzer](https://github.com/sgantzer12).
+- [Ivo Montés](https://github.com/Ivomm9).
+- [Biel Liñán](https://github.com/Drauguer).
 
 How to use the engine
 
