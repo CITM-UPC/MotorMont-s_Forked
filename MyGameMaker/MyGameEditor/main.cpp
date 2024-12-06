@@ -32,6 +32,7 @@ static const auto FRAME_DT = 1.0s / FPS;
 
 //static Camera camera;
 GameObject mainCamera("Main Camera");
+GameObject testCamera("Test Camera");
 
 SDL_Event event;
 bool rightMouseButtonDown = false;
@@ -223,28 +224,50 @@ void configureCamera() {
     glm::dmat4 projectionMatrix = glm::perspective(glm::radians(45.0), static_cast<double>(WINDOW_SIZE.x) / WINDOW_SIZE.y, 0.1, 100.0);
     //glm::dmat4 viewMatrix = camera.view();
 	glm::dmat4 viewMatrix = mainCamera.GetComponent<CameraComponent>()->camera().view();
-
+	testCamera.AddComponent<CameraComponent>();
     glMatrixMode(GL_PROJECTION);
     glLoadMatrixd(glm::value_ptr(projectionMatrix));
     glMatrixMode(GL_MODELVIEW);
     glLoadMatrixd(glm::value_ptr(viewMatrix));
 }
+bool isInsideFrustum(const BoundingBox& bbox, const std::list<Plane>& frustumPlanes) {
+    for (const auto& plane : frustumPlanes) {
+        if (plane.distance(bbox.v000()) < 0 &&
+            plane.distance(bbox.v001()) < 0 &&
+            plane.distance(bbox.v010()) < 0 &&
+            plane.distance(bbox.v011()) < 0 &&
+            plane.distance(bbox.v100()) < 0 &&
+            plane.distance(bbox.v101()) < 0 &&
+            plane.distance(bbox.v110()) < 0 &&
+            plane.distance(bbox.v111()) < 0) {
+            return false;
+        }
+    }
+    return true;
+}
 // Función de renderizado
 void display_func() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     configureCamera();
-
+    testCamera.GetComponent<CameraComponent>()->camera().drawFrustum();
+    auto frustumPlanes = testCamera.GetComponent<CameraComponent>()->camera().frustumPlanes();
+    
     for (auto& go : SceneManager::gameObjectsOnScene) {
         if (go.isRoot()) { // Solo objetos raíz
-            // Dibuja el objeto raíz (y sus hijos automáticamente desde GameObject::draw)
-            go.draw();
-            drawBoundingBox(go.boundingBox());
+            // Verificar si el objeto está dentro del frustum
+            if (isInsideFrustum(go.boundingBox(), frustumPlanes)) {
+                // Dibuja el objeto raíz (y sus hijos automáticamente desde GameObject::draw)
+                go.draw();
+                drawBoundingBox(go.boundingBox());
+            }
         }
     }
 
     // Otros elementos de la escena, como la cuadrícula, etc.
     drawFloorGrid(16, 0.25);
 }
+
+
 
 
 // Funciones de manejo de mouse
@@ -452,6 +475,12 @@ int main(int argc, char* argv[]) {
 	SceneManager::gameObjectsOnScene.push_back(mainCamera);
     mainCamera.GetComponent<CameraComponent>()->camera().transform().pos() = vec3(0, 1, 4);
     mainCamera.GetComponent<CameraComponent>()->camera().transform().rotate(glm::radians(180.0), vec3(0, 1, 0));
+
+    testCamera.name = "Test Camera";
+    testCamera.AddComponent<CameraComponent>();
+    SceneManager::gameObjectsOnScene.push_back(testCamera);
+    testCamera.GetComponent<CameraComponent>()->camera().transform().pos() = vec3(0, 1, 4);
+    testCamera.GetComponent<CameraComponent>()->camera().transform().rotate(glm::radians(180.0), vec3(0, 1, 0));
     SceneManager::spawnBakerHouse();
 
     while (window.isOpen()) {
