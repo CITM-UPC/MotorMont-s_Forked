@@ -41,7 +41,7 @@ int lastMouseX, lastMouseY;
 void initOpenGL() {
     glewInit();
     glEnable(GL_DEPTH_TEST);
-    glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+    glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
 }
 
 
@@ -189,7 +189,7 @@ void handleFileDrop(const std::string& filePath, mat4 projection, mat4 view) {
 
 //Renderizado del suelo
 static void drawFloorGrid(int size, double step) {
-    glColor3ub(0, 0, 0);
+    glColor3ub(0, 150, 0);
     glBegin(GL_LINES);
     for (double i = -size; i <= size; i += step) {
         glVertex3d(i, 0, -size);
@@ -390,32 +390,32 @@ static void idle_func() {
         if (state[SDL_SCANCODE_W]) {
             std::cout << "Moving camera forward." << std::endl;
             camera.transform().translate(glm::vec3(0, 0, move_speed));
-            Console::Instance().Log("Moving camera forward.");
+            //Console::Instance().Log("Moving camera forward.");
         }
         if (state[SDL_SCANCODE_S]) {
             std::cout << "Moving camera backward." << std::endl;
             camera.transform().translate(glm::vec3(0, 0, -move_speed));
-            Console::Instance().Log("Moving camera backward.");
+            //Console::Instance().Log("Moving camera backward.");
         }
         if (state[SDL_SCANCODE_A]) {
             std::cout << "Moving camera left." << std::endl;
             camera.transform().translate(glm::vec3(move_speed, 0, 0));
-            Console::Instance().Log("Moving camera left.");
+            //Console::Instance().Log("Moving camera left.");
         }
         if (state[SDL_SCANCODE_D]) {
             std::cout << "Moving camera right." << std::endl;
             camera.transform().translate(glm::vec3(-move_speed, 0, 0));
-            Console::Instance().Log("Moving camera right.");
+            //Console::Instance().Log("Moving camera right.");
         }
         if (state[SDL_SCANCODE_Q]) {
             std::cout << "Moving camera up." << std::endl;
             camera.transform().translate(glm::vec3(0, move_speed, 0));
-            Console::Instance().Log("Moving camera up.");
+            //Console::Instance().Log("Moving camera up.");
         }
         if (state[SDL_SCANCODE_E]) {
             std::cout << "Moving camera down." << std::endl;
             camera.transform().translate(glm::vec3(0, -move_speed, 0));
-            Console::Instance().Log("Moving camera down.");
+            //Console::Instance().Log("Moving camera down.");
         }
     }
 

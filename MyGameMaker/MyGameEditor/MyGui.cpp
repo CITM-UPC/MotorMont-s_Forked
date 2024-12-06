@@ -37,6 +37,34 @@ MyGUI::MyGUI(SDL_Window* window, void* context) {
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
     ImGui::StyleColorsDark();
+
+    ImGuiStyle& style = ImGui::GetStyle();
+    ImVec4* colors = style.Colors;
+
+    colors[ImGuiCol_Button] = ImVec4(0.0f, 0.8f, 0.0f, 1.0f);
+    colors[ImGuiCol_ButtonHovered] = ImVec4(0.0f, 0.9f, 0.1f, 1.0f);   
+    colors[ImGuiCol_ButtonActive] = ImVec4(0.0f, 0.7f, 0.0f, 1.0f);
+    colors[ImGuiCol_WindowBg] = ImVec4(0.1f, 0.1f, 0.1f, 0.8f);       
+    colors[ImGuiCol_TitleBg] = ImVec4(0.0f, 0.7f, 0.0f, 1.0f);       
+    colors[ImGuiCol_TitleBgActive] = ImVec4(0.0f, 0.9f, 0.1f, 1.0f);  
+    colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.0f, 0.6f, 0.0f, 1.0f);
+    colors[ImGuiCol_PopupBg] = ImVec4(0.0f, 0.8f, 0.0f, 0.9f);
+	colors[ImGuiCol_Border] = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
+	colors[ImGuiCol_BorderShadow] = ImVec4(0.2f, 0.2f, 0.2f, 1.0f);
+
+    colors[ImGuiCol_Header] = ImVec4(0.0f, 0.8f, 0.0f, 1.0f);           
+    colors[ImGuiCol_HeaderHovered] = ImVec4(0.0f, 0.9f, 0.0f, 1.0f);    
+    colors[ImGuiCol_HeaderActive] = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);     
+
+    colors[ImGuiCol_Border] = ImVec4(0.0f, 0.7f, 0.0f, 1.0f);          
+    colors[ImGuiCol_BorderShadow] = ImVec4(0.0f, 0.5f, 0.0f, 0.5f);    
+
+    colors[ImGuiCol_ButtonHovered] = ImVec4(0.0f, 1.0f, 0.0f, 1.0f); 
+    colors[ImGuiCol_ButtonActive] = ImVec4(0.0f, 0.7f, 0.0f, 1.0f);     
+
+    colors[ImGuiCol_SliderGrab] = ImVec4(0.0f, 0.9f, 0.0f, 1.0f);       
+    colors[ImGuiCol_SliderGrabActive] = ImVec4(0.0f, 1.0f, 0.0f, 1.0f); 
+
     ImGui_ImplSDL2_InitForOpenGL(window, context);
     ImGui_ImplOpenGL3_Init();
 }
