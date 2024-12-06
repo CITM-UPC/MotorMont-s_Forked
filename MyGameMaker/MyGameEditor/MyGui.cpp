@@ -266,22 +266,18 @@ void MyGUI::ShowHierarchy()
     }
 }
 //ALGO FALLA , HAY QUE REVISARLO
-
 void MyGUI::renderInspector() {
     ImGui::SetNextWindowSize(ImVec2(300, 700), ImGuiCond_Always);
     ImGui::SetNextWindowPos(ImVec2(980, 20), ImGuiCond_Always);
     ImGui::Begin("Inspector");
 
-    static GameObject* persistentSelectedObject = nullptr;
+     static GameObject* persistentSelectedObject = nullptr;
 
     if (SceneManager::selectedObject != nullptr) {
         persistentSelectedObject = SceneManager::selectedObject;
     }
 
     if (persistentSelectedObject) {
-        // Mostrar controles de rotación
-        GuiRotation();
-
         if (ImGui::CollapsingHeader("Transform")) {
             glm::vec3 position = persistentSelectedObject->transform().pos();
             glm::vec3 rotation(
@@ -289,13 +285,13 @@ void MyGUI::renderInspector() {
                 glm::degrees(persistentSelectedObject->transform().getYaw()),
                 glm::degrees(persistentSelectedObject->transform().getRoll())
             );
-            glm::vec3 scale = persistentSelectedObject->transform().extractScale(persistentSelectedObject->transform().mat());
+			glm::vec3 scale = persistentSelectedObject->transform().extractScale(persistentSelectedObject->transform().mat());
 
             // Controles para la posición
             ImGui::Text("Position:");
             ImGui::PushItemWidth(100);
             if (ImGui::DragFloat("X##pos", &position.x, 0.1f)) {
-                persistentSelectedObject->transform().setPos(position.x, position.y, position.z);
+                persistentSelectedObject->transform().setPos(position.x,position.y,position.z);
             }
             ImGui::NewLine();
             if (ImGui::DragFloat("Y##pos", &position.y, 0.1f)) {
@@ -306,17 +302,37 @@ void MyGUI::renderInspector() {
                 persistentSelectedObject->transform().setPos(position.x, position.y, position.z);
             }
             ImGui::PopItemWidth();
+            // Controles para la rotación
 
-            //// Controles para la escala
-            //ImGui::Text("Scale:");
-            //ImGui::PushItemWidth(100);
-            //if (ImGui::DragFloat3("##scale", &scale.x, 0.1f, 0.1f, 10.0f)) {
-            //    persistentSelectedObject->transform().setScale(scale);
-            //}
-            //ImGui::PopItemWidth();
+            ImGui::Text("Rotation:");
+            ImGui::PushItemWidth(100);
+            if (ImGui::DragFloat("X##rot", &rotation.x, 0.1f)) {
+                persistentSelectedObject->transform().setRotation(
+                    glm::radians(rotation.x),
+                    persistentSelectedObject->transform().getYaw(),
+                    persistentSelectedObject->transform().getRoll()
+                );
+            }
+            if (ImGui::DragFloat("Y##rot", &rotation.y, 0.1f)) {
+                persistentSelectedObject->transform().setRotation(
+                    persistentSelectedObject->transform().getPitch(),
+                    glm::radians(rotation.y),
+                    persistentSelectedObject->transform().getRoll()
+                );
+            }
+            if (ImGui::DragFloat("Z##rot", &rotation.z, 0.1f)) {
+                persistentSelectedObject->transform().setRotation(
+                    persistentSelectedObject->transform().getPitch(),
+                    persistentSelectedObject->transform().getYaw(),
+                    glm::radians(rotation.z)
+                );
+            }
+            ImGui::PopItemWidth();
+          /*  ImGui::Text("Position: (%.2f, %.2f, %.2f)", position.x, position.y, position.z);
+            ImGui::Text("Rotation: (%.2f, %.2f, %.2f)", rotation.x, rotation.y, rotation.z);
+            ImGui::Text("Scale: (%.2f, %.2f, %.2f)", scale.x, scale.y, scale.z);*/
         }
 
-        // Controles para Mesh
         if (persistentSelectedObject->hasMesh() && ImGui::CollapsingHeader("Mesh")) {
             Mesh& mesh = persistentSelectedObject->mesh();
 
@@ -326,25 +342,23 @@ void MyGUI::renderInspector() {
             ImGui::Checkbox("Show Normals (Per Triangle)", &showNormalsPerTriangle);
             ImGui::Checkbox("Show Normals (Per Face)", &showNormalsPerFace);
             if (showNormalsPerTriangle) {
-                persistentSelectedObject->mesh().drawNormals(persistentSelectedObject->transform().mat());
+				persistentSelectedObject->mesh().drawNormals(persistentSelectedObject->transform().mat());
             }
             if (showNormalsPerFace) {
                 persistentSelectedObject->mesh().drawNormalsPerFace(persistentSelectedObject->transform().mat());
             }
         }
-
-        // Controles para Texture
         if (persistentSelectedObject->hasTexture() && ImGui::CollapsingHeader("Texture")) {
             Texture& texture = persistentSelectedObject->texture();
-            static bool showCheckerTexture = false;
-
-            ImGui::Text("Width: %d", texture.image().width());
-            ImGui::Text("Height: %d", texture.image().height());
-
+                static bool showCheckerTexture = false;
+                ImGui::Text("Width: %d", texture.image().width() );
+                ImGui::Text("Heiht: %d", texture.image().height() );
+				
             if (ImGui::Button("Toggle Checker Texture")) {
                 showCheckerTexture = !showCheckerTexture;
                 persistentSelectedObject->hasCheckerTexture = showCheckerTexture;
             }
+            
         }
     }
     else {
@@ -353,50 +367,6 @@ void MyGUI::renderInspector() {
 
     ImGui::End();
 }
-
-void MyGUI::GuiRotation() {
-    // Display rotation label
-    ImGui::Text("Rotation");
-
-    static GameObject* persistentSelectedObject = nullptr;
-
-    if (SceneManager::selectedObject != nullptr) {
-        persistentSelectedObject = SceneManager::selectedObject;
-    }
-
-    // Get the current rotation values of the selected object
-    glm::vec3 rotation = persistentSelectedObject->GetComponent<TransformComponent>()->transform().GetRotation();
-    float rotationArray[3] = { rotation.x, rotation.y, rotation.z };
-
-    // Display and allow editing of the rotation values
-    bool rotationChanged = false;
-
-    ImGui::Text("X:"); ImGui::SameLine();
-    ImGui::SetNextItemWidth(100);
-    if (ImGui::DragFloat("##rotationX", &rotationArray[0], 0.1f, -360.0f, 360.0f, "%.1f")) {
-        rotationChanged = true;
-    }
-
-    ImGui::SameLine();
-    ImGui::Text("Y:"); ImGui::SameLine();
-    ImGui::SetNextItemWidth(100);
-    if (ImGui::DragFloat("##rotationY", &rotationArray[1], 0.1f, -360.0f, 360.0f, "%.1f")) {
-        rotationChanged = true;
-    }
-
-    ImGui::SameLine();
-    ImGui::Text("Z:"); ImGui::SameLine();
-    ImGui::SetNextItemWidth(100);
-    if (ImGui::DragFloat("##rotationZ", &rotationArray[2], 0.1f, -360.0f, 360.0f, "%.1f")) {
-        rotationChanged = true;
-    }
-
-    // Apply the new rotation values if they were modified
-    if (rotationChanged) {
-        persistentSelectedObject->GetComponent<TransformComponent>()->transform().SetRotation(glm::vec3(rotationArray[0], rotationArray[1], rotationArray[2]));
-    }
-}
-
 void MyGUI::render() {
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplSDL2_NewFrame();

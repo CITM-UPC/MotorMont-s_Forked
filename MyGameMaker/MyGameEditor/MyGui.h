@@ -1,9 +1,5 @@
 
 #include "MyWindow.h"
-#include <list>
-#include <string>
-#include <vector> // Include the vector header
-#include <imgui.h>
 
 class MyGUI : public IEventProcessor
 {
@@ -17,11 +13,6 @@ public:
 	void renderInspector();
 	void processEvent(const SDL_Event& event) override;
 	void handleEvent(const SDL_Event& event); 
-
-	void GuiPosition();
-	void GuiRotation();
-	void GuiScale();
-
 
 	void ShowMainMenuBar();
 	void ShowConsole();

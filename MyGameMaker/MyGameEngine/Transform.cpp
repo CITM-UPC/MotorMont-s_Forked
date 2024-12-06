@@ -1,11 +1,7 @@
-#define GLM_ENABLE_EXPERIMENTAL
 #include "Transform.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/glm.hpp>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/gtx/quaternion.hpp>
-#include <glm/gtx/euler_angles.hpp>
 
 
 void Transform::translate(const vec3& v) {
@@ -39,38 +35,6 @@ void Transform::rotateRoll(double radians) {
 }
 void Transform::rotate(double rads, const vec3& v) {
     _mat = glm::rotate(_mat, rads, v);
-}
-const vec3& Transform::GetRotation() const
-{
-    // Calculate the rotation matrix from the _left, _up, and _fwd vectors
-    mat4 rotationMatrix = mat4(1.0);
-    rotationMatrix[0] = vec4(_left, 0.0);
-    rotationMatrix[1] = vec4(_up, 0.0);
-    rotationMatrix[2] = vec4(_fwd, 0.0);
-
-    // Extract Euler angles from the rotation matrix
-    vec3 eulerAngles = glm::eulerAngles(glm::quat_cast(rotationMatrix));
-
-    // Convert radians to degrees
-    eulerAngles = glm::degrees(eulerAngles);
-
-    return eulerAngles;
-}
-void Transform::SetRotation(const vec3& eulerAngles)
-{
-    // Convert degrees to radians
-    vec3 eulerAnglesRad = glm::radians(eulerAngles);
-
-    // Convert Euler angles to quaternion
-    glm::quat quaternion = glm::quat(eulerAnglesRad);
-
-    // Convert quaternion to rotation matrix
-    mat4 rotationMatrix = glm::toMat4(quaternion);
-
-    // Calculate the new _left, _up, and _fwd vectors and normalize them
-    _left = glm::normalize(vec3(rotationMatrix[0]));
-    _up = glm::normalize(vec3(rotationMatrix[1]));
-    _fwd = glm::normalize(vec3(rotationMatrix[2]));
 }
 void Transform::updateRotationMatrix() {
     float cosYaw = cos(yaw);
