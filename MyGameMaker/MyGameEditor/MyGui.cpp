@@ -280,17 +280,21 @@ void MyGUI::renderInspector() {
         if (ImGui::CollapsingHeader("Transform")) {
             Transform& transform = persistentSelectedObject->transform();
 
-            glm::vec3 position = transform.pos();  // Get current position
+            glm::vec3 position = transform.pos();
             glm::vec3 rotation = glm::vec3(transform.extractEulerAngles(transform.mat()));
             glm::vec3 scale = transform.extractScale(transform.mat());
 
             // Editable Position
             if (ImGui::InputFloat3("Position", glm::value_ptr(position))) {
-                transform.pos() = position;  // Update position in Transform
+                transform.pos() = position;
             }
 
-            // Display Rotation (read-only for now)
-            ImGui::Text("Rotation: (%.2f, %.2f, %.2f)", rotation.x, rotation.y, rotation.z);
+            // Editable Rotation
+            static glm::vec3 inputRotation = glm::vec3(0.0f);
+            if (ImGui::InputFloat3("Rotation", glm::value_ptr(inputRotation), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
+                transform.setRotation(glm::radians(inputRotation.x), glm::radians(inputRotation.y), glm::radians(inputRotation.z));
+            }
+
 
             // Display Scale (read-only for now)
             ImGui::Text("Scale: (%.2f, %.2f, %.2f)", scale.x, scale.y, scale.z);
@@ -327,6 +331,7 @@ void MyGUI::renderInspector() {
     else {
         ImGui::Text("No GameObject selected.");
     }
+
 
     ImGui::End();
 }

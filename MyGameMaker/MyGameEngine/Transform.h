@@ -15,11 +15,10 @@ private:
     };
 
     // Variables para los ángulos de rotación
-    double yaw = 0.0;
-    double pitch = 0.0;
-    double roll = 0.0;
+    float yaw = 0.0;
+    float pitch = 0.0;
+    float roll = 0.0;
 
-  
 public:
     const auto& mat() const { return _mat; }
     const auto& left() const { return _left; }
@@ -33,21 +32,20 @@ public:
     Transform() = default;
     Transform(const mat4& mat) : _mat(mat) {}
 
-    
-   
-
     void translate(const vec3& v);
     void rotateYaw(double radians);
     void rotatePitch(double radians);
     void rotateRoll(double radians);
     void rotate(double rads, const vec3& v);
     void updateRotationMatrix();
+
+    void setRotation(float newYaw, float newPitch, float newRoll);
+
     void lookAt(const vec3& target);
     void alignCamera(const vec3& worldUp = vec3(0.0f, 1.0f, 0.0f));
-	glm::vec3 extractEulerAngles(const glm::mat4& mat);
-	glm::vec3 extractScale(const glm::mat4& mat);
+    glm::vec3 extractEulerAngles(const glm::mat4& mat);
+    glm::vec3 extractScale(const glm::mat4& mat);
 
     Transform operator*(const mat4& other) { return Transform(_mat * other); }
     Transform operator*(const Transform& other) { return Transform(_mat * other._mat); }
 };
-

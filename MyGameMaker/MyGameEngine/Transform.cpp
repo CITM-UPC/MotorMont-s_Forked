@@ -3,33 +3,37 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/glm.hpp>
 
-
 void Transform::translate(const vec3& v) {
     _mat = glm::translate(_mat, v);
 }
 
 void Transform::rotateYaw(double radians) {
-    yaw += radians; 
-    updateRotationMatrix(); 
+    yaw += radians;
+    updateRotationMatrix();
 }
 
 void Transform::rotatePitch(double radians) {
-    pitch += radians; 
-    updateRotationMatrix(); 
+    pitch += radians;
+    updateRotationMatrix();
 }
 
 void Transform::rotateRoll(double radians) {
     roll += radians;
-    updateRotationMatrix(); 
+    updateRotationMatrix();
 }
+
 void Transform::rotate(double rads, const vec3& v) {
     _mat = glm::rotate(_mat, rads, v);
 }
+
 void Transform::updateRotationMatrix() {
+
     float cosYaw = cos(yaw);
     float sinYaw = sin(yaw);
     float cosPitch = cos(pitch);
     float sinPitch = sin(pitch);
+    float cosRoll = cos(roll);
+    float sinRoll = sin(roll);
 
     mat4 yawMatrix = {
         cosYaw, 0, sinYaw, 0,
@@ -45,14 +49,30 @@ void Transform::updateRotationMatrix() {
         0, 0, 0, 1
     };
 
-    _mat = pitchMatrix * yawMatrix * _mat; 
-}
-void Transform::alignCamera(const vec3& worldUp) {
+    mat4 rollMatrix = {
+        cosRoll, -sinRoll, 0, 0,
+        sinRoll, cosRoll, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1
+    };
 
+    _mat = rollMatrix * pitchMatrix * yawMatrix;
+}
+
+
+void Transform::setRotation(float yawRadians, float pitchRadians, float rollRadians) {
+    yaw = yawRadians;
+    pitch = pitchRadians;
+    roll = rollRadians;
+
+    updateRotationMatrix();
+}
+
+
+void Transform::alignCamera(const vec3& worldUp) {
     vec3 fwd = glm::normalize(_fwd);
     vec3 right = glm::normalize(glm::cross(worldUp, fwd));
     vec3 up = glm::cross(fwd, right);
-
 
     _left = right;
     _up = up;
@@ -62,7 +82,7 @@ void Transform::alignCamera(const vec3& worldUp) {
 }
 
 void Transform::lookAt(const vec3& target) {
-    _fwd = glm::normalize(  _pos- target);
+    _fwd = glm::normalize(_pos - target);
     _left = glm::normalize(glm::cross(vec3(0, 1, 0), _fwd));
     _up = glm::cross(_fwd, _left);
 
@@ -71,19 +91,19 @@ void Transform::lookAt(const vec3& target) {
     _mat[2] = vec4(-_fwd, 0.0);
     _mat[3] = vec4(_pos, 1.0);
 }
+
 glm::vec3 Transform::extractEulerAngles(const glm::mat4& mat) {
     glm::vec3 forward(mat[2][0], mat[2][1], mat[2][2]);
     glm::vec3 up(mat[1][0], mat[1][1], mat[1][2]);
     glm::vec3 left(mat[0][0], mat[0][1], mat[0][2]);
 
     float yaw = atan2(forward.x, forward.z);
-
     float pitch = atan2(-forward.y, sqrt(forward.x * forward.x + forward.z * forward.z));
-
     float roll = atan2(left.y, up.y);
 
     return glm::vec3(glm::degrees(pitch), glm::degrees(yaw), glm::degrees(roll));
 }
+
 glm::vec3 Transform::extractScale(const glm::mat4& mat) {
     glm::vec3 left(mat[0][0], mat[0][1], mat[0][2]);
     glm::vec3 up(mat[1][0], mat[1][1], mat[1][2]);
