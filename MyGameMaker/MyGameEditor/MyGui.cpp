@@ -300,63 +300,53 @@ void MyGUI::renderInspector() {
                 persistentSelectedObject->transform().setPos(position.x, position.y, position.z);
             }
             ImGui::PopItemWidth();
-            // Controles para la rotación
 
+
+            // Controles para la rotación
             ImGui::Text("Rotation:");
             ImGui::PushItemWidth(100);
-        /*    rotation.x = glm::degrees(persistentSelectedObject->transform().getPitch());
-            rotation.y = glm::degrees(persistentSelectedObject->transform().getYaw());
-            rotation.z = glm::degrees(persistentSelectedObject->transform().getRoll());*/
-			
-            // Buffers para manejar los valores de rotación como texto
-            char xBuffer[16];
-            char yBuffer[16];
-            char zBuffer[16];
 
-            // Almacena las rotaciones acumuladas
-            // Inicializa los valores del buffer con las rotaciones actuales
-            snprintf(xBuffer, sizeof(xBuffer), "%.3f", accumulatedRotation.x);
-            snprintf(yBuffer, sizeof(yBuffer), "%.3f", accumulatedRotation.y);
-            snprintf(zBuffer, sizeof(zBuffer), "%.3f", accumulatedRotation.z);
-
-            // Entrada para rotación en X
-            if (ImGui::InputText("X##rot", xBuffer, sizeof(xBuffer), ImGuiInputTextFlags_EnterReturnsTrue)) {
-                float newX = std::stof(xBuffer); // Convertimos el texto a float
-                float deltaX = newX - accumulatedRotation.x; // Calculamos la diferencia de rotación
+            //  X Rotation
+            float deltaX = 0.0f;
+            if (ImGui::DragFloat("X##rot", &accumulatedRotation.x, 0.1f, -360.0f, 360.0f, "%.3f")) {
+                deltaX = accumulatedRotation.x - persistentSelectedObject->transform().GetRotation().x; 
                 if (deltaX != 0.0f) {
-                 
-                    accumulatedRotation.x += deltaX; // Actualizamos la acumulación
-                    persistentSelectedObject->transform().rotate(glm::radians(deltaX), glm::vec3(1.0f, 0.0f, 0.0f)); // Aplicamos la rotación diferencial
+                    persistentSelectedObject->transform().rotate(glm::radians(deltaX), glm::vec3(1.0f, 0.0f, 0.0f)); 
                 }
             }
-
-            // Entrada para rotación en Y
-            if (ImGui::InputText("Y##rot", yBuffer, sizeof(yBuffer), ImGuiInputTextFlags_EnterReturnsTrue)) {
-                float newY = std::stof(yBuffer);
-                float deltaY = newY - accumulatedRotation.y; // Calculamos la diferencia
+            //  Y Rotation
+            float deltaY = 0.0f;
+            if (ImGui::DragFloat("Y##rot", &accumulatedRotation.y, 0.1f, -360.0f, 360.0f, "%.3f")) {
+                deltaY = accumulatedRotation.y - persistentSelectedObject->transform().GetRotation().y;
                 if (deltaY != 0.0f) {
-                   
-                    accumulatedRotation.y += deltaY; // Actualizamos la acumulación
-                    persistentSelectedObject->transform().rotate(glm::radians(deltaY), glm::vec3(0.0f, 1.0f, 0.0f)); // Aplicamos la rotación diferencial
+                    persistentSelectedObject->transform().rotate(glm::radians(deltaY), glm::vec3(0.0f, 1.0f, 0.0f)); 
                 }
             }
-
-            // Entrada para rotación en Z
-            if (ImGui::InputText("Z##rot", zBuffer, sizeof(zBuffer), ImGuiInputTextFlags_EnterReturnsTrue)) {
-                float newZ = std::stof(zBuffer);
-                float deltaZ = newZ - accumulatedRotation.z; // Calculamos la diferencia
+            //  Z Rotation
+            float deltaZ = 0.0f;
+            if (ImGui::DragFloat("Z##rot", &accumulatedRotation.z, 0.1f, -360.0f, 360.0f, "%.3f")) {
+                deltaZ = accumulatedRotation.z - persistentSelectedObject->transform().GetRotation().z;
                 if (deltaZ != 0.0f) {
-                 
-                    accumulatedRotation.z += deltaZ; // Actualizamos la acumulación
-                    persistentSelectedObject->transform().rotate(glm::radians(deltaZ), glm::vec3(0.0f, 0.0f, 1.0f)); // Aplicamos la rotación diferencial
+                    persistentSelectedObject->transform().rotate(glm::radians(deltaZ), glm::vec3(0.0f, 0.0f, 1.0f)); 
                 }
             }
 
             ImGui::PopItemWidth();
 
-          /*  ImGui::Text("Position: (%.2f, %.2f, %.2f)", position.x, position.y, position.z);
-            ImGui::Text("Rotation: (%.2f, %.2f, %.2f)", rotation.x, rotation.y, rotation.z);
-            ImGui::Text("Scale: (%.2f, %.2f, %.2f)", scale.x, scale.y, scale.z);*/
+
+            // Controles para la escala
+            ImGui::Text("Scale:");
+            ImGui::PushItemWidth(100);
+            if (ImGui::DragFloat("X##scale", &scale.x, 0.1f, 0.01f, 100.0f)) {
+                persistentSelectedObject->transform().setScale(scale);
+            }
+            if (ImGui::DragFloat("Y##scale", &scale.y, 0.1f, 0.01f, 100.0f)) {
+                persistentSelectedObject->transform().setScale(scale);
+            }
+            if (ImGui::DragFloat("Z##scale", &scale.z, 0.1f, 0.01f, 100.0f)) {
+                persistentSelectedObject->transform().setScale(scale);
+            }
+            ImGui::PopItemWidth();
         }
 
         if (persistentSelectedObject->hasMesh() && ImGui::CollapsingHeader("Mesh")) {

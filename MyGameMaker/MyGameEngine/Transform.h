@@ -34,7 +34,7 @@ public:
     Transform(const mat4& mat) : _mat(mat) {}
 
     
-   
+    void setScale(const glm::vec3& scale);
     const vec3& GetRotation() const;
     void translate(const vec3& v);
 	void setPos(float x, float y, float z);
