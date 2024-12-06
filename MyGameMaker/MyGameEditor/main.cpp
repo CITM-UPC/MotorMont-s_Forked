@@ -12,6 +12,7 @@
 #include <chrono>
 #include <thread>
 #include <vector>
+#include <glm/gtx/string_cast.hpp>
 
 #include "MyGameEngine/Camera.h"
 #include "MyGameEngine/Mesh.h"
@@ -241,8 +242,13 @@ void display_func() {
             drawBoundingBox(go.boundingBox());
         }
     }
+   
 
-    // Otros elementos de la escena, como la cuadrícula, etc.
+    // ...
+    if (SceneManager::selectedObject != nullptr) {
+        cout << glm::to_string(SceneManager::selectedObject->transform().GetRotation()) << endl;
+    }
+   
     drawFloorGrid(16, 0.25);
 }
 

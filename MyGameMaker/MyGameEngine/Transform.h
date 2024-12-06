@@ -1,6 +1,11 @@
 #pragma once
-
+#define GLM_ENABLE_EXPERIMENTAL
 #include "types.h"
+#include <glm/gtx/euler_angles.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 class Transform {
 private:
@@ -35,7 +40,8 @@ public:
 
     
    
-
+    const vec3& GetRotation() const;
+    void SetRotation(const vec3& eulerAngles);
     void translate(const vec3& v);
 	void setPos(float x, float y, float z);
     double getYaw() const;
