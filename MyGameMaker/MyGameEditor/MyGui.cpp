@@ -102,7 +102,7 @@ void MyGUI::ShowMainMenuBar() {
         {
             if (ImGui::MenuItem("About"))
             {
-                const char* url = "https://github.com/CITM-UPC/FreakyEngine_Group5";
+                const char* url = "https://github.com/CITM-UPC/MotorMont-s_Forked";
                 SDL_OpenURL(url);
             }
             ImGui::Checkbox("Metrics", &show_metrics_window);
@@ -164,9 +164,9 @@ void MyGUI::ShowSpawnFigures(bool* p_open) {
 float GetMemoryUsage() {
     PROCESS_MEMORY_COUNTERS memCounter;
     if (GetProcessMemoryInfo(GetCurrentProcess(), &memCounter, sizeof(memCounter))) {
-        return static_cast<float>(memCounter.WorkingSetSize) / (1024.0f * 1024.0f); // Convert bytes to MB
+        return static_cast<float>(memCounter.WorkingSetSize) / (1024.0f * 1024.0f);
     }
-    return 0.0f; // Return 0 if there's an issue getting the memory info
+    return 0.0f;
 }
 
 void MyGUI::ShowMetricsWindow(bool* p_open) 
@@ -175,14 +175,12 @@ void MyGUI::ShowMetricsWindow(bool* p_open)
     static std::vector<float> memoryHistory;
     static const int maxSamples = 100;  
 
-    // Gather data for FPS
     float fps = ImGui::GetIO().Framerate;
     fpsHistory.push_back(fps);
     if (fpsHistory.size() > maxSamples) {
         fpsHistory.erase(fpsHistory.begin());
     }
 
-    // Gather data for Memory Usage
     float memoryUsage = GetMemoryUsage();
     memoryHistory.push_back(memoryUsage);
     if (memoryHistory.size() > maxSamples) {
@@ -227,7 +225,7 @@ void MyGUI::ShowHierarchy()
     ImGui::SetNextWindowSize(ImVec2(300, 700), ImGuiCond_Always);
     ImGui::SetNextWindowPos(ImVec2(0, 20), ImGuiCond_Always);
     if (ImGui::Begin("Hierarchy", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove)) {
-        // Iterar sobre todos los objetos en la escena
+
         for (auto& go : SceneManager::gameObjectsOnScene) 
         {
             if (SceneManager::gameObjectsOnScene.empty()) continue;
@@ -265,7 +263,7 @@ void MyGUI::ShowHierarchy()
         ImGui::End();
     }
 }
-//ALGO FALLA , HAY QUE REVISARLO
+
 void MyGUI::renderInspector() {
     ImGui::SetNextWindowSize(ImVec2(300, 700), ImGuiCond_Always);
     ImGui::SetNextWindowPos(ImVec2(980, 20), ImGuiCond_Always);
