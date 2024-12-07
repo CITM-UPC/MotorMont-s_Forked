@@ -38,8 +38,8 @@ public:
     ~GameObject();*/
 
     //// Métodos para acceder y modificar propiedades
-    //const auto& transform() const { return _transform; }
-    //auto& transform() { return _transform; }
+    const auto& transform() const { return GetComponent<TransformComponent>()->transform(); }
+    auto& transform() { return GetComponent<TransformComponent>()->transform(); }
 
     const auto& color() const { return _color; }
     auto& color() { return _color; }

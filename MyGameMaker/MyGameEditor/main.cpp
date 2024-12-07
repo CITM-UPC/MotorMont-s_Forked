@@ -21,6 +21,7 @@
 #include "MyGui.h"
 #include "SceneManager.h"
 #include "Console.h"
+#include "MyGameEngine/CameraComponent.h"
 
 using namespace std;
 using hrclock = chrono::high_resolution_clock;
@@ -31,7 +32,7 @@ static const unsigned int FPS = 60;
 static const auto FRAME_DT = 1.0s / FPS;
 
 static Camera camera;
-
+GameObject TestCamera("TestCamera");
 
 SDL_Event event;
 bool rightMouseButtonDown = false;
@@ -222,6 +223,8 @@ static void drawBoundingBox(const BoundingBox& bbox) { // Dibujar el bounding bo
 void configureCamera() { // Configurar la cámara
     glm::dmat4 projectionMatrix = glm::perspective(glm::radians(45.0), static_cast<double>(WINDOW_SIZE.x) / WINDOW_SIZE.y, 0.1, 100.0);
     glm::dmat4 viewMatrix = camera.view();
+
+    TestCamera.AddComponent<CameraComponent>();
 
     glMatrixMode(GL_PROJECTION);
     glLoadMatrixd(glm::value_ptr(projectionMatrix));
@@ -445,6 +448,13 @@ int main(int argc, char* argv[]) {
     // Posición inicial de la cámara
     camera.transform().pos() = vec3(0, 1, 4);
     camera.transform().rotate(glm::radians(180.0), vec3(0, 1, 0));
+
+	TestCamera.SetName("TestCamera");
+	TestCamera.AddComponent<CameraComponent>();
+	SceneManager::gameObjectsOnScene.push_back(TestCamera);
+	TestCamera.GetComponent<CameraComponent>()->camera().transform().pos() = vec3(0, 1, 4);
+	TestCamera.GetComponent<CameraComponent>()->camera().transform().rotate(glm::radians(180.0), vec3(0, 1, 0));
+
     SceneManager::spawnBakerHouse();
 
     while (window.isOpen()) {
