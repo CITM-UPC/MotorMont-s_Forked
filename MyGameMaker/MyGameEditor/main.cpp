@@ -280,6 +280,9 @@ void display_func() {
     configureCamera();
 	drawFrustum(TestCamera);
 
+    TestCamera.GetComponent<CameraComponent>()->camera().transform() = TestCamera.GetComponent<TransformComponent>()->transform();
+    auto frustumPlanes = TestCamera.GetComponent<CameraComponent>()->camera().frustumPlanes();
+
 	for (auto& go : SceneManager::gameObjectsOnScene) { // Renderizar todos los GameObjects
         if (go.isRoot()) {
             go.draw();
