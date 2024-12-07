@@ -153,6 +153,49 @@ std::string getFileExtension(const std::string& filePath) { // Obtener la extens
     return filePath.substr(dotPosition + 1);
 }
 
+//Draw frustum planes
+void drawFrustum(const GameObject& camera) {
+    // Get the camera's frustum planes
+    auto planes = camera.GetComponent<CameraComponent>()->camera().frustumPlanes();
+    std::vector<glm::vec3> frustumCorners = {
+        glm::vec3(-1, -1, -1), glm::vec3(1, -1, -1),
+        glm::vec3(1, 1, -1), glm::vec3(-1, 1, -1),
+        glm::vec3(-1, -1, 1), glm::vec3(1, -1, 1),
+        glm::vec3(1, 1, 1), glm::vec3(-1, 1, 1)
+    };
+
+    // Get the camera's projection and view matrices
+    const auto& cameraComp = camera.GetComponent<CameraComponent>();
+    glm::mat4 projection = cameraComp->camera().projection();
+    glm::mat4 view = cameraComp->camera().view();
+
+    // Combine the projection and view matrices
+    glm::mat4 projView = projection * view;
+
+    // Calculate the inverse of the projection-view matrix
+    glm::mat4 invProjView = glm::inverse(projView);
+
+    // Transform the frustum corners into world space
+    for (auto& corner : frustumCorners) {
+        glm::vec4 transformedCorner = invProjView * glm::vec4(corner, 1.0f);
+        corner = glm::vec3(transformedCorner) / transformedCorner.w;
+    }
+
+    // Draw the frustum lines (for visualization)
+    glColor3f(1.0f, 1.0f, 1.0f);
+    glBegin(GL_LINES);
+    for (int i = 0; i < 4; ++i) {
+        glVertex3fv(glm::value_ptr(frustumCorners[i]));
+        glVertex3fv(glm::value_ptr(frustumCorners[(i + 1) % 4]));
+        glVertex3fv(glm::value_ptr(frustumCorners[i + 4]));
+        glVertex3fv(glm::value_ptr(frustumCorners[(i + 1) % 4 + 4]));
+        glVertex3fv(glm::value_ptr(frustumCorners[i]));
+        glVertex3fv(glm::value_ptr(frustumCorners[i + 4]));
+    }
+    glEnd();
+}
+
+
 void handleFileDrop(const std::string& filePath, mat4 projection, mat4 view) { // Manejar el archivo que se arrastra al editor
     auto extension = getFileExtension(filePath);
     auto imageTexture = std::make_shared<Image>();
@@ -235,6 +278,7 @@ void configureCamera() { // Configurar la cámara
 void display_func() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     configureCamera();
+	drawFrustum(TestCamera);
 
 	for (auto& go : SceneManager::gameObjectsOnScene) { // Renderizar todos los GameObjects
         if (go.isRoot()) {
@@ -448,7 +492,6 @@ int main(int argc, char* argv[]) {
     // Posición inicial de la cámara
     camera.transform().pos() = vec3(0, 1, 4);
     camera.transform().rotate(glm::radians(180.0), vec3(0, 1, 0));
-
 	TestCamera.SetName("TestCamera");
 	TestCamera.AddComponent<CameraComponent>();
 	SceneManager::gameObjectsOnScene.push_back(TestCamera);
