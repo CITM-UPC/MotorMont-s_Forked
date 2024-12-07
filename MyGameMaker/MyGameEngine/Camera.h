@@ -14,7 +14,7 @@ public:
 	double aspect = 16.0 / 9.0 ;
 	double zNear = 0.1;
 	double zFar = 128.0;
-
+	std::list<Plane> frustumPlanesList; // Lista de planos del frustum
 private:
 	Transform _transform;
 
@@ -32,10 +32,10 @@ public:
 
 	void UpdateCamera(Transform transform);
 	void UpdateMainCamera();
-	void UpdateCameraPosition(glm::vec3 position);
 	void UpdateProjection();
 	void UpdateView(Transform transform);
 	void UpdateViewProjection();
+	void UpdateFrustumPlanes();
 
 	
 };

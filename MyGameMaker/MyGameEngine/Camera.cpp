@@ -28,16 +28,13 @@ std::list<Plane> Camera::frustumPlanes() const {
 		Plane(glm::rotate(_transform.up(), v_fov, _transform.left()), _transform.pos())
 	};
 }
-void Camera::UpdateCameraPosition(glm::vec3 position)
-{
-    _transform.setPos(position.x, position.y, position.z);
-    UpdateMainCamera();
-}
+
 void Camera::UpdateCamera(Transform transform)
 {
 	UpdateProjection();
 	UpdateView(transform);
 	UpdateViewProjection();
+	UpdateFrustumPlanes();
 
 }
 
@@ -46,7 +43,7 @@ void Camera::UpdateMainCamera()
 	UpdateProjection();
 	UpdateView(_transform);
 	UpdateViewProjection();
-
+	
 }
 
 void Camera::UpdateProjection()
@@ -62,4 +59,7 @@ void Camera::UpdateView(Transform transform)
 void Camera::UpdateViewProjection()
 {
 	viewProjectionMatrix = projectionMatrix * viewMatrix;
+}
+void Camera::UpdateFrustumPlanes() {
+	frustumPlanesList = frustumPlanes(); // Actualiza los planos del frustum
 }

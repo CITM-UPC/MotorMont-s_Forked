@@ -280,16 +280,13 @@ void display_func() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     configureCamera();
 	drawFrustum(testCamera); // Dibujar el frustum de la cámara de prueba (testCamera
+    testCamera.GetComponent<CameraComponent>()->camera().transform() = testCamera.GetComponent<TransformComponent>()->transform();
     auto frustumPlanes = testCamera.GetComponent<CameraComponent>()->camera().frustumPlanes();
     
     for (auto& go : SceneManager::gameObjectsOnScene) {
         if (go.isRoot()) { // Solo objetos raíz
             // Verificar si el objeto está dentro del frustum
             if (isInsideFrustum(go.boundingBox(), frustumPlanes)) {
-                if (go.HasComponent<CameraComponent>() && go.name != "Main Camera") {
-                    go.GetComponent<CameraComponent>()->camera().UpdateCamera(go.GetComponent<TransformComponent>()->transform());
-                   
-                }
                 // Dibuja el objeto raíz (y sus hijos automáticamente desde GameObject::draw)
                 go.draw();
                 drawBoundingBox(go.boundingBox());
