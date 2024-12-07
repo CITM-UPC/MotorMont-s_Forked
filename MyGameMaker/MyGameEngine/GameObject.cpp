@@ -7,6 +7,9 @@ const int CHECKERS_HEIGHT = 64;
 GLubyte checkerImage[CHECKERS_HEIGHT][CHECKERS_WIDTH][4];
 GLuint checker_texture_id;
 
+GameObject::GameObject(const std::string& name) : name(name), cachedComponentType(typeid(Component)) {
+	AddComponent<TransformComponent>();
+}
 
 void deleteCheckerTexture() {
     if (checker_texture_id) {
@@ -62,7 +65,7 @@ static void drawBoundingBox(const BoundingBox& bbox) {
 
 void GameObject::draw() const {
     glPushMatrix();
-    glMultMatrixd(_transform.data());
+    glMultMatrixd(GetComponent<TransformComponent>()->transform().data());
     glColor3ubv(&_color.r);
 
     if (hasTexture()) {
@@ -107,4 +110,14 @@ BoundingBox GameObject::worldBoundingBox() const {
     BoundingBox bbox = worldTransform().mat() * (_mesh_ptr ? _mesh_ptr->boundingBox() : BoundingBox());
     for (const auto& child : children()) bbox = bbox + child.worldBoundingBox();
     return bbox;
+}
+
+std::string GameObject::GetName() const
+{
+    return name;
+}
+
+void GameObject::SetName(const std::string& name)
+{
+    this->name = name;
 }
