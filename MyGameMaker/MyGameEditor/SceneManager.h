@@ -11,6 +11,7 @@ public:
 	static void spawnBakerHouse();
 	static GameObject* getGameObject(int index);
     //File drop handler
+	static void deleteSelectedObject(); // Nueva función para eliminar el objeto seleccionado
 
 public: 
 	static std::vector<GameObject> gameObjectsOnScene;

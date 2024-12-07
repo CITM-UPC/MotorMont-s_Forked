@@ -365,6 +365,25 @@ void MyGUI::renderInspector() {
     ImGui::End();
 }
 
+void MyGUI::processEvent(const SDL_Event& event) {
+    ImGui_ImplSDL2_ProcessEvent(&event);
+
+    handleEvent(event);
+}
+
+void MyGUI::handleEvent(const SDL_Event& event) {
+    if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_DELETE) {
+        handleDeleteKey();
+
+        ImGui_ImplSDL2_ProcessEvent(&event);
+    }
+}
+
+void MyGUI::handleDeleteKey() {
+    SceneManager::deleteSelectedObject();
+}
+
+
 void MyGUI::render() {
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplSDL2_NewFrame();
@@ -382,11 +401,3 @@ void MyGUI::render() {
 
 }
 
-
-void MyGUI::handleEvent(const SDL_Event& event) {
-	ImGui_ImplSDL2_ProcessEvent(&event);
-}
-
-void MyGUI::processEvent(const SDL_Event& event) {
-	ImGui_ImplSDL2_ProcessEvent(&event);
-}
