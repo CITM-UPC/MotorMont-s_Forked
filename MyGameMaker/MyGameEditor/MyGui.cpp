@@ -281,23 +281,23 @@ void MyGUI::renderInspector() {
 
     if (persistentSelectedObject) {
         if (ImGui::CollapsingHeader("Transform")) {
-            glm::vec3 position = persistentSelectedObject->transform().pos();
+            glm::vec3 position = persistentSelectedObject->GetComponent<TransformComponent>()->transform().pos();
             glm::vec3 rotation = persistentSelectedObject->GetComponent<TransformComponent>()->transform().GetRotation();
-			glm::vec3 scale = persistentSelectedObject->transform().extractScale(persistentSelectedObject->transform().mat());
+			glm::vec3 scale = persistentSelectedObject->GetComponent<TransformComponent>()->transform().extractScale(persistentSelectedObject->GetComponent<TransformComponent>()->transform().mat());
 
             // Controles para la posición
             ImGui::Text("Position:");
             ImGui::PushItemWidth(100);
             if (ImGui::DragFloat("X##pos", &position.x, 0.1f)) {
-                persistentSelectedObject->transform().setPos(position.x,position.y,position.z);
+                persistentSelectedObject->GetComponent<TransformComponent>()->transform().setPos(position.x,position.y,position.z);
             }
             ImGui::NewLine();
             if (ImGui::DragFloat("Y##pos", &position.y, 0.1f)) {
-                persistentSelectedObject->transform().setPos(position.x, position.y, position.z);
+                persistentSelectedObject->GetComponent<TransformComponent>()->transform().setPos(position.x, position.y, position.z);
             }
             ImGui::NewLine();
             if (ImGui::DragFloat("Z##pos", &position.z, 0.1f)) {
-                persistentSelectedObject->transform().setPos(position.x, position.y, position.z);
+                persistentSelectedObject->GetComponent<TransformComponent>()->transform().setPos(position.x, position.y, position.z);
             }
             ImGui::PopItemWidth();
 

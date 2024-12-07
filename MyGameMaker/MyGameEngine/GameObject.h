@@ -21,7 +21,7 @@
 
 class GameObject : public std::enable_shared_from_this<GameObject>, public TreeExt<GameObject> {
 private:
-    Transform _transform;                       // Transformación del objeto
+    //Transform _transform;                       // Transformación del objeto
     glm::u8vec3 _color = glm::u8vec3(255, 255, 255); // Color del objeto
     Texture _texture;                           // Textura del objeto
     std::shared_ptr<Mesh> _mesh_ptr;           // Puntero a la malla
@@ -59,8 +59,8 @@ public:
     bool HasComponent() const;
 
     // Métodos para acceder y modificar propiedades
-    const auto& transform() const { return _transform; }
-    auto& transform() { return _transform; }
+    const auto& transform() const { return GetComponent<TransformComponent>()->transform(); }
+    auto& transform() { return GetComponent<TransformComponent>()->transform(); }
 
     const auto& color() const { return _color; }
     auto& color() { return _color; }
@@ -80,11 +80,11 @@ public:
     //std::vector<std::shared_ptr<Component>> getComponents() const;
 
     // Transformación global del objeto
-    Transform worldTransform() const { return isRoot() ? _transform : parent().worldTransform() * _transform; }
+    Transform worldTransform() const { return isRoot() ? GetComponent<TransformComponent>()->transform() : parent().worldTransform() * GetComponent<TransformComponent>()->transform(); }
 
     // Cálculo de las cajas de colisión
     BoundingBox localBoundingBox() const; // Definir en el .cpp
-    BoundingBox boundingBox() const { return _transform.mat() * localBoundingBox(); }
+    BoundingBox boundingBox() const { return GetComponent<TransformComponent>()->transform().mat() * localBoundingBox(); }
     BoundingBox worldBoundingBox() const; // Definir en el .cpp
 
     // Métodos para manejar textura y malla

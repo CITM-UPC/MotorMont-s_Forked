@@ -286,6 +286,10 @@ void display_func() {
         if (go.isRoot()) { // Solo objetos raíz
             // Verificar si el objeto está dentro del frustum
             if (isInsideFrustum(go.boundingBox(), frustumPlanes)) {
+                if (go.HasComponent<CameraComponent>() && go.name != "Main Camera") {
+                    go.GetComponent<CameraComponent>()->camera().UpdateCamera(go.GetComponent<TransformComponent>()->transform());
+                   
+                }
                 // Dibuja el objeto raíz (y sus hijos automáticamente desde GameObject::draw)
                 go.draw();
                 drawBoundingBox(go.boundingBox());

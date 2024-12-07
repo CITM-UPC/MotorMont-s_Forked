@@ -25,7 +25,18 @@ public:
 	mat4 projection() const;
 	mat4 view() const;
 	std::list<Plane> frustumPlanes() const;
-   
+
+	mat4 viewMatrix;
+	mat4 projectionMatrix;
+	mat4 viewProjectionMatrix;
+
+	void UpdateCamera(Transform transform);
+	void UpdateMainCamera();
+	void UpdateCameraPosition(glm::vec3 position);
+	void UpdateProjection();
+	void UpdateView(Transform transform);
+	void UpdateViewProjection();
+
 	
 };
 

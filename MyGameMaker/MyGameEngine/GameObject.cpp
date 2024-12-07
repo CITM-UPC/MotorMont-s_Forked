@@ -72,7 +72,7 @@ std::string GameObject::GetName() const
 }
 void GameObject::draw() const {
     glPushMatrix();
-    glMultMatrixd(_transform.data());
+    glMultMatrixd(GetComponent<TransformComponent>()->transform().data());
     glColor3ubv(&_color.r);
 
     if (hasTexture()) {
