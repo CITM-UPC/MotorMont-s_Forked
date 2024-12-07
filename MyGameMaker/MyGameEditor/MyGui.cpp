@@ -306,7 +306,7 @@ void MyGUI::renderInspector() {
 
     if (persistentSelectedObject) {
         if (ImGui::CollapsingHeader("Transform")) {
-            Transform& transform = persistentSelectedObject->transform();
+            Transform& transform = persistentSelectedObject->GetComponent<TransformComponent>()->transform();
 
             glm::vec3 position = transform.pos();
             glm::vec3 rotation = glm::vec3(transform.extractEulerAngles(transform.mat()));
@@ -338,10 +338,10 @@ void MyGUI::renderInspector() {
             ImGui::Checkbox("Show Normals (Per Triangle)", &showNormalsPerTriangle);
             ImGui::Checkbox("Show Normals (Per Face)", &showNormalsPerFace);
             if (showNormalsPerTriangle) {
-                persistentSelectedObject->mesh().drawNormals(persistentSelectedObject->transform().mat());
+                persistentSelectedObject->mesh().drawNormals(persistentSelectedObject->GetComponent<TransformComponent>()->transform().mat());
             }
             if (showNormalsPerFace) {
-                persistentSelectedObject->mesh().drawNormalsPerFace(persistentSelectedObject->transform().mat());
+                persistentSelectedObject->mesh().drawNormalsPerFace(persistentSelectedObject->GetComponent<TransformComponent>()->transform().mat());
             }
         }
 

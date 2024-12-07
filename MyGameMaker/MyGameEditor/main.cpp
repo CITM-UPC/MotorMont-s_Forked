@@ -162,7 +162,7 @@ void handleFileDrop(const std::string& filePath, mat4 projection, mat4 view) { /
     if (extension == "obj" || extension == "fbx" || extension == "dae") {
        
 		SceneManager::LoadGameObject(filePath);
-		SceneManager::getGameObject(SceneManager::gameObjectsOnScene.size() - 1)->transform().pos() = screenToWorld(glm::vec2(mouseX, mouseY), 10.0f, projection, view);
+		SceneManager::getGameObject(SceneManager::gameObjectsOnScene.size() - 1)->GetComponent<TransformComponent>()->transform().pos() = screenToWorld(glm::vec2(mouseX, mouseY), 10.0f, projection, view);
 		SceneManager::selectedObject = &SceneManager::gameObjectsOnScene.back();
 
     }
@@ -316,7 +316,7 @@ void mouseMotion_func(int x, int y) { // Movimiento del mouse
             glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)WINDOW_SIZE.x / WINDOW_SIZE.y, 0.1f, 100.0f);
             glm::mat4 view = camera.view();
 			if (SceneManager::selectedObject != nullptr) {
-				target = SceneManager::selectedObject->transform().pos();
+				target = SceneManager::selectedObject->GetComponent<TransformComponent>()->transform().pos();
 
 			}
 			else {
@@ -351,7 +351,7 @@ static void idle_func() {
     //Debug to rotate the initial baker house and parent it 
     if (state[SDL_SCANCODE_T]) {
 
-        SceneManager::gameObjectsOnScene[0].transform().rotate(glm::radians(10.0f), glm::vec3(0, -1, 0));
+        SceneManager::gameObjectsOnScene[0].GetComponent<TransformComponent>()->transform().rotate(glm::radians(10.0f), glm::vec3(0, -1, 0));
         //SceneManager::gameObjectsOnScene[0].children().front().transform().rotate(glm::radians(10.0f), glm::vec3(0, -1, 0));
     }
 
@@ -418,9 +418,9 @@ static void idle_func() {
     }
 
     if (state[SDL_SCANCODE_F] && !fKeyDown && SceneManager::selectedObject != NULL) {
-        camera.transform().pos() = SceneManager::selectedObject->transform().pos() + vec3(0, 1, 4);
+        camera.transform().pos() = SceneManager::selectedObject->GetComponent<TransformComponent>()->transform().pos() + vec3(0, 1, 4);
         fKeyDown = true;
-        camera.transform().lookAt(SceneManager::selectedObject->transform().pos());
+        camera.transform().lookAt(SceneManager::selectedObject->GetComponent<TransformComponent>()->transform().pos());
         std::cout << "Camera looking at target." << std::endl;
     }
     else if (!state[SDL_SCANCODE_F]) {

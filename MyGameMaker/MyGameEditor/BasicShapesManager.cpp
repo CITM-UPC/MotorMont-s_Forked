@@ -117,6 +117,6 @@ void BasicShapesManager::createFigure(int figureType, std::vector<GameObject>& g
     }
 
     // Configurar posición inicial y nombre
-    go->transform().translate(vec3(mousePosition));
+    go->GetComponent<TransformComponent>()->transform().translate(vec3(mousePosition));
     go->setName("GameObject (" + std::to_string(gameObjects.size()) + ")");
 }
