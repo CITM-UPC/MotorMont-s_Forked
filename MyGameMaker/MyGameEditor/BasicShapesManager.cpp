@@ -88,18 +88,25 @@ void BasicShapesManager::createFigure(int figureType, std::vector<GameObject>& g
     GameObject* go = nullptr;
 
     if (parent) {
-        // Crear un hijo del objeto seleccionado
-        
         go = &parent->emplaceChild();
-        go->worldTransform();
-    }
-    else {
-        // Crear un nuevo objeto raíz
-        gameObjects.emplace_back(); // Agregar al vector
-        go = &gameObjects.back();
-        
+
+        // Convert transform to local space
+        glm::mat4 parentWorldInverse = glm::inverse(parent->worldTransform().mat());
+        glm::vec4 localPosition = parentWorldInverse * glm::vec4(mousePosition, 1.0f);
+
+
+        go->transform().translate(glm::vec3(localPosition));
+        go->setName("GameObject (" + std::to_string(gameObjects.size() + 32) + ")");
     }
 
+    else {
+
+        gameObjects.emplace_back(); 
+        go = &gameObjects.back();
+        go->transform().translate(vec3(mousePosition));
+        
+        go->setName("GameObject (" + std::to_string(gameObjects.size()) + ")");
+    }
     // Configurar la malla según el tipo de figura
     switch (figureType) {
     case 1:  // Triángulo
@@ -116,7 +123,5 @@ void BasicShapesManager::createFigure(int figureType, std::vector<GameObject>& g
         return;
     }
 
-    // Configurar posición inicial y nombre
-    go->GetComponent<TransformComponent>()->transform().translate(vec3(mousePosition));
-    go->setName("GameObject (" + std::to_string(gameObjects.size()) + ")");
+    
 }
