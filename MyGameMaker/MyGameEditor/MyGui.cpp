@@ -313,20 +313,22 @@ void MyGUI::renderInspector() {
             glm::vec3 scale = transform.extractScale(transform.mat());
 
             // Editable Position
-            if (ImGui::InputFloat3("Position", glm::value_ptr(position))) {
+            if (ImGui::DragFloat3("Position", glm::value_ptr(position), 0.1f, -1000.0f, 1000.0f, "%.3f", ImGuiSliderFlags_None)) {
                 transform.pos() = position;
             }
 
             // Editable Rotation
             static glm::vec3 inputRotation = glm::vec3(0.0f);
-            if (ImGui::InputFloat3("Rotation", glm::value_ptr(inputRotation), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
+            if (ImGui::DragFloat3("Rotation", glm::value_ptr(inputRotation), 0.1f, -360.0f, 360.0f, "%.3f", ImGuiSliderFlags_None)) {
                 transform.setRotation(glm::radians(inputRotation.x), glm::radians(inputRotation.y), glm::radians(inputRotation.z));
             }
 
-			// Editable Scale
-            if (ImGui::InputFloat3("Scale", glm::value_ptr(scale))) {
+            // Editable Scale
+            if (ImGui::DragFloat3("Scale", glm::value_ptr(scale), 0.01f, 0.001f, 10.0f, "%.3f", ImGuiSliderFlags_None)) {
                 transform.setScale(scale);
             }
+
+
         }
 
         if (persistentSelectedObject->hasMesh() && ImGui::CollapsingHeader("Mesh")) {
