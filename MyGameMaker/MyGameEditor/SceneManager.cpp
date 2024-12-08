@@ -10,10 +10,10 @@ GameObject* SceneManager::selectedObject = nullptr;
 void SceneManager::spawnBakerHouse() 
 {
     GameObject go;
-    auto mesh = std::make_shared<Mesh>();
+    auto mesh = new Mesh();
     mesh->LoadFile("Assets/BakerHouse.fbx");
     go.setMesh(mesh);
-    auto imageTexture = std::make_shared<Image>();
+    auto imageTexture = new Image();
     imageTexture->loadTexture("Assets/Baker_House.png");
 	go.setTextureImage(imageTexture);
 	go.transform().pos() = vec3(4, 0, 0);
@@ -23,7 +23,7 @@ void SceneManager::spawnBakerHouse()
 
 
 void SceneManager::LoadGameObject(const std::string& filePath) {
-    auto mesh = std::make_shared<Mesh>();
+    auto mesh = new Mesh();
 
     GameObject go;
     mesh->LoadFile(filePath.c_str());
