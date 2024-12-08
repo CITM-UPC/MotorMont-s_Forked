@@ -36,7 +36,8 @@ public:
     void rotateYaw(double radians);
     void rotatePitch(double radians);
     void rotateRoll(double radians);
-    void rotate(double rads, const vec3& v);
+    void rotate(double rads, const glm::vec3& v);
+
     void updateRotationMatrix();
 
     void setRotation(float newYaw, float newPitch, float newRoll);

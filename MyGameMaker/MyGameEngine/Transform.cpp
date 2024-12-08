@@ -4,7 +4,8 @@
 #include <glm/glm.hpp>
 
 void Transform::translate(const vec3& v) {
-    _mat = glm::translate(_mat, v);
+    _pos += v;
+    _mat[3] = vec4(_pos, 1.0f);
 }
 
 void Transform::rotateYaw(double radians) {
@@ -22,12 +23,22 @@ void Transform::rotateRoll(double radians) {
     updateRotationMatrix();
 }
 
-void Transform::rotate(double rads, const vec3& v) {
-    _mat = glm::rotate(_mat, rads, v);
+void Transform::rotate(double rads, const glm::vec3& v) {
+    // Ensure the _mat is glm::mat4 and compatible with glm::rotate
+    glm::mat4 currentTransform = _mat;
+    glm::vec3 currentScale = extractScale(currentTransform);
+    glm::vec3 currentPos = _pos;
+
+    // Apply the rotation
+    _mat = glm::rotate(currentTransform, static_cast<float>(rads), v);
+
+    // Restore position and scale
+    _mat[3] = glm::vec4(currentPos, 1.0f);
+    setScale(currentScale);
 }
 
-void Transform::updateRotationMatrix() {
 
+void Transform::updateRotationMatrix() {
     float cosYaw = cos(yaw);
     float sinYaw = sin(yaw);
     float cosPitch = cos(pitch);
@@ -56,9 +67,15 @@ void Transform::updateRotationMatrix() {
         0, 0, 0, 1
     };
 
-    _mat = rollMatrix * pitchMatrix * yawMatrix;
-}
+    vec3 currentScale = extractScale(_mat);
+    vec3 currentPos = _pos;
 
+    _mat = rollMatrix * pitchMatrix * yawMatrix;
+
+    // Restore position and scale
+    _mat[3] = vec4(currentPos, 1.0f);
+    setScale(currentScale);
+}
 
 void Transform::setRotation(float yawRadians, float pitchRadians, float rollRadians) {
     yaw = yawRadians;
@@ -69,29 +86,40 @@ void Transform::setRotation(float yawRadians, float pitchRadians, float rollRadi
 }
 
 void Transform::setScale(const glm::vec3& scale) {
-    glm::vec3 currentScale = extractScale(_mat);
-
+    vec3 currentPos = _pos;
     glm::vec3 newScale = scale;
 
-    _mat[0] = glm::vec4(newScale.x, _mat[0][1], _mat[0][2], _mat[0][3]); // Scale x
-    _mat[1] = glm::vec4(_mat[1][0], newScale.y, _mat[1][2], _mat[1][3]); // Scale y
-    _mat[2] = glm::vec4(_mat[2][0], _mat[2][1], newScale.z, _mat[2][3]); // Scale z
-}
+    // Apply scaling without affecting position or rotation
+    glm::vec3 left = glm::normalize(glm::vec3(_mat[0]));
+    glm::vec3 up = glm::normalize(glm::vec3(_mat[1]));
+    glm::vec3 forward = glm::normalize(glm::vec3(_mat[2]));
 
+    _mat[0] = vec4(left * newScale.x, 0.0f);
+    _mat[1] = vec4(up * newScale.y, 0.0f);
+    _mat[2] = vec4(forward * newScale.z, 0.0f);
+    _mat[3] = vec4(currentPos, 1.0f);
+}
 
 void Transform::alignCamera(const vec3& worldUp) {
     vec3 fwd = glm::normalize(_fwd);
     vec3 right = glm::normalize(glm::cross(worldUp, fwd));
     vec3 up = glm::cross(fwd, right);
 
+    vec3 currentPos = _pos;
+    vec3 currentScale = extractScale(_mat);
+
     _left = right;
     _up = up;
     _fwd = fwd;
-    _pos = _pos;
-    _mat = mat4(vec4(_left, 0.0f), vec4(_up, 0.0f), vec4(_fwd, 0.0f), vec4(_pos, 1.0f));
+    _mat = mat4(vec4(_left, 0.0f), vec4(_up, 0.0f), vec4(_fwd, 0.0f), vec4(currentPos, 1.0f));
+
+    setScale(currentScale);
 }
 
 void Transform::lookAt(const vec3& target) {
+    vec3 currentPos = _pos;
+    vec3 currentScale = extractScale(_mat);
+
     _fwd = glm::normalize(_pos - target);
     _left = glm::normalize(glm::cross(vec3(0, 1, 0), _fwd));
     _up = glm::cross(_fwd, _left);
@@ -99,7 +127,9 @@ void Transform::lookAt(const vec3& target) {
     _mat[0] = vec4(_left, 0.0);
     _mat[1] = vec4(_up, 0.0);
     _mat[2] = vec4(-_fwd, 0.0);
-    _mat[3] = vec4(_pos, 1.0);
+    _mat[3] = vec4(currentPos, 1.0);
+
+    setScale(currentScale);
 }
 
 glm::vec3 Transform::extractEulerAngles(const glm::mat4& mat) {
