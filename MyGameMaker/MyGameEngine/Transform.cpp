@@ -4,8 +4,7 @@
 #include <glm/glm.hpp>
 
 void Transform::translate(const vec3& v) {
-    _pos += v;
-    _mat[3] = vec4(_pos, 1.0f);
+    _mat = glm::translate(_mat, v);
 }
 
 void Transform::rotateYaw(double radians) {
