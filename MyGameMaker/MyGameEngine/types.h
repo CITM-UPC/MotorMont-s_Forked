@@ -30,9 +30,22 @@ struct Vector {
 inline Vector operator*(const mat4& m, const Vector& v) { return Vector(vec3(m * vec4(v.v, 0))); }
 
 struct Plane {
-	Vector normal;
-	Point point;
-	Plane(const Vector& normal, const Point& point) : normal(normal), point(point) {}
+	glm::vec3 normal; 
+	glm::vec3 point;  
+
+	Plane(const glm::vec3& normal, const glm::vec3& point)
+		: normal(glm::normalize(normal)), point(point) {}
+
+	float distance(const glm::vec3& p) const {
+		return glm::dot(normal, p - point);
+	}
 };
 
-inline Plane operator*(const mat4& m, const Plane& plane) { return Plane(m * plane.normal, m * plane.point); }
+inline Plane operator*(const glm::mat4& m, const Plane& plane) {
+
+	glm::vec3 transformedNormal = glm::normalize(glm::vec3(m * glm::vec4(plane.normal, 0.0f)));
+
+	glm::vec3 transformedPoint = glm::vec3(m * glm::vec4(plane.point, 1.0f));
+
+	return Plane(transformedNormal, transformedPoint);
+}

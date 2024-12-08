@@ -195,6 +195,26 @@ void drawFrustum(const GameObject& camera) {
     glEnd();
 }
 
+//Check if a bounding box is inside the frustum
+bool isInsideFrustum(const BoundingBox& bbox, const std::list<Plane>& frustumPlanes) {
+    for (const auto& plane : frustumPlanes) {
+
+        if (plane.distance(bbox.v000()) < 0 &&
+            plane.distance(bbox.v001()) < 0 &&
+            plane.distance(bbox.v010()) < 0 &&
+            plane.distance(bbox.v011()) < 0 &&
+            plane.distance(bbox.v100()) < 0 &&
+            plane.distance(bbox.v101()) < 0 &&
+            plane.distance(bbox.v110()) < 0 &&
+            plane.distance(bbox.v111()) < 0) {
+
+            return false;
+        }
+    }
+    return true;
+}
+
+
 
 void handleFileDrop(const std::string& filePath, mat4 projection, mat4 view) { // Manejar el archivo que se arrastra al editor
     auto extension = getFileExtension(filePath);
@@ -277,21 +297,32 @@ void configureCamera() { // Configurar la cámara
 // Función de renderizado
 void display_func() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    configureCamera();
-	drawFrustum(TestCamera);
 
+    // Setup camera configurations
+    configureCamera();
+
+    // Update the frustum planes from the test camera
+    auto cameraComponent = TestCamera.GetComponent<CameraComponent>();
+    auto& cameraTransform = TestCamera.GetComponent<TransformComponent>()->transform();
+    cameraComponent->camera().transform() = cameraTransform;
     TestCamera.GetComponent<CameraComponent>()->camera().transform() = TestCamera.GetComponent<TransformComponent>()->transform();
     auto frustumPlanes = TestCamera.GetComponent<CameraComponent>()->camera().frustumPlanes();
 
-	for (auto& go : SceneManager::gameObjectsOnScene) { // Renderizar todos los GameObjects
-        if (go.isRoot()) {
-            go.draw();
-            drawBoundingBox(go.boundingBox());
+    // Draw frustum for visualization
+    drawFrustum(TestCamera);
+
+    // Iterate through all GameObjects and render only those inside the frustum
+    for (auto& gameObject : SceneManager::gameObjectsOnScene) {
+        if (gameObject.isRoot()) {
+            if (isInsideFrustum(gameObject.boundingBox(), frustumPlanes)) {
+                gameObject.draw();
+                drawBoundingBox(gameObject.boundingBox());
+            }
         }
     }
-
     drawFloorGrid(16, 0.25);
 }
+
 
 
 // Funciones de manejo de mouse
