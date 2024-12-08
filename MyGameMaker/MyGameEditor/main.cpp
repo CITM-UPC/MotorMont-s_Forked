@@ -58,21 +58,21 @@ glm::vec2 getMousePosition() {
 
 //Funcion para convertir de coordenadas de pantalla a coordenadas del mundo
 glm::vec3 screenToWorld(const glm::vec2& mousePos, float depth, const glm::mat4& projection, const glm::mat4& view) {
-<<<<<<< Updated upstream
 
-=======
->>>>>>> Stashed changes
     float x = (2.0f * mousePos.x) / WINDOW_SIZE.x - 1.0f;
-    float y = 1.0f - (2.0f * mousePos.y) / WINDOW_SIZE.y;
-    glm::vec4 clipCoords(x, y, -1.0f, 1.0f);
+    float y = 1.0f - (2.0f * mousePos.y) / WINDOW_SIZE.y;  
+    glm::vec4 clipCoords(x, y, -1.0f, 1.0f); 
+
 
     glm::vec4 eyeCoords = glm::inverse(projection) * clipCoords;
     eyeCoords = glm::vec4(eyeCoords.x, eyeCoords.y, -1.0f, 0.0f);
 
+
     glm::vec3 worldRay = glm::vec3(glm::inverse(view) * eyeCoords);
     worldRay = glm::normalize(worldRay);
 
-    glm::vec3 cameraPosition = glm::vec3(glm::inverse(view)[3]);
+
+    glm::vec3 cameraPosition = glm::vec3(glm::inverse(view)[3]); 
     return cameraPosition + worldRay * depth;
 }
 
@@ -87,9 +87,7 @@ glm::vec3 getRayFromMouse(int mouseX, int mouseY, const glm::mat4& projection, c
     glm::vec4 rayEye = glm::inverse(projection) * rayClip;
     rayEye = glm::vec4(rayEye.x, rayEye.y, -1.0f, 0.0f);
 
-    glm::vec3 rayWorld = glm::vec3(glm::inverse(view) * rayEye);
-    rayWorld = glm::normalize(rayWorld);
-
+    glm::vec3 rayWorld = glm::normalize(glm::vec3(glm::inverse(view) * rayEye));
     return rayWorld;
 }
 
@@ -178,7 +176,7 @@ void handleFileDrop(const std::string& filePath, mat4 projection, mat4 view) {
         GameObject* hitObject = raycastFromMouseToGameObject(mouseX, mouseY, projection, view, WINDOW_SIZE);
         if (hitObject) {
             // Si hay un GameObject debajo del mouse, aplicar la textura
-            hitObject->setTextureImage(imageTexture.get());
+            hitObject->setTextureImage(imageTexture);
             cout << "Texture applied to GameObject under mouse." << endl;
             Console::Instance().Log("Texture applied to GameObject under mouse.");
         }
@@ -503,21 +501,11 @@ int main(int argc, char* argv[]) {
     initOpenGL();
 
     // Posición inicial de la cámara
-<<<<<<< Updated upstream
     mainCamera.name = "Main Camera";
     mainCamera.AddComponent<CameraComponent>();
 	SceneManager::gameObjectsOnScene.push_back(mainCamera);
     mainCamera.GetComponent<CameraComponent>()->camera().transform().pos() = vec3(0, 1, 4);
     mainCamera.GetComponent<CameraComponent>()->camera().transform().rotate(glm::radians(180.0), vec3(0, 1, 0));
-=======
-    camera.transform().pos() = vec3(0, 1, 4);
-    camera.transform().rotate(glm::radians(180.0), vec3(0, 1, 0));
-    TestCamera.SetName("TestCamera");
-    TestCamera.AddComponent<CameraComponent>();
-    SceneManager::gameObjectsOnScene.push_back(TestCamera);
-    TestCamera.GetComponent<CameraComponent>()->camera().transform().pos() = vec3(0, 1, 4);
-    TestCamera.GetComponent<CameraComponent>()->camera().transform().rotate(glm::radians(180.0), vec3(0, 1, 0));
->>>>>>> Stashed changes
 
     testCamera.name = "Test Camera";
     testCamera.AddComponent<CameraComponent>();
@@ -528,9 +516,9 @@ int main(int argc, char* argv[]) {
 
     while (window.isOpen()) {
         const auto t0 = hrclock::now();
-        handleAltKey();
+		handleAltKey();
         // Obtener la posición actual del mouse
-        glm::vec2 mouseScreenPos = getMousePosition();
+        glm::vec2 mouseScreenPos = getMousePosition();       
 
         display_func(); // Renderizar la escena
         gui.render();
@@ -541,27 +529,22 @@ int main(int argc, char* argv[]) {
         if (dt < FRAME_DT) this_thread::sleep_for(FRAME_DT - dt);
 
         SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
-
+        
         while (SDL_PollEvent(&event))
         {
             // Obtener matrices de proyección y vista de la cámara
             glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)WINDOW_SIZE.x / WINDOW_SIZE.y, 0.1f, 100.0f);
-<<<<<<< Updated upstream
             glm::mat4 view = mainCamera.GetComponent<CameraComponent>()->camera().view();
           
-=======
-            glm::mat4 view = camera.view();
-
->>>>>>> Stashed changes
             gui.processEvent(event);
-
+            
             switch (event.type)
             {
-            case SDL_QUIT:
-                window.close();
-                break;
-            case SDL_DROPFILE:
-                cout << "File dropped: " << event.drop.file << endl;
+			case SDL_QUIT:
+				window.close();
+				break;
+            case SDL_DROPFILE:               
+				cout << "File dropped: " << event.drop.file << endl;
                 handleFileDrop(event.drop.file, projection, view);
                 SDL_free(event.drop.file);
                 break;
@@ -570,7 +553,6 @@ int main(int argc, char* argv[]) {
                     // Raycast para detectar el objeto debajo del mouse
                     SceneManager::selectedObject = raycastFromMouseToGameObject(mouseScreenPos.x, mouseScreenPos.y, projection, view, WINDOW_SIZE);
                 }
-                break;
             case SDL_MOUSEBUTTONUP:
                 mouseButton_func(event.button.button, event.button.state, event.button.x, event.button.y);
                 break;
@@ -580,7 +562,6 @@ int main(int argc, char* argv[]) {
             case SDL_MOUSEWHEEL:
                 mouseWheel_func(event.wheel.y);
                 break;
-<<<<<<< Updated upstream
             case SDL_KEYDOWN:
                 glm::vec3 mouseWorldPos = screenToWorld(mouseScreenPos, 10.0f, projection, view);
 
@@ -605,39 +586,15 @@ int main(int argc, char* argv[]) {
 			default:
 				cout << event.type << endl;
 				break;
-=======
-                //case SDL_KEYDOWN:
-                //    glm::vec3 mouseWorldPos = screenToWorld(mouseScreenPos, 10.0f, projection, view);
-
-                //    // Crear figuras en la posición 3D calculada
-                //    switch (event.key.keysym.sym) {
-                //    case SDLK_1:  // Crear Triángulo
-                //        BasicShapesManager::createFigure(1, SceneManager::gameObjectsOnScene, 1.0, mouseWorldPos);
-                //        SceneManager::selectedObject = &SceneManager::gameObjectsOnScene.back();
-                //        break;
-                //    case SDLK_2:  // Crear Cuadrado
-                //        BasicShapesManager::createFigure(2, SceneManager::gameObjectsOnScene, 1.0, mouseWorldPos);
-                //        SceneManager::selectedObject = &SceneManager::gameObjectsOnScene.back();
-                //        break;
-                //    case SDLK_3:  // Crear Cubo
-                //        BasicShapesManager::createFigure(3, SceneManager::gameObjectsOnScene, 1.0, mouseWorldPos);
-                //        SceneManager::selectedObject = &SceneManager::gameObjectsOnScene.back();
-                //        break;
-                //    default:
-                //        break;
-                //    }
-                //    break;
-            default:
-                cout << event.type << endl;
-                break;
->>>>>>> Stashed changes
             }
+
+
+
         }
         idle_func();    // Actualizar lógica de juego
     }
     return EXIT_SUCCESS;
 }
-
 
 
 

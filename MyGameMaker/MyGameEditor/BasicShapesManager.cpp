@@ -9,14 +9,14 @@
 // Gestor de figuras geométricas básicas
 
 // Triángulo
-Mesh* BasicShapesManager::MakeTriangleMesh(double size) {
+std::shared_ptr<Mesh> BasicShapesManager::MakeTriangleMesh(double size) {
     const glm::vec3 vertices[] = { glm::vec3(-size, -size, 0), glm::vec3(size, -size, 0), glm::vec3(0, size, 0) };
     unsigned int indices[] = { 0, 1, 2 };
     const glm::vec2 texcoords[] = { glm::vec2(0, 1), glm::vec2(1, 1), glm::vec2(0.5, 0) };
     const glm::vec3 normals[] = { glm::vec3(0, 0, 1), glm::vec3(0, 0, 1), glm::vec3(0, 0, 1) };
     const glm::u8vec3 colors[] = { glm::u8vec3(255, 0, 0), glm::u8vec3(0, 255, 0), glm::u8vec3(0, 0, 255) };
 
-    auto mesh_ptr = new Mesh();
+    auto mesh_ptr = std::make_shared<Mesh>();
     mesh_ptr->load(vertices, 3, indices, 3);
     mesh_ptr->loadTexCoords(texcoords, sizeof(texcoords) / sizeof(texcoords[0]));
     mesh_ptr->loadNormals(normals, sizeof(normals) / sizeof(normals[0]));
@@ -24,14 +24,15 @@ Mesh* BasicShapesManager::MakeTriangleMesh(double size) {
     return mesh_ptr;
 }
 
-Mesh* BasicShapesManager::MakeQuadMesh(double size) {
+// Cuadrado
+std::shared_ptr<Mesh> BasicShapesManager::MakeQuadMesh(double size) {
     const glm::vec3 vertices[] = { glm::vec3(-size, -size, 0), glm::vec3(size, -size, 0), glm::vec3(size, size, 0), glm::vec3(-size, size, 0) };
     unsigned int indices[] = { 0, 1, 2, 2, 3, 0 };
     const glm::vec2 texcoords[] = { glm::vec2(0, 1), glm::vec2(1, 1), glm::vec2(1, 0), glm::vec2(0, 0) };
     const glm::vec3 normals[] = { glm::vec3(0, 0, 1), glm::vec3(0, 0, 1), glm::vec3(0, 0, 1), glm::vec3(0, 0, 1) };
     const glm::u8vec3 colors[] = { glm::u8vec3(255, 0, 0), glm::u8vec3(0, 255, 0), glm::u8vec3(0, 0, 255), glm::u8vec3(255, 255, 0) };
 
-    auto mesh_ptr = new Mesh();
+    auto mesh_ptr = std::make_shared<Mesh>();
     mesh_ptr->load(vertices, 4, indices, 6);
     mesh_ptr->loadTexCoords(texcoords, sizeof(texcoords) / sizeof(texcoords[0]));
     mesh_ptr->loadNormals(normals, sizeof(normals) / sizeof(normals[0]));
@@ -39,7 +40,8 @@ Mesh* BasicShapesManager::MakeQuadMesh(double size) {
     return mesh_ptr;
 }
 
-Mesh* BasicShapesManager::MakeCubeMesh(double size) {
+// Cubo
+std::shared_ptr<Mesh> BasicShapesManager::MakeCubeMesh(double size) {
     const glm::vec3 vertices[] = {
         // Cara frontal
         {-size, -size, size}, {size, -size, size}, {size, size, size}, {-size, size, size},
@@ -73,7 +75,7 @@ Mesh* BasicShapesManager::MakeCubeMesh(double size) {
         {255, 0, 255}, {0, 255, 255}, {255, 128, 0}, {128, 0, 255}
     };
 
-    auto mesh_ptr = new Mesh();
+    auto mesh_ptr = std::make_shared<Mesh>();
     mesh_ptr->load(vertices, 8, indices, 36);
     mesh_ptr->loadTexCoords(texcoords, sizeof(texcoords) / sizeof(texcoords[0]));
     mesh_ptr->loadNormals(normals, sizeof(normals) / sizeof(normals[0]));
@@ -82,11 +84,10 @@ Mesh* BasicShapesManager::MakeCubeMesh(double size) {
 }
 
 void BasicShapesManager::createFigure(int figureType, std::vector<GameObject>& gameObjects, double size, glm::vec3 mousePosition) {
-    GameObject* parent = SceneManager::selectedObject;
+    GameObject* parent = SceneManager::selectedObject; 
     GameObject* go = nullptr;
 
     if (parent) {
-<<<<<<< Updated upstream
         // Crear un hijo del objeto seleccionado
         
         go = &parent->emplaceChild();
@@ -98,23 +99,6 @@ void BasicShapesManager::createFigure(int figureType, std::vector<GameObject>& g
         go = &gameObjects.back();
         
     }
-=======
-        go = &parent->emplaceChild();
-
-        // Convert transform to local space
-        glm::mat4 parentWorldInverse = glm::inverse(parent->worldTransform().mat());
-        glm::vec4 localPosition = parentWorldInverse * glm::vec4(mousePosition, 1.0f);
-
-        go->transform().translate(glm::vec3(localPosition));
-        go->setName("GameObject (" + std::to_string(gameObjects.size() + 32) + ")");
-    }
-    else {
-        gameObjects.emplace_back();
-        go = &gameObjects.back();
-        go->transform().translate(mousePosition);
-        go->setName("GameObject (" + std::to_string(gameObjects.size()) + ")");
-    }
->>>>>>> Stashed changes
 
     // Configurar la malla según el tipo de figura
     switch (figureType) {
@@ -131,12 +115,8 @@ void BasicShapesManager::createFigure(int figureType, std::vector<GameObject>& g
         std::cout << "Figure type not recognized." << std::endl;
         return;
     }
-<<<<<<< Updated upstream
 
     // Configurar posición inicial y nombre
     go->transform().translate(vec3(mousePosition));
     go->setName("GameObject (" + std::to_string(gameObjects.size()) + ")");
 }
-=======
-}
->>>>>>> Stashed changes

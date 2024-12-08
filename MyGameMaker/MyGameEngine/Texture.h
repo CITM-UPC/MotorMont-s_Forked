@@ -6,18 +6,19 @@
 class Texture
 {
 public:
-    enum WrapModes { Repeat, MirroredRepeat, Clamp };
-    WrapModes wrapMode = Repeat;
+	enum WrapModes { Repeat, MirroredRepeat, Clamp };
+	WrapModes wrapMode = Repeat;
 
-    enum Filters { Nearest, Linear };
-    Filters filter = Nearest;
+	enum Filters { Nearest, Linear };
+	Filters filter = Nearest;
 
 private:
-    std::unique_ptr<Image> _img_ptr;
+	std::shared_ptr<Image> _img_ptr;
 
 public:
-    unsigned int id() const { return _img_ptr ? _img_ptr->id() : 0; }
-    void bind() const;
-    void setImage(Image* img_ptr) { _img_ptr.reset(img_ptr); }
-    Image* image() const { return _img_ptr.get(); }
+	unsigned int id() const { return _img_ptr ? _img_ptr->id() : 0; }
+	void bind() const;
+	void setImage(const std::shared_ptr<Image>& img_ptr) { _img_ptr = img_ptr; }
+	const auto& image() const { return *_img_ptr; }
 };
+
