@@ -50,7 +50,4 @@ public:
 	void drawNormals(const glm::mat4& modelMatrix);
 	void drawNormalsPerFace(const glm::mat4& modelMatrix);
 
-
-
-
 };
