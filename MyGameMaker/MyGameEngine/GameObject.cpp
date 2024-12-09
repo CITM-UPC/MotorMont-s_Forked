@@ -90,17 +90,17 @@ void GameObject::draw() const {
     if (hasTexture()) glDisable(GL_TEXTURE_2D);
 
     // Dibuja a los hijos recursivamente desde aquí
-    for (const auto& child : children()) {
-        child.draw(); // Cada hijo se dibuja relativo a su padre
-        drawBoundingBox(child.boundingBox()); // También dibujamos sus bounding boxes
+    for (const auto& child : children) {
+        child->draw(); // Cada hijo se dibuja relativo a su padre
+        drawBoundingBox(child->boundingBox()); // También dibujamos sus bounding boxes
     }
 
     glPopMatrix();
 }
 BoundingBox GameObject::localBoundingBox() const {
-    if (children().size()) {
-        BoundingBox bbox = _mesh_ptr ? _mesh_ptr->boundingBox() : children().front().boundingBox();
-        for (const auto& child : children()) bbox = bbox + child.boundingBox();
+    if (children.size()) {
+        BoundingBox bbox = _mesh_ptr ? _mesh_ptr->boundingBox() : children.front()->boundingBox();
+        for (const auto& child : children) bbox = bbox + child->boundingBox();
         return bbox;
     }
     else return _mesh_ptr ? _mesh_ptr->boundingBox() : BoundingBox();
@@ -108,7 +108,7 @@ BoundingBox GameObject::localBoundingBox() const {
 
 BoundingBox GameObject::worldBoundingBox() const {
     BoundingBox bbox = worldTransform().mat() * (_mesh_ptr ? _mesh_ptr->boundingBox() : BoundingBox());
-    for (const auto& child : children()) bbox = bbox + child.worldBoundingBox();
+    for (const auto& child : children) bbox = bbox + child->worldBoundingBox();
     return bbox;
 }
 
@@ -120,4 +120,41 @@ std::string GameObject::GetName() const
 void GameObject::SetName(const std::string& name)
 {
     this->name = name;
+}
+
+void GameObject::setParent(GameObject* newParent) {
+    if (this == newParent) return; // Prevenir auto-emparentamiento
+
+    // Remover del padre actual (si existe)
+    if (parent != nullptr) {
+        parent->removeChild(this);
+    }
+
+    // Asignar el nuevo padre
+    parent = newParent;
+
+    // Agregar este objeto como hijo del nuevo padre
+    if (newParent != nullptr) {
+        newParent->addChild(this);
+    }
+}
+
+void GameObject::addChild(GameObject* child) {
+    if (std::find(children.begin(), children.end(), child) == children.end()) {
+        children.push_back(child);
+    }
+}
+
+void GameObject::removeChild(GameObject* child) {
+    children.erase(std::remove(children.begin(), children.end(), child), children.end());
+}
+
+
+
+bool GameObject::hasChildren() const {
+    return !children.empty();
+}
+
+const std::vector<GameObject*>& GameObject::getChildren() const {
+    return children;
 }

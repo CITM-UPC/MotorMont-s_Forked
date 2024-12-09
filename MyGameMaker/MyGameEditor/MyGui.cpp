@@ -288,7 +288,53 @@ void MyGUI::ShowHierarchy()
                     renaming = false;
                 }
             }
+            // Comenzar el "drag" si se selecciona este objeto
+            if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
+                GameObject* goPtr = &go; // Asegúrate de que estás pasando un puntero válido
+                ImGui::SetDragDropPayload("GAMEOBJECT", &goPtr, sizeof(GameObject*)); // El payload debe contener el puntero
+                ImGui::Text("Dragging %s", go.getName().c_str());
+                ImGui::EndDragDropSource();
+            }
+
+
+            // Hacer que este objeto sea un "drop target"
+            if (ImGui::BeginDragDropTarget()) {
+                if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("GAMEOBJECT")) {
+                    IM_ASSERT(payload->DataSize == sizeof(GameObject*)); // Verifica el tamaño del payload
+                    GameObject* draggedObject = *(GameObject**)payload->Data;
+
+                    if (draggedObject == nullptr) {
+                        std::cout << "Error: Dragged object is null!" << std::endl;
+                    }
+                    else {
+                        std::cout << "Dragged object: " << draggedObject->getName() << std::endl;
+                        // Aquí se maneja el emparentamiento
+                        if (draggedObject != &go) {
+                            draggedObject->setParent(&go);
+                            (std::remove(SceneManager::gameObjectsOnScene.begin(), SceneManager::gameObjectsOnScene.end(), *draggedObject));
+                        }
+                    }
+                }
+
+                ImGui::EndDragDropTarget();
+            }
+
+            // Añadir un desplazamiento visual para mostrar jerarquías
+            if (go.hasChildren()) {
+                ImGui::Indent();
+                for (auto& child : go.getChildren()) {
+                    ImGui::Text("  %s", child->getName().c_str());
+                }
+                ImGui::Unindent();
+            }
+            if (ImGui::TreeNode(go.getName().c_str())) {
+                for (auto& child : go.getChildren()) {
+                    ImGui::BulletText("%s", child->getName().c_str());
+                }
+                ImGui::TreePop();
+            }
         }
+
         ImGui::End();
     }
 }

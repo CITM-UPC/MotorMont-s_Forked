@@ -53,6 +53,14 @@ public:
     const std::string& getName() const { return name; }
     void setName(const std::string& newName) { name = newName; }
 
+    bool operator==(const GameObject& other) const {
+        // Comparar los objetos por el nombre, o cualquier criterio único
+        return this->name == other.name;
+    }
+    bool operator!=(const GameObject& other) const {
+        return !(*this == other);
+    }
+
 	// Métodos para añadir, obtener y eliminar componentes
     template <typename T, typename... Args>
     std::shared_ptr<T> AddComponent(Args&&... args);
@@ -76,7 +84,7 @@ public:
     //std::vector<std::shared_ptr<Component>> getComponents() const;
 
     // Transformación global del objeto
-    Transform worldTransform() const { return isRoot() ? GetComponent<TransformComponent>()->transform() : parent().worldTransform() * GetComponent<TransformComponent>()->transform(); }
+    Transform worldTransform() const { return isRoot() ? GetComponent<TransformComponent>()->transform() : parent->worldTransform() * GetComponent<TransformComponent>()->transform(); }
 
     // Cálculo de las cajas de colisión
     BoundingBox localBoundingBox() const; // Definir en el .cpp
@@ -106,7 +114,19 @@ public:
 
     void initializeCheckerTexture();
 
-   
+    // Métodos de jerarquía
+    void setParent(GameObject* newParent);                  // Establece el padre de este objeto
+    void addChild(GameObject* child);                      // Añade un hijo a este objeto
+    void removeChild(GameObject* child);                   // Elimina un hijo de este objeto
+    bool hasChildren() const;                              // Devuelve true si tiene hijos
+    const std::vector<GameObject*>& getChildren() const;   // Devuelve los hijos de este objeto
+
+    // Métodos para obtener información del objeto
+    GameObject* getParent() const;  // Devuelve el padre del objeto
+
+    private:
+        GameObject* parent = nullptr;         // Padre del objeto
+        std::vector<GameObject*> children;    // Hijos del objeto
 };
 
 
