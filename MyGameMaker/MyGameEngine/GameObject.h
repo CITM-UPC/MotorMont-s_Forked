@@ -12,32 +12,27 @@
 #include <string>
 #include "Component.h"
 #include "TransformComponent.h"
+#include <unordered_map>
+#include <typeindex>
 
-class GameObject : public TreeExt<GameObject>, public std::enable_shared_from_this<GameObject>{
+class GameObject : public TreeExt<GameObject>, public std::enable_shared_from_this<GameObject> {
 private:
-    //Transform _transform;                       // Transformación del objeto
     glm::u8vec3 _color = glm::u8vec3(255, 255, 255); // Color del objeto
-    Texture _texture;                           // Textura del objeto
-    std::shared_ptr<Mesh> _mesh_ptr;           // Puntero a la malla
-    //std::vector<std::shared_ptr<Component>> _components; // Lista de componentes
-    bool _active = true;                        // Estado de activación
+    Texture _texture; // Textura del objeto
+    std::shared_ptr<Mesh> _mesh_ptr; // Puntero a la malla
+    bool _active = true; // Estado de activación
     std::string name;
-	mutable bool hasCreatedCheckerTexture = false;		// Indica si la textura de cuadros ha sido creada
-    // Restaura la textura original del objeto
-
+    mutable bool hasCreatedCheckerTexture = false; // Indica si la textura de cuadros ha sido creada
     std::unordered_map<std::type_index, std::shared_ptr<Component>> components;
-
     mutable std::type_index cachedComponentType;
     mutable std::shared_ptr<Component> cachedComponent;
-	
+    std::vector<std::shared_ptr<GameObject>> children_;
+
 public:
     GameObject(const std::string& name = "GameObject");
     bool hasCheckerTexture = false;
-    // Constructor y destructor
-    /*GameObject(const std::string& name = "New GameObject");
-    ~GameObject();*/
 
-    //// Métodos para acceder y modificar propiedades
+    // Métodos para acceder y modificar propiedades
     const auto& transform() const { return GetComponent<TransformComponent>()->transform(); }
     auto& transform() { return GetComponent<TransformComponent>()->transform(); }
 
@@ -53,7 +48,7 @@ public:
     const std::string& getName() const { return name; }
     void setName(const std::string& newName) { name = newName; }
 
-	// Métodos para añadir, obtener y eliminar componentes
+    // Métodos para añadir, obtener y eliminar componentes
     template <typename T, typename... Args>
     std::shared_ptr<T> AddComponent(Args&&... args);
 
@@ -69,19 +64,13 @@ public:
     std::string GetName() const;
     void SetName(const std::string& name);
 
-
-    // Gestión de componentes
-    //void addComponent(std::shared_ptr<Component> component);
-    //void removeComponent(std::shared_ptr<Component> component);
-    //std::vector<std::shared_ptr<Component>> getComponents() const;
-
     // Transformación global del objeto
     Transform worldTransform() const { return isRoot() ? GetComponent<TransformComponent>()->transform() : parent().worldTransform() * GetComponent<TransformComponent>()->transform(); }
 
     // Cálculo de las cajas de colisión
-    BoundingBox localBoundingBox() const; // Definir en el .cpp
+    BoundingBox localBoundingBox() const;
     BoundingBox boundingBox() const { return GetComponent<TransformComponent>()->transform().mat() * localBoundingBox(); }
-    BoundingBox worldBoundingBox() const; // Definir en el .cpp
+    BoundingBox worldBoundingBox() const;
 
     // Métodos para manejar textura y malla
     void setTextureImage(const std::shared_ptr<Image>& img_ptr) { _texture.setImage(img_ptr); }
@@ -92,23 +81,24 @@ public:
     bool hasMesh() const { return _mesh_ptr != nullptr; }
 
     // Método para dibujar el objeto
-    void draw() const; // Definir en el .cpp
-
-    // Métodos de ciclo de vida
-    //virtual void awake();      // Inicialización
-    //virtual void start();      // Llamado al inicio
-    //virtual void update(float deltaTime); // Lógica de actualización
-    //virtual void onDestroy();  // Limpieza antes de eliminar el objeto
+    void draw() const;
 
     // Activación del objeto
     void setActive(bool active) { _active = active; }
     bool isActive() const { return _active; }
 
+    // Métodos para cambiar y obtener el padre del GameObject
+    void SetParent(std::shared_ptr<GameObject> newParent);
+    std::shared_ptr<GameObject> GetParent() const;
+    void addChild(std::shared_ptr<GameObject> child);
+    void removeChild(GameObject& child);
+    const std::vector<std::shared_ptr<GameObject>>& children() const;
+
     void initializeCheckerTexture();
 
-   
-};
 
+
+};
 
 template <typename T, typename... Args>
 std::shared_ptr<T> GameObject::AddComponent(Args&&... args) {
@@ -145,7 +135,7 @@ void GameObject::RemoveComponent() {
         components.erase(it);
     }
     else {
-        //Log a warning 
+        // Log a warning
     }
 }
 
@@ -153,4 +143,5 @@ template <typename T>
 bool GameObject::HasComponent() const {
     return components.find(typeid(T)) != components.end();
 }
+
 

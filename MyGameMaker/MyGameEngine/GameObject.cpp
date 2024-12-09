@@ -8,19 +8,18 @@ GLubyte checkerImage[CHECKERS_HEIGHT][CHECKERS_WIDTH][4];
 GLuint checker_texture_id;
 
 GameObject::GameObject(const std::string& name) : name(name), cachedComponentType(typeid(Component)) {
-	AddComponent<TransformComponent>();
+    AddComponent<TransformComponent>();
 }
 
 void deleteCheckerTexture() {
     if (checker_texture_id) {
         glDeleteTextures(1, &checker_texture_id);
-		checker_texture_id = 0;
+        checker_texture_id = 0;
     }
 }
 
 // Crea la textura de tablero y devuelve el ID de la textura
 void CheckerTexture(bool hasCreatedCheckerImage) {
-    
     for (int i = 0; i < CHECKERS_HEIGHT; i++) {
         for (int j = 0; j < CHECKERS_WIDTH; j++) {
             int c = ((((i & 0x8) == 0) ^ ((j & 0x8) == 0)) * 255);
@@ -30,8 +29,8 @@ void CheckerTexture(bool hasCreatedCheckerImage) {
             checkerImage[i][j][3] = (GLubyte)255; // Opacidad completa
         }
     }
-    
-	deleteCheckerTexture();
+
+    deleteCheckerTexture();
     glGenTextures(1, &checker_texture_id);
     glBindTexture(GL_TEXTURE_2D, checker_texture_id);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -61,8 +60,6 @@ static void drawBoundingBox(const BoundingBox& bbox) {
     drawWiredQuad(bbox.v001(), bbox.v011(), bbox.v111(), bbox.v101());
 }
 
-
-
 void GameObject::draw() const {
     glPushMatrix();
     glMultMatrixd(GetComponent<TransformComponent>()->transform().data());
@@ -91,16 +88,17 @@ void GameObject::draw() const {
 
     // Dibuja a los hijos recursivamente desde aquí
     for (const auto& child : children()) {
-        child.draw(); // Cada hijo se dibuja relativo a su padre
-        drawBoundingBox(child.boundingBox()); // También dibujamos sus bounding boxes
+        child->draw(); // Cada hijo se dibuja relativo a su padre
+        drawBoundingBox(child->boundingBox()); // También dibujamos sus bounding boxes
     }
 
     glPopMatrix();
 }
+
 BoundingBox GameObject::localBoundingBox() const {
     if (children().size()) {
-        BoundingBox bbox = _mesh_ptr ? _mesh_ptr->boundingBox() : children().front().boundingBox();
-        for (const auto& child : children()) bbox = bbox + child.boundingBox();
+        BoundingBox bbox = _mesh_ptr ? _mesh_ptr->boundingBox() : children().front()->boundingBox();
+        for (const auto& child : children()) bbox = bbox + child->boundingBox();
         return bbox;
     }
     else return _mesh_ptr ? _mesh_ptr->boundingBox() : BoundingBox();
@@ -108,16 +106,49 @@ BoundingBox GameObject::localBoundingBox() const {
 
 BoundingBox GameObject::worldBoundingBox() const {
     BoundingBox bbox = worldTransform().mat() * (_mesh_ptr ? _mesh_ptr->boundingBox() : BoundingBox());
-    for (const auto& child : children()) bbox = bbox + child.worldBoundingBox();
+    for (const auto& child : children()) bbox = bbox + child->worldBoundingBox();
     return bbox;
 }
 
-std::string GameObject::GetName() const
-{
+std::string GameObject::GetName() const {
     return name;
 }
 
-void GameObject::SetName(const std::string& name)
-{
+void GameObject::SetName(const std::string& name) {
     this->name = name;
+}
+
+void GameObject::SetParent(std::shared_ptr<GameObject> newParent) {
+    if (auto currentParent = GetParent()) {
+        currentParent->removeChild(*this);
+    }
+    if (newParent) {
+        newParent->addChild(shared_from_this());
+    }
+}
+
+std::shared_ptr<GameObject> GameObject::GetParent() const {
+    return parent().shared_from_this();
+}
+
+void GameObject::addChild(std::shared_ptr<GameObject> child) {
+    children_.push_back(child);
+}
+
+void GameObject::removeChild(GameObject& child) {
+    auto it = std::find_if(children_.begin(), children_.end(), [&child](const std::shared_ptr<GameObject>& ptr) {
+        return ptr.get() == &child;
+        });
+    if (it != children_.end()) {
+        children_.erase(it);
+    }
+}
+
+const std::vector<std::shared_ptr<GameObject>>& GameObject::children() const {
+    return children_;
+}
+
+void GameObject::initializeCheckerTexture() {
+    hasCheckerTexture = true;
+    hasCreatedCheckerTexture = false;
 }

@@ -143,6 +143,7 @@
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="TransformComponent.h" />
+    <ClInclude Include="TreeExt.h" />
     <ClInclude Include="types.h" />
   </ItemGroup>
   <ItemGroup>
