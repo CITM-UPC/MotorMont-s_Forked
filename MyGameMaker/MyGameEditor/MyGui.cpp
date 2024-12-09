@@ -262,7 +262,7 @@ void MyGUI::ShowHierarchy()
 
             static char newName[128] = "";
             static bool renaming = false;
-            static GameObject* renamingObject = nullptr;
+            static std::shared_ptr<GameObject> renamingObject = nullptr;
 
             bool isSelected = (SceneManager::selectedObject == &go);
             if (ImGui::Selectable(go.getName().c_str(), isSelected))
@@ -273,11 +273,11 @@ void MyGUI::ShowHierarchy()
             if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
             {
                 renaming = true;
-                renamingObject = &go;
+                renamingObject = std::make_shared<GameObject>(go);
                 strcpy_s(newName, go.getName().c_str());
             }
 
-            if (renaming && renamingObject == &go)
+            if (renaming && renamingObject == std::make_shared<GameObject>(go))
             {
                 ImGui::SetKeyboardFocusHere();
                 if (ImGui::InputText("##rename", newName, IM_ARRAYSIZE(newName), ImGuiInputTextFlags_EnterReturnsTrue))
@@ -293,26 +293,29 @@ void MyGUI::ShowHierarchy()
             // Funcionalidad de arrastrar y soltar
             if (ImGui::BeginDragDropSource())
             {
-                ImGui::SetDragDropPayload("DND_GAMEOBJECT", &go, sizeof(GameObject*));
+                ImGui::SetDragDropPayload("DND_GAMEOBJECT", &go, sizeof(std::shared_ptr<GameObject>));
                 ImGui::Text("%s", go.getName().c_str());
                 ImGui::EndDragDropSource();
             }
 
             if (ImGui::BeginDragDropTarget()) {
-                if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_DEMO_CELL")) {
-                    IM_ASSERT(payload->DataSize == sizeof(int));
-                    int payload_n = *(const int*)payload->Data;
-                    GameObject* droppedGo = SceneManager::getGameObject(payload_n);
-                    if (droppedGo) {
-                        // Aquí puedes realizar las operaciones necesarias con droppedGo
-                        // Por ejemplo, agregarlo a una lista de objetos en la escena
-                        SceneManager::gameObjectsOnScene.push_back(*droppedGo);
+                if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_GAMEOBJECT")) {
+                    IM_ASSERT(payload->DataSize == sizeof(std::shared_ptr<GameObject>));
+                    std::shared_ptr<GameObject> droppedGo = *(std::shared_ptr<GameObject>*)payload->Data;
+                    if (droppedGo && droppedGo.get() != &go) {
+                        // Eliminar la relación de padre anterior si existe
+                        if (auto currentParent = droppedGo->GetParent()) {
+                            currentParent->removeChild(*droppedGo);
+                        }
+                        // Establecer la nueva relación de padre-hijo
+                        go.addChild(droppedGo);
+                        droppedGo->SetParent(std::make_shared<GameObject>(go));
                     }
                 }
                 ImGui::EndDragDropTarget();
             }
         }
-        
+
         ImGui::End();
     }
 }
