@@ -22,6 +22,8 @@
 #include "SceneManager.h"
 #include "Console.h"
 #include "MyGameEngine/CameraComponent.h"
+#include "MyGameEngine/ImageImporter.h"
+#include "MyGameEngine/ModelImporter.h"
 
 using namespace std;
 using hrclock = chrono::high_resolution_clock;
@@ -216,40 +218,45 @@ bool isInsideFrustum(const BoundingBox& bbox, const std::list<Plane>& frustumPla
 
 
 
-void handleFileDrop(const std::string& filePath, mat4 projection, mat4 view) { // Manejar el archivo que se arrastra al editor
+void handleFileDrop(const std::string& filePath, glm::mat4 projection, glm::mat4 view) {
     auto extension = getFileExtension(filePath);
-    auto imageTexture = std::make_shared<Image>();
     int mouseX, mouseY;
-    // Obtener posición actual del mouse
     SDL_GetMouseState(&mouseX, &mouseY);
 
     if (extension == "obj" || extension == "fbx" || extension == "dae") {
-       
-		SceneManager::LoadGameObject(filePath);
-		SceneManager::getGameObject(SceneManager::gameObjectsOnScene.size() - 1)->GetComponent<TransformComponent>()->transform().pos() = screenToWorld(glm::vec2(mouseX, mouseY), 10.0f, projection, view);
-		SceneManager::selectedObject = &SceneManager::gameObjectsOnScene.back();
-
+        SceneManager::LoadGameObject(filePath);
+        auto* newObject = SceneManager::getGameObject(SceneManager::gameObjectsOnScene.size() - 1);
+        if (newObject) {
+            newObject->GetComponent<TransformComponent>()->transform().pos() = screenToWorld(glm::vec2(mouseX, mouseY), 10.0f, projection, view);
+            SceneManager::selectedObject = &SceneManager::gameObjectsOnScene.back();
+        }
     }
     else if (extension == "png" || extension == "jpg" || extension == "bmp") {
-        imageTexture->loadTexture(filePath);
-        // Detectar si el mouse está sobre algún GameObject
-        GameObject* hitObject = raycastFromMouseToGameObject(mouseX, mouseY, projection, view, WINDOW_SIZE);
-        if (hitObject) {
-            // Si hay un GameObject debajo del mouse, aplicar la textura
-            hitObject->setTextureImage(imageTexture);
-            cout << "Texture applied to GameObject under mouse." << endl;
-            Console::Instance().Log("Texture applied to GameObject under mouse.");
+        try {
+            auto image = ImageImporter::loadFromFile(filePath); // Use ImageImporter to load the image
+            auto hitObject = raycastFromMouseToGameObject(mouseX, mouseY, projection, view, WINDOW_SIZE);
+
+            if (hitObject) {
+                hitObject->setTextureImage(image);
+                std::cout << "Texture applied to GameObject under mouse." << std::endl;
+                Console::Instance().Log("Texture applied to GameObject under mouse.");
+            }
+            else {
+                std::cout << "No GameObject under mouse to apply texture." << std::endl;
+                Console::Instance().Log("No GameObject under mouse to apply texture.");
+            }
         }
-        else {
-            cout << "No GameObject under mouse to apply texture." << endl;
-            Console::Instance().Log("No GameObject under mouse to apply texture.");
+        catch (const std::exception& e) {
+            std::cerr << "Error loading texture: " << e.what() << std::endl;
+            Console::Instance().Log(std::string("Error loading texture: ") + e.what());
         }
     }
     else {
-        cout << "Unsupported file extension: " << extension << endl;
-        Console::Instance().Log("Unsupported file extension: ");
+        std::cout << "Unsupported file extension: " << extension << std::endl;
+        Console::Instance().Log("Unsupported file extension: " + extension);
     }
 }
+
 
 //Renderizado del suelo
 static void drawFloorGrid(int size, double step) { // Dibujar una cuadrícula en el suelo
