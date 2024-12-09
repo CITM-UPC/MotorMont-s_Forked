@@ -132,7 +132,7 @@ std::shared_ptr<GameObject> GameObject::GetParent() const {
 }
 
 void GameObject::addChild(std::shared_ptr<GameObject> child) {
-    children_.push_back(child);
+    emplaceChild(*child);
 }
 
 void GameObject::removeChild(GameObject& child) {

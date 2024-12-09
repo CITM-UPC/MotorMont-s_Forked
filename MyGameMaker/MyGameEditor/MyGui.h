@@ -1,4 +1,7 @@
 #include "MyWindow.h"
+#include <memory>
+
+class GameObject;
 
 class MyGUI : public IEventProcessor
 {
@@ -25,4 +28,5 @@ public:
 
 private:
     void handleDeleteKey(); // Nueva función para manejar la tecla "Suprimir"
+    GameObject* draggedObject = nullptr; // Objeto arrastrado
 };

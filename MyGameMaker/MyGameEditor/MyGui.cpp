@@ -4,6 +4,7 @@
 #include "BasicShapesManager.h"
 #include "SystemInfo.h"
 #include "Console.h"
+#include <memory>
 
 
 #include <imgui.h>
@@ -249,13 +250,13 @@ void MyGUI::ShowLibraryVerions(bool* p_open)
     ImGui::End();
 }
 
-void MyGUI::ShowHierarchy() 
+void MyGUI::ShowHierarchy()
 {
     ImGui::SetNextWindowSize(ImVec2(300, 700), ImGuiCond_Always);
     ImGui::SetNextWindowPos(ImVec2(0, 20), ImGuiCond_Always);
     if (ImGui::Begin("Hierarchy", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove)) {
 
-        for (auto& go : SceneManager::gameObjectsOnScene) 
+        for (auto& go : SceneManager::gameObjectsOnScene)
         {
             if (SceneManager::gameObjectsOnScene.empty()) continue;
 
@@ -269,14 +270,14 @@ void MyGUI::ShowHierarchy()
                 SceneManager::selectedObject = &go;
             }
 
-            if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0)) 
+            if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
             {
                 renaming = true;
                 renamingObject = &go;
                 strcpy_s(newName, go.getName().c_str());
             }
 
-            if (renaming && renamingObject == &go) 
+            if (renaming && renamingObject == &go)
             {
                 ImGui::SetKeyboardFocusHere();
                 if (ImGui::InputText("##rename", newName, IM_ARRAYSIZE(newName), ImGuiInputTextFlags_EnterReturnsTrue))
@@ -288,10 +289,34 @@ void MyGUI::ShowHierarchy()
                     renaming = false;
                 }
             }
+
+            // Funcionalidad de arrastrar y soltar
+            if (ImGui::BeginDragDropSource())
+            {
+                ImGui::SetDragDropPayload("DND_GAMEOBJECT", &go, sizeof(GameObject*));
+                ImGui::Text("%s", go.getName().c_str());
+                ImGui::EndDragDropSource();
+            }
+
+            if (ImGui::BeginDragDropTarget()) {
+                if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_DEMO_CELL")) {
+                    IM_ASSERT(payload->DataSize == sizeof(int));
+                    int payload_n = *(const int*)payload->Data;
+                    GameObject* droppedGo = SceneManager::getGameObject(payload_n);
+                    if (droppedGo) {
+                        // Aquí puedes realizar las operaciones necesarias con droppedGo
+                        // Por ejemplo, agregarlo a una lista de objetos en la escena
+                        SceneManager::gameObjectsOnScene.push_back(*droppedGo);
+                    }
+                }
+                ImGui::EndDragDropTarget();
+            }
         }
+        
         ImGui::End();
     }
 }
+
 
 void MyGUI::renderInspector() {
     ImGui::SetNextWindowSize(ImVec2(300, 700), ImGuiCond_Always);
@@ -379,6 +404,14 @@ void MyGUI::handleEvent(const SDL_Event& event) {
 
         ImGui_ImplSDL2_ProcessEvent(&event);
     }
+    if (event.type == SDL_MOUSEBUTTONDOWN) {
+        // Supongamos que `droppedGo` es un `std::shared_ptr<GameObject>` válido
+        std::shared_ptr<GameObject> droppedGo = std::make_shared<GameObject>("DroppedObject");
+        if (draggedObject) {
+            draggedObject->addChild(droppedGo);
+        }
+    }
+
 }
 
 void MyGUI::handleDeleteKey() {
