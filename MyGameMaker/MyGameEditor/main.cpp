@@ -227,10 +227,10 @@ void handleFileDrop(const std::string& filePath, glm::mat4 projection, glm::mat4
             SceneManager::LoadGameObject(filePath);
             auto* newObject = SceneManager::getGameObject(SceneManager::gameObjectsOnScene.size() - 1);
             if (newObject) {
-                newObject->GetComponent<TransformComponent>()->transform().pos() = screenToWorld(glm::vec2(mouseX, mouseY), 10.0f, projection, view);
+                newObject->GetComponent<TransformComponent>()->transform().pos() =
+                    screenToWorld(glm::vec2(mouseX, mouseY), 10.0f, projection, view);
                 SceneManager::selectedObject = &SceneManager::gameObjectsOnScene.back();
 
-                // Save as .custom
                 std::string customFilePath = filePath.substr(0, filePath.find_last_of('.')) + ".custom";
                 ModelImporter::saveAsCustomFormat(*newObject, customFilePath);
                 Console::Instance().Log("FBX loaded and saved as .custom format.");
@@ -241,27 +241,44 @@ void handleFileDrop(const std::string& filePath, glm::mat4 projection, glm::mat4
             Console::Instance().Log(std::string("Error processing FBX: ") + e.what());
         }
     }
-    else if (extension == "custom") {
+    else if (extension == "png" || extension == "jpg" || extension == "jpeg") {
         try {
-            SceneManager::LoadCustomModel(filePath);
-            auto* newObject = SceneManager::getGameObject(SceneManager::gameObjectsOnScene.size() - 1);
-            if (newObject) {
-                newObject->GetComponent<TransformComponent>()->transform().pos() = screenToWorld(glm::vec2(mouseX, mouseY), 10.0f, projection, view);
-                SceneManager::selectedObject = &SceneManager::gameObjectsOnScene.back();
-                std::cout << "Custom model loaded successfully." << std::endl;
-                Console::Instance().Log("Custom model loaded successfully.");
+            auto texture = ImageImporter::loadFromFile(filePath);
+            if (SceneManager::selectedObject) {
+                // Associate the texture with the selected object
+                SceneManager::selectedObject->setTextureImage(texture);
+
+                // Save the texture as .customimage
+                std::string customImagePath = filePath.substr(0, filePath.find_last_of('.')) + ".customimage";
+                ImageImporter::saveAsCustomImage(texture, customImagePath);
+
+                Console::Instance().Log("Texture loaded and associated with the selected object.");
+            }
+            else {
+                Console::Instance().Log("No GameObject selected to associate the texture.");
             }
         }
         catch (const std::exception& e) {
-            std::cerr << "Error loading custom model: " << e.what() << std::endl;
-            Console::Instance().Log(std::string("Error loading custom model: ") + e.what());
+            std::cerr << "Error processing image: " << e.what() << std::endl;
+            Console::Instance().Log(std::string("Error processing image: ") + e.what());
+        }
+    }
+    else if (extension == "customimage") {
+        try {
+            auto image = ImageImporter::loadFromFile(filePath);
+            Console::Instance().Log("Custom image loaded successfully.");
+        }
+        catch (const std::exception& e) {
+            std::cerr << "Error loading custom image: " << e.what() << std::endl;
+            Console::Instance().Log(std::string("Error loading custom image: ") + e.what());
         }
     }
     else {
-        std::cout << "Unsupported file extension: " << extension << std::endl;
         Console::Instance().Log("Unsupported file extension: " + extension);
     }
 }
+
+
 
 
 //Renderizado del suelo

@@ -6,6 +6,12 @@
 #include <locale>
 #include <codecvt>
 #include <mutex>
+#include <fstream>
+#include <iostream>
+#include "Image.h"
+#include <windows.h>
+#include <string>
+#include <vector>
 
 namespace fs = std::filesystem;
 
@@ -20,69 +26,30 @@ static void initDevIL() {
     }
 }
 
-#include <windows.h>
-#include <string>
-
-std::wstring toWideString(const std::string& str) {
-    int size_needed = MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), nullptr, 0);
-    std::wstring wstr(size_needed, 0);
-    MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), &wstr[0], size_needed);
-    return wstr;
-}
-
-
-std::shared_ptr<Image> ImageImporter::loadFromFile(const std::string& path) {
-    initDevIL();
-
-    ILuint img;
-    ilGenImages(1, &img);
-    ilBindImage(img);
-
-    auto ps = fs::absolute(path);
-    if (!fs::exists(ps)) {
-        ilDeleteImages(1, &img);
-        throw std::runtime_error("File does not exist: " + ps.string());
+// Save the image data by serializing it into a vector
+void ImageImporter::saveAsCustomImage(const std::shared_ptr<Image>& image, const std::string& outputPath) {
+    if (!image) {
+        throw std::runtime_error("No image to save.");
     }
 
-    // Load image with appropriate string type
-    bool image_loaded;
-#ifdef UNICODE
-    image_loaded = ilLoadImage(toWideString(ps.string()).c_str());
-#else
-    image_loaded = ilLoadImage(ps.string().c_str());
-#endif
-
-    if (!image_loaded) {
-        ilDeleteImages(1, &img);
-        throw std::runtime_error("Failed to load image: " + ps.string());
+    std::ofstream file(outputPath, std::ios::binary);
+    if (!file.is_open()) {
+        throw std::runtime_error("Failed to open file for saving: " + outputPath);
     }
 
-    const auto origin = ilGetInteger(IL_IMAGE_ORIGIN);
-    if (origin != IL_ORIGIN_UPPER_LEFT) {
-        iluFlipImage();
-    }
+    uint32_t width = image->width();
+    uint32_t height = image->height();
+    uint32_t channels = image->channels();
 
-    const auto width = ilGetInteger(IL_IMAGE_WIDTH);
-    const auto height = ilGetInteger(IL_IMAGE_HEIGHT);
-    const auto channels = ilGetInteger(IL_IMAGE_CHANNELS);
+    // Serialize image metadata
+    file.write(reinterpret_cast<const char*>(&width), sizeof(width));
+    file.write(reinterpret_cast<const char*>(&height), sizeof(height));
+    file.write(reinterpret_cast<const char*>(&channels), sizeof(channels));
 
-    if (channels == 1) {
-        ilConvertImage(IL_LUMINANCE, IL_UNSIGNED_BYTE);
-    } else if (channels == 2) {
-        ilConvertImage(IL_LUMINANCE_ALPHA, IL_UNSIGNED_BYTE);
-    } else if (channels == 3) {
-        ilConvertImage(IL_RGB, IL_UNSIGNED_BYTE);
-    } else if (channels == 4) {
-        ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
-    }
+    // Serialize image pixel data using rawData()
+    const auto& rawData = image->rawData();
+    file.write(reinterpret_cast<const char*>(rawData.data()), rawData.size());
 
-    const auto* data = ilGetData();
-
-    // Create and populate the Image object
-    auto image = std::make_shared<Image>();
-    image->load(width, height, channels, (void*)data);
-
-    ilDeleteImages(1, &img);
-
-    return image;
+    file.close();
+    std::cout << "Image saved as .customimage format: " << outputPath << std::endl;
 }

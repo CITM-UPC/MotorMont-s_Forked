@@ -5,7 +5,7 @@
 
 class ModelImporter {
 public:
-	static GameObject loadFromFile(const std::string& path);
-	static GameObject loadCustomFormat(const std::string& path);
-	static void saveAsCustomFormat(const GameObject& gameObject, const std::string& outputPath);
+    static GameObject loadFromFile(const std::string& path);
+    static GameObject loadCustomFormat(const std::string& path);
+    static void saveAsCustomFormat(const GameObject& gameObject, const std::string& outputPath);
 };

@@ -6,7 +6,6 @@
 
 class ImageImporter {
 public:
-
-	static std::shared_ptr<Image> loadFromFile(const std::string& path);
-
+    static std::shared_ptr<Image> loadFromFile(const std::string& path);
+    static void saveAsCustomImage(const std::shared_ptr<Image>& image, const std::string& outputPath);
 };

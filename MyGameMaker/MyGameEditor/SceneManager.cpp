@@ -4,9 +4,16 @@
 #include "MyGameEngine/Image.h"
 #include "Console.h"
 #include "MyGameEngine/ModelImporter.h"
+#include "MyGameEngine/ImageImporter.h"
+#include "MyGameEngine/Texture.h"
 
 std::vector<GameObject> SceneManager::gameObjectsOnScene;
 GameObject* SceneManager::selectedObject = nullptr;
+
+bool fileExists(const std::string& path) {
+    std::ifstream file(path);
+    return file.good();
+}
 
 void SceneManager::spawnBakerHouse()
 {
@@ -24,14 +31,31 @@ void SceneManager::spawnBakerHouse()
 
 void SceneManager::LoadGameObject(const std::string& filePath) {
     auto mesh = std::make_shared<Mesh>();
-
     GameObject go;
     mesh->LoadFile(filePath.c_str());
     go.setMesh(mesh);
+
+    // Check for associated texture
+    std::string texturePath = filePath.substr(0, filePath.find_last_of('.')) + ".png";
+    if (fileExists(texturePath)) {
+        auto texture = ImageImporter::loadFromFile(texturePath);
+        go.setTextureImage(texture);
+
+        // Save the texture only if it exists
+        std::string customImagePath = filePath.substr(0, filePath.find_last_of('.')) + ".customimage";
+        ImageImporter::saveAsCustomImage(texture, customImagePath);
+    }
+
     go.setName("GameObject (" + std::to_string(gameObjectsOnScene.size()) + ")");
     gameObjectsOnScene.push_back(go);
-    Console::Instance().Log("Fbx imported succesfully.");
+
+    // Save the model in custom format
+    std::string customFilePath = filePath.substr(0, filePath.find_last_of('.')) + ".custom";
+    ModelImporter::saveAsCustomFormat(go, customFilePath);
+
+    Console::Instance().Log("GameObject imported and saved successfully.");
 }
+
 
 GameObject* SceneManager::getGameObject(int index) {
     return &gameObjectsOnScene[index];

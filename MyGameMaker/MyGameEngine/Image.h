@@ -2,6 +2,7 @@
 
 #include <ostream>
 #include <istream>
+#include <vector>
 
 class Image {
 
@@ -9,6 +10,8 @@ class Image {
 	unsigned short _width = 0;
 	unsigned short _height = 0;
 	unsigned char _channels = 0;
+
+	mutable std::vector<unsigned char> _dataCache;
 
 public:
 	unsigned int id() const { return _id; }
@@ -26,6 +29,8 @@ public:
 	void bind() const;
 	void load(int width, int height, int channels, void* data);
 	void loadTexture(const std::string& path);
+
+	const std::vector<unsigned char>& rawData() const;
 };
 
 std::ostream& operator<<(std::ostream& os, const Image& img);
