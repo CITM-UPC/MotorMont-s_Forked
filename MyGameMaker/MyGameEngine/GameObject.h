@@ -27,6 +27,7 @@ private:
     mutable std::type_index cachedComponentType;
     mutable std::shared_ptr<Component> cachedComponent;
     std::vector<std::shared_ptr<GameObject>> children_;
+    std::shared_ptr<GameObject> parent_;
 
 public:
     GameObject(const std::string& name = "GameObject");

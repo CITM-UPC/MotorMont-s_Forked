@@ -6,6 +6,7 @@
 #include "MyGameEngine/ModelImporter.h"
 #include "MyGameEngine/ImageImporter.h"
 #include "MyGameEngine/Texture.h"
+#include "BasicShapesManager.h"
 
 std::vector<GameObject> SceneManager::gameObjectsOnScene;
 GameObject* SceneManager::selectedObject = nullptr;
@@ -27,6 +28,30 @@ void SceneManager::spawnBakerHouse()
     go.transform().pos() = vec3(0, 0, 7);
     go.setName("GameObject (" + std::to_string(gameObjectsOnScene.size()) + ")");
     SceneManager::gameObjectsOnScene.push_back(go);
+}
+
+void SceneManager::spawnParentedObjects()
+{
+    // Crear el objeto padre
+    auto parentObject = std::make_shared<GameObject>("ParentObject");
+    auto parentMesh = BasicShapesManager::MakeTriangleMesh(1.0);
+    parentObject->setMesh(parentMesh);
+    parentObject->transform().pos() = vec3(0, 0, 2); // Posición en z = 2
+
+    // Crear el objeto hijo
+    auto childObject = std::make_shared<GameObject>("ChildObject");
+    auto childMesh = BasicShapesManager::MakeTriangleMesh(0.5);
+    childObject->setMesh(childMesh);
+    childObject->transform().pos() = vec3(0, 0, 2.4); // Posición en z = 2.4
+
+    // Parentar el objeto hijo al objeto padre
+    parentObject->addChild(childObject);
+
+    // Añadir el objeto padre a la escena
+    SceneManager::gameObjectsOnScene.push_back(*parentObject);
+
+    // Añadir el objeto hijo a la escena (opcional, si quieres que aparezca en la lista de objetos de la escena)
+    SceneManager::gameObjectsOnScene.push_back(*childObject);
 }
 
 void SceneManager::LoadGameObject(const std::string& filePath) {

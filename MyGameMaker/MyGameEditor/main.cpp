@@ -563,6 +563,8 @@ int main(int argc, char* argv[]) {
 	TestCamera.GetComponent<CameraComponent>()->camera().transform().rotate(glm::radians(180.0), vec3(0, 1, 0));
 
     SceneManager::spawnBakerHouse();
+    SceneManager::spawnParentedObjects();
+
 
     while (window.isOpen()) {
         const auto t0 = hrclock::now();

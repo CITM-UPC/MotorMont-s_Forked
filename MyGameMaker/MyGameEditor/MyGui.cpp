@@ -321,6 +321,8 @@ void MyGUI::ShowHierarchy()
 }
 
 
+
+
 void MyGUI::renderInspector() {
     ImGui::SetNextWindowSize(ImVec2(300, 700), ImGuiCond_Always);
     ImGui::SetNextWindowPos(ImVec2(980, 20), ImGuiCond_Always);

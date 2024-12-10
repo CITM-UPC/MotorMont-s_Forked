@@ -122,8 +122,9 @@ void GameObject::SetParent(std::shared_ptr<GameObject> newParent) {
     if (auto currentParent = GetParent()) {
         currentParent->removeChild(*this);
     }
+    parent_ = newParent;
     if (newParent) {
-        newParent->addChild(shared_from_this());
+        newParent->children_.push_back(shared_from_this());
     }
 }
 
@@ -132,7 +133,8 @@ std::shared_ptr<GameObject> GameObject::GetParent() const {
 }
 
 void GameObject::addChild(std::shared_ptr<GameObject> child) {
-    emplaceChild(*child);
+    children_.push_back(child); // Añadir el hijo a la lista de hijos
+    child->parent_ = shared_from_this(); // Establecer la relación de paternidad directamente
 }
 
 void GameObject::removeChild(GameObject& child) {
