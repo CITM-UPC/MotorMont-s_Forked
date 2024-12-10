@@ -100,31 +100,50 @@ GameObject ModelImporter::loadCustomFormat(const std::string& path) {
         throw std::runtime_error("Failed to open custom model file: " + path);
     }
 
-    // Example parsing logic for custom binary file
     GameObject go;
     std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>();
 
-    // Read header (example structure)
-    uint32_t vertexCount, indexCount;
+    // Read header
+    uint32_t vertexCount = 0, indexCount = 0;
     file.read(reinterpret_cast<char*>(&vertexCount), sizeof(vertexCount));
     file.read(reinterpret_cast<char*>(&indexCount), sizeof(indexCount));
 
-    // Load vertices
+    // Debug logs
+    std::cout << "Reading custom model: " << path << "\n";
+    std::cout << "Vertex count from file: " << vertexCount << "\n";
+    std::cout << "Index count from file: " << indexCount << "\n";
+
+    // Validate counts
+    if (vertexCount > 100000 || indexCount > 1000000) {
+        throw std::runtime_error("Vertex or index count is unreasonably large, indicating file corruption or format mismatch.");
+    }
+
+    // Read vertices
     std::vector<glm::vec3> vertices(vertexCount);
     file.read(reinterpret_cast<char*>(vertices.data()), vertexCount * sizeof(glm::vec3));
 
-    // Load indices
+    // Read indices
     std::vector<unsigned int> indices(indexCount);
     file.read(reinterpret_cast<char*>(indices.data()), indexCount * sizeof(unsigned int));
 
-    // Load into mesh
+    // Verify data integrity
+    if (!file) {
+        throw std::runtime_error("Failed to read the expected amount of data from the custom file.");
+    }
+
+    // Load data into the mesh
     mesh->load(vertices.data(), vertices.size(), indices.data(), indices.size());
     go.setMesh(mesh);
 
     file.close();
 
+    std::cout << "Successfully loaded model: " << path << "\n";
+    std::cout << "Vertices loaded: " << vertices.size() << ", Indices loaded: " << indices.size() << std::endl;
+
     return go;
 }
+
+
 
 void ModelImporter::saveAsCustomFormat(const GameObject& gameObject, const std::string& outputPath) {
     if (!gameObject.hasMesh()) {
@@ -142,6 +161,9 @@ void ModelImporter::saveAsCustomFormat(const GameObject& gameObject, const std::
     uint32_t vertexCount = mesh.vertices().size();
     file.write(reinterpret_cast<const char*>(&vertexCount), sizeof(vertexCount));
 
+    // Debug log
+    std::cout << "Saving vertex count: " << vertexCount << std::endl;
+
     // Save vertices
     file.write(reinterpret_cast<const char*>(mesh.vertices().data()), vertexCount * sizeof(glm::vec3));
 
@@ -149,9 +171,14 @@ void ModelImporter::saveAsCustomFormat(const GameObject& gameObject, const std::
     uint32_t indexCount = mesh.indices().size();
     file.write(reinterpret_cast<const char*>(&indexCount), sizeof(indexCount));
 
+    // Debug log
+    std::cout << "Saving index count: " << indexCount << std::endl;
+
     // Save indices
     file.write(reinterpret_cast<const char*>(mesh.indices().data()), indexCount * sizeof(unsigned int));
 
     file.close();
     std::cout << "Model saved as .custom format: " << outputPath << std::endl;
 }
+
+
