@@ -228,10 +228,7 @@ void handleFileDrop(const std::string& filePath, glm::mat4 projection, glm::mat4
             SceneManager::LoadGameObject(filePath);
             auto* newObject = SceneManager::getGameObject(SceneManager::gameObjectsOnScene.size() - 1);
             if (newObject) {
-                newObject->transform().pos() =
-                    screenToWorld(glm::vec2(mouseX, mouseY), 10.0f, projection, view);
-                SceneManager::selectedObject = newObject;
-
+                TestCamera.GetComponent<CameraComponent>()->camera().transform() = TestCamera.GetComponent<TransformComponent>()->transform();
                 Console::Instance().Log("Model loaded and positioned successfully.");
             }
         }
@@ -262,10 +259,7 @@ void handleFileDrop(const std::string& filePath, glm::mat4 projection, glm::mat4
             SceneManager::LoadCustomModel(filePath);
             auto* newObject = SceneManager::getGameObject(SceneManager::gameObjectsOnScene.size() - 1);
             if (newObject) {
-                newObject->transform().pos() =
-                    screenToWorld(glm::vec2(mouseX, mouseY), 10.0f, projection, view);
-                SceneManager::selectedObject = newObject;
-
+                newObject->GetComponent<TransformComponent>()->transform().pos() = screenToWorld(glm::vec2(mouseX, mouseY), 10.0f, projection, view);
                 Console::Instance().Log("Custom model loaded successfully.");
             }
         }
