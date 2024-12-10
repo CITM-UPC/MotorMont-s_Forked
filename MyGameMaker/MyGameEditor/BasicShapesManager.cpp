@@ -5,6 +5,8 @@
 #include "MyGameEngine/GameObject.h"
 #include "BasicShapesManager.h"
 #include "SceneManager.h"
+#include "MyGameEngine/TransformComponent.h"
+#include "MyGameEngine/Transform.h"
 
 // Gestor de figuras geométricas básicas
 
@@ -84,44 +86,41 @@ std::shared_ptr<Mesh> BasicShapesManager::MakeCubeMesh(double size) {
 }
 
 void BasicShapesManager::createFigure(int figureType, std::vector<GameObject>& gameObjects, double size, glm::vec3 mousePosition) {
-    GameObject* parent = SceneManager::selectedObject; 
-    GameObject* go = nullptr;
+    std::shared_ptr<GameObject> parent = std::shared_ptr<GameObject>(SceneManager::selectedObject, [](GameObject*) {});
+    std::shared_ptr<GameObject> go = nullptr;
 
     if (parent) {
-        go = &parent->emplaceChild();
+        go = parent->emplaceChild();
 
-        // Convert transform to local space
+        // Convertir la posición del ratón al espacio local del padre
         glm::mat4 parentWorldInverse = glm::inverse(parent->worldTransform().mat());
         glm::vec4 localPosition = parentWorldInverse * glm::vec4(mousePosition, 1.0f);
 
-
-        go->transform().translate(glm::vec3(localPosition));
+        go->GetComponent<TransformComponent>()->transform().translate(glm::vec3(localPosition));
         go->setName("GameObject (" + std::to_string(gameObjects.size() + 32) + ")");
     }
-
     else {
-
-        gameObjects.emplace_back(); 
-        go = &gameObjects.back();
-        go->transform().translate(vec3(mousePosition));
-        
+        gameObjects.emplace_back();
+        go = std::make_shared<GameObject>(gameObjects.back());
+        go->AddComponent<TransformComponent>();
+        go->GetComponent<TransformComponent>()->transform().translate(mousePosition);
         go->setName("GameObject (" + std::to_string(gameObjects.size()) + ")");
     }
+
     // Configurar la malla según el tipo de figura
     switch (figureType) {
     case 1:  // Triángulo
-        go->setMesh(MakeTriangleMesh(size));
+        go->setMesh(BasicShapesManager::MakeTriangleMesh(size));
         break;
     case 2:  // Cuadrado
-        go->setMesh(MakeQuadMesh(size));
+        go->setMesh(BasicShapesManager::MakeQuadMesh(size));
         break;
     case 3:  // Cubo
-        go->setMesh(MakeCubeMesh(size));
+        go->setMesh(BasicShapesManager::MakeCubeMesh(size));
         break;
     default:
         std::cout << "Figure type not recognized." << std::endl;
         return;
     }
-
-    
 }
+

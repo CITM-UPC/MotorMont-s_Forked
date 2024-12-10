@@ -18,11 +18,11 @@ public:
 	bool isRoot() const { return !_parent; }
 
 	template <typename ...Args>
-	auto& emplaceChild(Args&&... args) {
+	std::shared_ptr<T> emplaceChild(Args&&... args) {
 		auto child = std::make_shared<T>(std::forward<Args>(args)...);
 		_children.push_back(child);
 		child->_parent = static_cast<T*>(this);
-		return *child;
+		return child;
 	}
 
 	void removeChild(const T& child) { _children.remove_if([&](const std::shared_ptr<T>& ptr) { return ptr.get() == &child; }); }

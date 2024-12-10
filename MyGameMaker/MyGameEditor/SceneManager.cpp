@@ -11,6 +11,7 @@
 std::vector<GameObject> SceneManager::gameObjectsOnScene;
 GameObject* SceneManager::selectedObject = nullptr;
 
+
 bool fileExists(const std::string& path) {
     std::ifstream file(path);
     return file.good();
@@ -25,7 +26,13 @@ void SceneManager::spawnBakerHouse()
     auto imageTexture = std::make_shared<Image>();
     imageTexture->loadTexture("Assets/Baker_House.png");
     go.setTextureImage(imageTexture);
-    go.transform().pos() = vec3(0, 0, 7);
+
+    // Asegúrate de obtener el componente TransformComponent y luego acceder a Transform
+    auto transformComponent = go.GetComponent<TransformComponent>();
+    if (transformComponent) {
+        transformComponent->transform().translate(glm::vec3(0, 0, 7));
+    }
+
     go.setName("GameObject (" + std::to_string(gameObjectsOnScene.size()) + ")");
     SceneManager::gameObjectsOnScene.push_back(go);
 }
@@ -36,13 +43,23 @@ void SceneManager::spawnParentedObjects()
     auto parentObject = std::make_shared<GameObject>("ParentObject");
     auto parentMesh = BasicShapesManager::MakeTriangleMesh(1.0);
     parentObject->setMesh(parentMesh);
-    parentObject->transform().pos() = vec3(0, 0, 2); // Posición en z = 2
+
+    // Asegúrate de obtener el componente TransformComponent y luego acceder a Transform
+    auto parentTransformComponent = parentObject->GetComponent<TransformComponent>();
+    if (parentTransformComponent) {
+        parentTransformComponent->transform().translate(glm::vec3(0, 0, 2)); // Posición en z = 2
+    }
 
     // Crear el objeto hijo
     auto childObject = std::make_shared<GameObject>("ChildObject");
     auto childMesh = BasicShapesManager::MakeTriangleMesh(0.5);
     childObject->setMesh(childMesh);
-    childObject->transform().pos() = vec3(0, 0, 2.4); // Posición en z = 2.4
+
+    // Asegúrate de obtener el componente TransformComponent y luego acceder a Transform
+    auto childTransformComponent = childObject->GetComponent<TransformComponent>();
+    if (childTransformComponent) {
+        childTransformComponent->transform().translate(glm::vec3(0, 0, 2.4)); // Posición en z = 2.4
+    }
 
     // Parentar el objeto hijo al objeto padre
     parentObject->addChild(childObject);

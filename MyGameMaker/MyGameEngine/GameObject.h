@@ -34,8 +34,14 @@ public:
     bool hasCheckerTexture = false;
 
     // Métodos para acceder y modificar propiedades
-    const auto& transform() const { return GetComponent<TransformComponent>()->transform(); }
-    auto& transform() { return GetComponent<TransformComponent>()->transform(); }
+    Transform worldTransform() const {
+        if (parent_) {
+            return parent_->worldTransform() * GetComponent<TransformComponent>()->transform();
+        }
+        else {
+            return GetComponent<TransformComponent>()->transform();
+        }
+    }
 
     const auto& color() const { return _color; }
     auto& color() { return _color; }
@@ -66,7 +72,7 @@ public:
     void SetName(const std::string& name);
 
     // Transformación global del objeto
-    Transform worldTransform() const { return isRoot() ? GetComponent<TransformComponent>()->transform() : parent().worldTransform() * GetComponent<TransformComponent>()->transform(); }
+
 
     // Cálculo de las cajas de colisión
     BoundingBox localBoundingBox() const;
@@ -131,13 +137,7 @@ std::shared_ptr<T> GameObject::GetComponent() const {
 
 template <typename T>
 void GameObject::RemoveComponent() {
-    auto it = components.find(typeid(T));
-    if (it != components.end()) {
-        components.erase(it);
-    }
-    else {
-        // Log a warning
-    }
+    components.erase(typeid(T));
 }
 
 template <typename T>
