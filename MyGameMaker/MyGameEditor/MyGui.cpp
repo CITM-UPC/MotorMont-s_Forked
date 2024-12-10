@@ -312,6 +312,7 @@ void MyGUI::ShowHierarchy()
                         if (draggedObject != &go) {
                             draggedObject->setParent(&go);
                             go.addChild(draggedObject);
+                            (std::remove(SceneManager::gameObjectsOnScene.begin(), SceneManager::gameObjectsOnScene.end(), *draggedObject));
                         }
                     }
                 }
