@@ -1,5 +1,6 @@
 #include "MyWindow.h"
 #include <memory>
+#include <string>
 
 class GameObject;
 
@@ -17,7 +18,7 @@ public:
     void handleEvent(const SDL_Event& event);
 
     void ShowMainMenuBar();
-    void ShowConsole();
+    void ConsoleWindow();
 
     void ShowSpawnFigures(bool* p_open);
     void ShowMetricsWindow(bool* p_open);
@@ -26,7 +27,11 @@ public:
 
     void ShowHierarchy();
 
+    void ShowAssetsWindow();
+
 private:
     void handleDeleteKey(); // Nueva función para manejar la tecla "Suprimir"
     GameObject* draggedObject = nullptr; // Objeto arrastrado
+
+    bool show_assets_window = false;
 };

@@ -5,6 +5,7 @@
 #include "SystemInfo.h"
 #include "Console.h"
 #include <memory>
+#include <filesystem>
 
 
 #include <imgui.h>
@@ -127,9 +128,16 @@ void MyGUI::ShowMainMenuBar() {
                 const char* url = "https://github.com/CITM-UPC/MotorMont-s_Forked";
                 SDL_OpenURL(url);
             }
-            ImGui::Checkbox("Metrics", &show_metrics_window);
-            ImGui::Checkbox("Hardware Info", &show_hardware_window);
-            ImGui::Checkbox("Software Info", &show_software_window);
+
+            if (ImGui::BeginMenu("View")) {
+                if (ImGui::RadioButton("Console", !show_assets_window)) {
+                    show_assets_window = false; // Show Console
+                }
+                if (ImGui::RadioButton("Assets", show_assets_window)) {
+                    show_assets_window = true; // Show Assets
+                }
+                ImGui::EndMenu();
+            }
             ImGui::EndMenu();
         }
 
@@ -137,32 +145,66 @@ void MyGUI::ShowMainMenuBar() {
     }
 }
 
-
-void MyGUI::ShowConsole() {
-
+void MyGUI::ConsoleWindow() {
     ImGui::SetNextWindowSize(ImVec2(680, 200), ImGuiCond_Always);
     ImGui::SetNextWindowPos(ImVec2(300, ImGui::GetIO().DisplaySize.y - 200), ImGuiCond_Always);
 
     ImGui::Begin("Console");
 
-    if (ImGui::Button("Clear"))
-    {
+    if (ImGui::Button("Clear")) {
         Console::Instance().Clear();
     }
 
     const auto& messages = Console::Instance().GetMessages();
     ImGui::Text("Message Count: %zu", messages.size());
-    for (const auto& message : messages)
-    {
+    for (const auto& message : messages) {
         ImGui::Text("%s", message.c_str());
     }
 
     if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
         ImGui::SetScrollHereY(1.0f);
     }
-    ImGui::End();
 
+    ImGui::End();
 }
+
+void MyGUI::ShowAssetsWindow() {
+    ImGui::SetNextWindowSize(ImVec2(680, 200), ImGuiCond_Always);
+    ImGui::SetNextWindowPos(ImVec2(300, ImGui::GetIO().DisplaySize.y - 200), ImGuiCond_Always);
+
+    ImGui::Begin("Assets");
+
+    static std::string baseDirectory = "Assets";
+
+    // Check if the directory exists
+    if (!std::filesystem::exists(baseDirectory)) {
+        ImGui::Text("Error: Assets directory not found at %s", baseDirectory.c_str());
+        ImGui::End();
+        return;
+    }
+
+    // Safely iterate through the directory
+    try {
+        for (const auto& entry : std::filesystem::directory_iterator(baseDirectory)) {
+            if (entry.is_directory()) {
+                ImGui::Text("[Folder] %s", entry.path().filename().string().c_str());
+            }
+            else if (entry.is_regular_file()) {
+                std::string extension = entry.path().extension().string();
+                ImGui::Text("[File] %s (%s)", entry.path().filename().string().c_str(), extension.c_str());
+            }
+        }
+    }
+    catch (const std::filesystem::filesystem_error& e) {
+        ImGui::Text("Error: Unable to access assets directory.");
+        ImGui::Text("%s", e.what());
+    }
+
+    ImGui::End();
+}
+
+
+
 
 void MyGUI::ShowSpawnFigures(bool* p_open) {
 
@@ -426,7 +468,13 @@ void MyGUI::render() {
     ShowMainMenuBar();
     ShowHierarchy();
     renderInspector();
-    ShowConsole();
+
+    if (show_assets_window) {
+        ShowAssetsWindow();
+    }
+    else {
+        ConsoleWindow();
+    }
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
