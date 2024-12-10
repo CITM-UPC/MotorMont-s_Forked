@@ -1,4 +1,7 @@
 #include "ImageImporter.h"
+#include "ModelImporter.h"
+#include "Mesh.h"
+#include "../MyGameEditor/SceneManager.h"
 #include <filesystem>
 #include <stdexcept>
 #include <IL/il.h>
@@ -89,4 +92,66 @@ std::shared_ptr<Image> ImageImporter::loadFromFile(const std::string& path) {
     ilDeleteImages(1, &img);
 
     return image;
+}
+
+GameObject ModelImporter::loadCustomFormat(const std::string& path) {
+    std::ifstream file(path, std::ios::binary);
+    if (!file.is_open()) {
+        throw std::runtime_error("Failed to open custom model file: " + path);
+    }
+
+    // Example parsing logic for custom binary file
+    GameObject go;
+    std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>();
+
+    // Read header (example structure)
+    uint32_t vertexCount, indexCount;
+    file.read(reinterpret_cast<char*>(&vertexCount), sizeof(vertexCount));
+    file.read(reinterpret_cast<char*>(&indexCount), sizeof(indexCount));
+
+    // Load vertices
+    std::vector<glm::vec3> vertices(vertexCount);
+    file.read(reinterpret_cast<char*>(vertices.data()), vertexCount * sizeof(glm::vec3));
+
+    // Load indices
+    std::vector<unsigned int> indices(indexCount);
+    file.read(reinterpret_cast<char*>(indices.data()), indexCount * sizeof(unsigned int));
+
+    // Load into mesh
+    mesh->load(vertices.data(), vertices.size(), indices.data(), indices.size());
+    go.setMesh(mesh);
+
+    file.close();
+
+    return go;
+}
+
+void ModelImporter::saveAsCustomFormat(const GameObject& gameObject, const std::string& outputPath) {
+    if (!gameObject.hasMesh()) {
+        throw std::runtime_error("GameObject has no mesh to save.");
+    }
+
+    const auto& mesh = gameObject.mesh();
+
+    std::ofstream file(outputPath, std::ios::binary);
+    if (!file.is_open()) {
+        throw std::runtime_error("Failed to open file for saving: " + outputPath);
+    }
+
+    // Save vertex count
+    uint32_t vertexCount = mesh.vertices().size();
+    file.write(reinterpret_cast<const char*>(&vertexCount), sizeof(vertexCount));
+
+    // Save vertices
+    file.write(reinterpret_cast<const char*>(mesh.vertices().data()), vertexCount * sizeof(glm::vec3));
+
+    // Save index count
+    uint32_t indexCount = mesh.indices().size();
+    file.write(reinterpret_cast<const char*>(&indexCount), sizeof(indexCount));
+
+    // Save indices
+    file.write(reinterpret_cast<const char*>(mesh.indices().data()), indexCount * sizeof(unsigned int));
+
+    file.close();
+    std::cout << "Model saved as .custom format: " << outputPath << std::endl;
 }

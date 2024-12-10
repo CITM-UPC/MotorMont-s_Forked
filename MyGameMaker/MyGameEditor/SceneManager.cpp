@@ -3,6 +3,7 @@
 #include "MyGameEngine/Mesh.h"
 #include "MyGameEngine/Image.h"
 #include "Console.h"
+#include "MyGameEngine/ModelImporter.h"
 
 std::vector<GameObject> SceneManager::gameObjectsOnScene;
 GameObject* SceneManager::selectedObject = nullptr;
@@ -45,5 +46,17 @@ void SceneManager::deleteSelectedObject() {
             selectedObject = nullptr;
             Console::Instance().Log("Object deleted successfully.");
         }
+    }
+}
+
+void SceneManager::LoadCustomModel(const std::string& filePath) {
+    try {
+        GameObject go = ModelImporter::loadCustomFormat(filePath);
+        go.setName("Custom Model (" + std::to_string(gameObjectsOnScene.size()) + ")");
+        gameObjectsOnScene.push_back(go);
+        Console::Instance().Log("Custom model imported successfully.");
+    }
+    catch (const std::exception& e) {
+        Console::Instance().Log(std::string("Failed to load custom model: ") + e.what());
     }
 }

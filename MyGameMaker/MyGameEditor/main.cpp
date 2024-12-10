@@ -217,38 +217,44 @@ bool isInsideFrustum(const BoundingBox& bbox, const std::list<Plane>& frustumPla
 }
 
 
-
 void handleFileDrop(const std::string& filePath, glm::mat4 projection, glm::mat4 view) {
     auto extension = getFileExtension(filePath);
     int mouseX, mouseY;
     SDL_GetMouseState(&mouseX, &mouseY);
 
     if (extension == "obj" || extension == "fbx" || extension == "dae") {
-        SceneManager::LoadGameObject(filePath);
-        auto* newObject = SceneManager::getGameObject(SceneManager::gameObjectsOnScene.size() - 1);
-        if (newObject) {
-            newObject->GetComponent<TransformComponent>()->transform().pos() = screenToWorld(glm::vec2(mouseX, mouseY), 10.0f, projection, view);
-            SceneManager::selectedObject = &SceneManager::gameObjectsOnScene.back();
-        }
-    }
-    else if (extension == "png" || extension == "jpg" || extension == "bmp") {
         try {
-            auto image = ImageImporter::loadFromFile(filePath); // Use ImageImporter to load the image
-            auto hitObject = raycastFromMouseToGameObject(mouseX, mouseY, projection, view, WINDOW_SIZE);
+            SceneManager::LoadGameObject(filePath);
+            auto* newObject = SceneManager::getGameObject(SceneManager::gameObjectsOnScene.size() - 1);
+            if (newObject) {
+                newObject->GetComponent<TransformComponent>()->transform().pos() = screenToWorld(glm::vec2(mouseX, mouseY), 10.0f, projection, view);
+                SceneManager::selectedObject = &SceneManager::gameObjectsOnScene.back();
 
-            if (hitObject) {
-                hitObject->setTextureImage(image);
-                std::cout << "Texture applied to GameObject under mouse." << std::endl;
-                Console::Instance().Log("Texture applied to GameObject under mouse.");
-            }
-            else {
-                std::cout << "No GameObject under mouse to apply texture." << std::endl;
-                Console::Instance().Log("No GameObject under mouse to apply texture.");
+                // Save as .custom
+                std::string customFilePath = filePath.substr(0, filePath.find_last_of('.')) + ".custom";
+                ModelImporter::saveAsCustomFormat(*newObject, customFilePath);
+                Console::Instance().Log("FBX loaded and saved as .custom format.");
             }
         }
         catch (const std::exception& e) {
-            std::cerr << "Error loading texture: " << e.what() << std::endl;
-            Console::Instance().Log(std::string("Error loading texture: ") + e.what());
+            std::cerr << "Error processing FBX: " << e.what() << std::endl;
+            Console::Instance().Log(std::string("Error processing FBX: ") + e.what());
+        }
+    }
+    else if (extension == "custom") {
+        try {
+            SceneManager::LoadCustomModel(filePath);
+            auto* newObject = SceneManager::getGameObject(SceneManager::gameObjectsOnScene.size() - 1);
+            if (newObject) {
+                newObject->GetComponent<TransformComponent>()->transform().pos() = screenToWorld(glm::vec2(mouseX, mouseY), 10.0f, projection, view);
+                SceneManager::selectedObject = &SceneManager::gameObjectsOnScene.back();
+                std::cout << "Custom model loaded successfully." << std::endl;
+                Console::Instance().Log("Custom model loaded successfully.");
+            }
+        }
+        catch (const std::exception& e) {
+            std::cerr << "Error loading custom model: " << e.what() << std::endl;
+            Console::Instance().Log(std::string("Error loading custom model: ") + e.what());
         }
     }
     else {
