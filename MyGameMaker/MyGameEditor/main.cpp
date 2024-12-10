@@ -224,11 +224,10 @@ void handleFileDrop(const std::string& filePath, glm::mat4 projection, glm::mat4
 
     try {
         if (extension == "obj" || extension == "fbx" || extension == "dae") {
-            // Load the model and save it as .custom
+            // Existing model handling code
             SceneManager::LoadGameObject(filePath);
             auto* newObject = SceneManager::getGameObject(SceneManager::gameObjectsOnScene.size() - 1);
 
-            // Save the loaded model in .custom format
             std::string customFilePath = "Library/CustomModels/" + SceneManager::getFileNameWithoutExtension(filePath) + ".custom";
             if (newObject) {
                 ModelImporter::saveAsCustomFormat(*newObject, customFilePath);
@@ -241,7 +240,7 @@ void handleFileDrop(const std::string& filePath, glm::mat4 projection, glm::mat4
             }
         }
         else if (extension == "custom") {
-            // Load the .custom model
+            // Existing .custom model handling
             SceneManager::LoadCustomModel(filePath);
             auto* newObject = SceneManager::getGameObject(SceneManager::gameObjectsOnScene.size() - 1);
             if (newObject) {
@@ -253,6 +252,28 @@ void handleFileDrop(const std::string& filePath, glm::mat4 projection, glm::mat4
                 Console::Instance().Log("Failed to load .custom model.");
             }
         }
+        else if (extension == "png" || extension == "jpg" || extension == "bmp" || extension == "tga") {
+            // Load conventional image and save as custom
+            auto image = ImageImporter::loadFromFile(filePath);
+            if (image) {
+                std::string customFilePath = "Library/CustomImages/" + SceneManager::getFileNameWithoutExtension(filePath) + ".custom";
+                ImageImporter::saveAsCustomImage(image, customFilePath);
+                Console::Instance().Log("Image converted to .custom format and saved successfully.");
+            }
+            else {
+                Console::Instance().Log("Failed to load or convert image.");
+            }
+        }
+        else if (extension == "customimg") {
+            // Load custom image
+            auto image = ImageImporter::loadCustomImage(filePath);
+            if (image) {
+                Console::Instance().Log(".custom image loaded successfully.");
+            }
+            else {
+                Console::Instance().Log("Failed to load .custom image.");
+            }
+        }
         else {
             Console::Instance().Log("Unsupported file extension: " + extension);
         }
@@ -261,8 +282,6 @@ void handleFileDrop(const std::string& filePath, glm::mat4 projection, glm::mat4
         Console::Instance().Log(std::string("Error handling file: ") + e.what());
     }
 }
-
-
 
 
 
