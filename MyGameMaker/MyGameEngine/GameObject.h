@@ -29,7 +29,13 @@ private:
     std::vector<std::shared_ptr<GameObject>> children_;
     std::shared_ptr<GameObject> parent_;
 
+    int uuid;
+
 public:
+
+    void setUUID(int id) { uuid = id; }
+    int getUUID() const { return uuid; }
+
     GameObject(const std::string& name = "GameObject");
     bool hasCheckerTexture = false;
 

@@ -20,6 +20,9 @@ public:
 	static std::string getFileDirectory(const std::string& filePath);
 	static std::string getFileNameWithoutExtension(const std::string& filePath);
 
+	static void saveScene(const std::string& filePath); 
+	static void loadScene(const std::string& filePath); 
+
 
 public: 
 	static std::vector<GameObject> gameObjectsOnScene;

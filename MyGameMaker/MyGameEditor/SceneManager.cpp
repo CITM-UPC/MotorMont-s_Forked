@@ -11,6 +11,8 @@
 #include "SceneManager.h"
 #include <filesystem>
 #include <string>
+#include <fstream>
+#include "MyGui.h"
 
 namespace fs = std::filesystem;
 
@@ -139,4 +141,50 @@ void SceneManager::LoadCustomModel(const std::string& filePath) {
     catch (const std::exception& e) {
         Console::Instance().Log(std::string("Failed to load custom model: ") + e.what());
     }
+}
+
+void SceneManager::saveScene(const std::string& filePath) {
+    std::ofstream outFile(filePath, std::ios::out);
+    if (!outFile) {
+        Console::Instance().Log("Failed to open file for saving scene: " + filePath);
+        return;
+    }
+
+    outFile << "{\n\"GameObjects\": [\n";
+    for (size_t i = 0; i < gameObjectsOnScene.size(); ++i) {
+        const auto& go = gameObjectsOnScene[i];
+        outFile << "  {\n";
+        outFile << "    \"UID\": " << go.getUUID() << ",\n";
+        outFile << "    \"ParentUID\": " << (go.GetParent() ? go.GetParent()->getUUID() : -1) << ",\n";
+        outFile << "    \"Name\": \"" << go.getName() << "\"\n";
+        outFile << "  }";
+        if (i != gameObjectsOnScene.size() - 1) outFile << ",";
+        outFile << "\n";
+    }
+    outFile << "]\n}";
+    outFile.close();
+
+    Console::Instance().Log("Scene saved to " + filePath);
+}
+
+void SceneManager::loadScene(const std::string& filePath) {
+    std::ifstream inFile(filePath, std::ios::in);
+    if (!inFile) {
+        Console::Instance().Log("Failed to open file for loading scene: " + filePath);
+        return;
+    }
+
+    gameObjectsOnScene.clear();
+
+    std::string line;
+    while (std::getline(inFile, line)) {
+        if (line.find("\"UID\":") != std::string::npos) {
+            GameObject go;
+            go.setUUID(std::stoi(line.substr(line.find(":") + 1)));
+            gameObjectsOnScene.push_back(go);
+        }
+    }
+    inFile.close();
+
+    Console::Instance().Log("Scene loaded from " + filePath);
 }

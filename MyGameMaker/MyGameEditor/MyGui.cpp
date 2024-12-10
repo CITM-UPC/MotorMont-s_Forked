@@ -77,7 +77,6 @@ MyGUI::~MyGUI() {
 }
 
 void MyGUI::ShowMainMenuBar() {
-
     if (show_metrics_window) {
         ShowMetricsWindow(&show_metrics_window);
     }
@@ -91,47 +90,40 @@ void MyGUI::ShowMainMenuBar() {
         ShowSpawnFigures(&show_spawn_figures_window);
     }
 
-    if (ImGui::BeginMainMenuBar()) 
-    {
-        if (ImGui::BeginMenu("File")) 
-        {
-            if (ImGui::BeginMenu("Import"))
-            {
-                if (ImGui::MenuItem("FBX")) 
-                {
-                    const char* filterPatterns[1] = { "*.fbx" };
-                    const char* filePath = tinyfd_openFileDialog(
-                        "Select an FBX file",
-                        "",
-                        1,
-                        filterPatterns,
-                        NULL,
-                        0
-                    );
-                    if (filePath) 
-                    {
-                        SceneManager::LoadGameObject(filePath);
-                    }
-                }
-                ImGui::EndMenu();
-            }
-            if (ImGui::MenuItem("Quit")) 
-            {
-
+    if (ImGui::BeginMainMenuBar()) {
+        if (ImGui::BeginMenu("File")) {
+            if (ImGui::MenuItem("Quit")) {
                 SDL_Quit();
                 exit(0);
-
             }
             ImGui::EndMenu();
         }
+
         if (ImGui::BeginMenu("Mesh")) {
             ImGui::Checkbox("Mesh Creator", &show_spawn_figures_window);
             ImGui::EndMenu();
         }
-        if (ImGui::BeginMenu("Help"))
-        {
-            if (ImGui::MenuItem("About"))
-            {
+
+        if (ImGui::BeginMenu("Scene")) { // New "Scene" menu
+            if (ImGui::MenuItem("Save Scene")) {
+                const char* filterPatterns[] = { "*.scene" };
+                const char* filePath = tinyfd_saveFileDialog("Save Scene", "scene_output.scene", 1, filterPatterns, nullptr);
+                if (filePath) {
+                    SceneManager::saveScene(filePath); // Ensure SceneManager::saveScene exists and is correctly implemented
+                }
+            }
+            if (ImGui::MenuItem("Load Scene")) {
+                const char* filterPatterns[] = { "*.scene" };
+                const char* filePath = tinyfd_openFileDialog("Load Scene", "", 1, filterPatterns, nullptr, 0);
+                if (filePath) {
+                    SceneManager::loadScene(filePath); // Ensure SceneManager::loadScene exists and is correctly implemented
+                }
+            }
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Help")) {
+            if (ImGui::MenuItem("About")) {
                 const char* url = "https://github.com/CITM-UPC/MotorMont-s_Forked";
                 SDL_OpenURL(url);
             }
@@ -140,9 +132,11 @@ void MyGUI::ShowMainMenuBar() {
             ImGui::Checkbox("Software Info", &show_software_window);
             ImGui::EndMenu();
         }
+
         ImGui::EndMainMenuBar();
     }
 }
+
 
 void MyGUI::ShowConsole() {
 
@@ -425,19 +419,17 @@ void MyGUI::handleDeleteKey() {
 
 
 void MyGUI::render() {
-	ImGui_ImplOpenGL3_NewFrame();
-	ImGui_ImplSDL2_NewFrame();
-	ImGui::NewFrame();
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplSDL2_NewFrame();
+    ImGui::NewFrame();
 
-	ShowMainMenuBar();
-
+    ShowMainMenuBar();
     ShowHierarchy();
     renderInspector();
-
     ShowConsole();
 
-	ImGui::Render();
-	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
+
 
