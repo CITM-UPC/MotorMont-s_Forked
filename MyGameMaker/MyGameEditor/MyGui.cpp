@@ -104,19 +104,19 @@ void MyGUI::ShowMainMenuBar() {
             ImGui::EndMenu();
         }
 
-        if (ImGui::BeginMenu("Scene")) { // New "Scene" menu
+        if (ImGui::BeginMenu("Scene")) {
             if (ImGui::MenuItem("Save Scene")) {
                 const char* filterPatterns[] = { "*.scene" };
                 const char* filePath = tinyfd_saveFileDialog("Save Scene", "scene_output.scene", 1, filterPatterns, nullptr);
                 if (filePath) {
-                    SceneManager::saveScene(filePath); // Ensure SceneManager::saveScene exists and is correctly implemented
+                    SceneManager::saveScene(filePath);
                 }
             }
             if (ImGui::MenuItem("Load Scene")) {
                 const char* filterPatterns[] = { "*.scene" };
                 const char* filePath = tinyfd_openFileDialog("Load Scene", "", 1, filterPatterns, nullptr, 0);
                 if (filePath) {
-                    SceneManager::loadScene(filePath); // Ensure SceneManager::loadScene exists and is correctly implemented
+                    SceneManager::loadScene(filePath);
                 }
             }
             ImGui::EndMenu();

@@ -12,7 +12,10 @@
 #include <filesystem>
 #include <string>
 #include <fstream>
+#include <sstream>
 #include "MyGui.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace fs = std::filesystem;
 
@@ -153,10 +156,21 @@ void SceneManager::saveScene(const std::string& filePath) {
     outFile << "{\n\"GameObjects\": [\n";
     for (size_t i = 0; i < gameObjectsOnScene.size(); ++i) {
         const auto& go = gameObjectsOnScene[i];
+        const auto& transform = go.GetComponent<TransformComponent>()->transform();
+
         outFile << "  {\n";
         outFile << "    \"UID\": " << go.getUUID() << ",\n";
         outFile << "    \"ParentUID\": " << (go.GetParent() ? go.GetParent()->getUUID() : -1) << ",\n";
-        outFile << "    \"Name\": \"" << go.getName() << "\"\n";
+        outFile << "    \"Name\": \"" << go.getName() << "\",\n";
+        outFile << "    \"Transform\": {\n";
+        outFile << "      \"Position\": [" << transform.pos().x << ", " << transform.pos().y << ", " << transform.pos().z << "],\n";
+        outFile << "      \"Scale\": [" << transform.extractScale(transform.mat()).x << ", "
+            << transform.extractScale(transform.mat()).y << ", "
+            << transform.extractScale(transform.mat()).z << "],\n";
+        outFile << "      \"Rotation\": [" << transform.extractEulerAngles(transform.mat()).x << ", "
+            << transform.extractEulerAngles(transform.mat()).y << ", "
+            << transform.extractEulerAngles(transform.mat()).z << "]\n";
+        outFile << "    }\n";
         outFile << "  }";
         if (i != gameObjectsOnScene.size() - 1) outFile << ",";
         outFile << "\n";
@@ -181,6 +195,42 @@ void SceneManager::loadScene(const std::string& filePath) {
         if (line.find("\"UID\":") != std::string::npos) {
             GameObject go;
             go.setUUID(std::stoi(line.substr(line.find(":") + 1)));
+
+            // Parse Name
+            std::getline(inFile, line);
+            if (line.find("\"Name\":") != std::string::npos) {
+                std::string name = line.substr(line.find(":") + 2);
+                name.erase(name.find_last_of("\""));
+                go.setName(name);
+            }
+
+            // Parse Transform
+            Transform transform;
+            while (std::getline(inFile, line) && line.find("}") == std::string::npos) {
+                if (line.find("\"Position\":") != std::string::npos) {
+                    std::istringstream iss(line.substr(line.find("[") + 1));
+                    glm::vec3 pos;
+                    char delim;
+                    iss >> pos.x >> delim >> pos.y >> delim >> pos.z;
+                    transform.translate(pos);
+                }
+                else if (line.find("\"Scale\":") != std::string::npos) {
+                    std::istringstream iss(line.substr(line.find("[") + 1));
+                    glm::vec3 scale;
+                    char delim;
+                    iss >> scale.x >> delim >> scale.y >> delim >> scale.z;
+                    transform.setScale(scale);
+                }
+                else if (line.find("\"Rotation\":") != std::string::npos) {
+                    std::istringstream iss(line.substr(line.find("[") + 1));
+                    glm::vec3 rotation;
+                    char delim;
+                    iss >> rotation.x >> delim >> rotation.y >> delim >> rotation.z;
+                    transform.setRotation(glm::radians(rotation.y), glm::radians(rotation.x), glm::radians(rotation.z));
+                }
+            }
+            go.AddComponent<TransformComponent>()->transform() = transform;
+
             gameObjectsOnScene.push_back(go);
         }
     }
