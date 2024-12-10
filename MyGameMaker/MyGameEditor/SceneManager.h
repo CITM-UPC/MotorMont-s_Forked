@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include "../MyGameEngine/GameObject.h"
+
 class SceneManager
 {
 public:
@@ -16,11 +17,12 @@ public:
 	static void deleteSelectedObject(); // Nueva función para eliminar el objeto seleccionado
 	static void spawnParentedObjects(); // Nueva función para generar objetos parenteados
 
+	static std::string getFileDirectory(const std::string& filePath);
+	static std::string getFileNameWithoutExtension(const std::string& filePath);
+
 
 public: 
 	static std::vector<GameObject> gameObjectsOnScene;
 	static GameObject* selectedObject;
-
-
 };
 

@@ -8,6 +8,20 @@
 #include "MyGameEngine/Texture.h"
 #include "BasicShapesManager.h"
 
+#include "SceneManager.h"
+#include <filesystem>
+#include <string>
+
+namespace fs = std::filesystem;
+
+std::string SceneManager::getFileDirectory(const std::string& filePath) {
+    return std::filesystem::path(filePath).parent_path().string();
+}
+
+std::string SceneManager::getFileNameWithoutExtension(const std::string& filePath) {
+    return std::filesystem::path(filePath).stem().string();
+}
+
 std::vector<GameObject> SceneManager::gameObjectsOnScene;
 GameObject* SceneManager::selectedObject = nullptr;
 

@@ -222,53 +222,43 @@ void handleFileDrop(const std::string& filePath, glm::mat4 projection, glm::mat4
     int mouseX, mouseY;
     SDL_GetMouseState(&mouseX, &mouseY);
 
-    if (extension == "obj" || extension == "fbx" || extension == "dae") {
-        try {
-            // Load standard 3D model formats
+    try {
+        if (extension == "obj" || extension == "fbx" || extension == "dae") {
+            // Load the model and save it as .custom
             SceneManager::LoadGameObject(filePath);
             auto* newObject = SceneManager::getGameObject(SceneManager::gameObjectsOnScene.size() - 1);
-            if (newObject) {
-                TestCamera.GetComponent<CameraComponent>()->camera().transform() = TestCamera.GetComponent<TransformComponent>()->transform();
-                Console::Instance().Log("Model loaded and positioned successfully.");
-            }
-        }
-        catch (const std::exception& e) {
-            Console::Instance().Log(std::string("Error loading model: ") + e.what());
-        }
-    }
-    else if (extension == "png" || extension == "jpg" || extension == "jpeg") {
-        try {
-            // Load image files as textures
-            auto texture = ImageImporter::loadFromFile(filePath);
-            if (SceneManager::selectedObject) {
-                SceneManager::selectedObject->setTextureImage(texture);
 
-                Console::Instance().Log("Texture associated with selected GameObject.");
+            // Save the loaded model in .custom format
+            std::string customFilePath = "Library/CustomModels/" + SceneManager::getFileNameWithoutExtension(filePath) + ".custom";
+            if (newObject) {
+                ModelImporter::saveAsCustomFormat(*newObject, customFilePath);
+                newObject->GetComponent<TransformComponent>()->transform().pos() =
+                    screenToWorld(glm::vec2(mouseX, mouseY), 10.0f, projection, view);
+                Console::Instance().Log("Model converted to .custom format and loaded successfully.");
             }
             else {
-                Console::Instance().Log("No selected GameObject to associate the texture.");
+                Console::Instance().Log("Failed to convert model to .custom format.");
             }
         }
-        catch (const std::exception& e) {
-            Console::Instance().Log(std::string("Error loading image: ") + e.what());
-        }
-    }
-    else if (extension == "custom") {
-        try {
-            // Load custom model format
+        else if (extension == "custom") {
+            // Load the .custom model
             SceneManager::LoadCustomModel(filePath);
             auto* newObject = SceneManager::getGameObject(SceneManager::gameObjectsOnScene.size() - 1);
             if (newObject) {
-                newObject->GetComponent<TransformComponent>()->transform().pos() = screenToWorld(glm::vec2(mouseX, mouseY), 10.0f, projection, view);
-                Console::Instance().Log("Custom model loaded successfully.");
+                newObject->GetComponent<TransformComponent>()->transform().pos() =
+                    screenToWorld(glm::vec2(mouseX, mouseY), 10.0f, projection, view);
+                Console::Instance().Log(".custom model loaded successfully.");
+            }
+            else {
+                Console::Instance().Log("Failed to load .custom model.");
             }
         }
-        catch (const std::exception& e) {
-            Console::Instance().Log(std::string("Error loading custom model: ") + e.what());
+        else {
+            Console::Instance().Log("Unsupported file extension: " + extension);
         }
     }
-    else {
-        Console::Instance().Log("Unsupported file extension: " + extension);
+    catch (const std::exception& e) {
+        Console::Instance().Log(std::string("Error handling file: ") + e.what());
     }
 }
 
