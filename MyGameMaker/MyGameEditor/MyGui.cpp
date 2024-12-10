@@ -311,7 +311,7 @@ void MyGUI::ShowHierarchy()
                         // Aquí se maneja el emparentamiento
                         if (draggedObject != &go) {
                             draggedObject->setParent(&go);
-                            (std::remove(SceneManager::gameObjectsOnScene.begin(), SceneManager::gameObjectsOnScene.end(), *draggedObject));
+                            go.addChild(draggedObject);
                         }
                     }
                 }
