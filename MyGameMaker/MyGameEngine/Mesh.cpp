@@ -12,8 +12,11 @@ Mesh::Mesh()
 	//_meshLoader = new MeshLoader();
 }
 
-void Mesh::load(const glm::vec3* vertices, size_t num_verts, unsigned int* indices, size_t num_indexs)
-{
+void Mesh::load(const glm::vec3* vertices, size_t num_verts, unsigned int* indices, size_t num_indexs) {
+	if (num_verts == 0 || num_indexs == 0) {
+		//throw std::runtime_error("Mesh data is empty. Vertices or indices are missing.");
+	}
+
 	_vertices.assign(vertices, vertices + num_verts);
 	_indices.assign(indices, indices + num_indexs);
 	_vertexBuffer.loadData(vertices, num_verts * sizeof(glm::vec3));
@@ -22,14 +25,20 @@ void Mesh::load(const glm::vec3* vertices, size_t num_verts, unsigned int* indic
 	_normalsBuffer.unload();
 	_colorsBuffer.unload();
 
-	_boundingBox.min = _vertices.front();
-	_boundingBox.max = _vertices.front();
+	if (!_vertices.empty()) {
+		_boundingBox.min = _vertices.front();
+		_boundingBox.max = _vertices.front();
 
-	for (const auto& v : _vertices) {
-		_boundingBox.min = glm::min(_boundingBox.min, glm::dvec3(v));
-		_boundingBox.max = glm::max(_boundingBox.max, glm::dvec3(v));
+		for (const auto& v : _vertices) {
+			_boundingBox.min = glm::min(_boundingBox.min, glm::dvec3(v));
+			_boundingBox.max = glm::max(_boundingBox.max, glm::dvec3(v));
+		}
+	}
+	else {
+		//throw std::runtime_error("Vertices are empty. Cannot calculate bounding box.");
 	}
 }
+
 
 void Mesh::loadTexCoords(const glm::vec2* tex_coords, size_t num_tex_coords)
 {

@@ -114,17 +114,14 @@ void SceneManager::LoadCustomModel(const std::string& filePath) {
     }
 }
 
+// SceneManager.cpp
+
 void SceneManager::saveScene(const std::string& filePath) {
     std::ofstream outFile(filePath, std::ios::out);
     if (!outFile) {
         Console::Instance().Log("Failed to open file for saving scene: " + filePath);
         return;
     }
-
-    // Create a directory for storing meshes
-    std::string sceneDir = getFileDirectory(filePath);
-    std::string meshDir = sceneDir + "/Meshes";
-    std::filesystem::create_directories(meshDir);
 
     outFile << "{\n\"GameObjects\": [\n";
     for (size_t i = 0; i < gameObjectsOnScene.size(); ++i) {
@@ -144,22 +141,28 @@ void SceneManager::saveScene(const std::string& filePath) {
             << transform.extractEulerAngles(transform.mat()).z << "]\n";
         outFile << "    },\n";
 
-        // Save the mesh if the GameObject has one
+        // Embed mesh data directly in the scene file
         if (go.hasMesh()) {
-            std::string meshFileName = "Mesh_" + std::to_string(go.getUUID()) + ".custom";
-            std::string meshFilePath = meshDir + "/" + meshFileName;
+            const auto& mesh = go.mesh();
+            outFile << "    \"Mesh\": {\n";
+            outFile << "      \"Vertices\": [";
+            for (size_t j = 0; j < mesh.vertices().size(); ++j) {
+                const auto& v = mesh.vertices()[j];
+                outFile << "[" << v.x << "," << v.y << "," << v.z << "]";
+                if (j < mesh.vertices().size() - 1) outFile << ",";
+            }
+            outFile << "],\n";
 
-            try {
-                // Use ModelImporter to save the mesh
-                ModelImporter::saveAsCustomFormat(go, meshFilePath);
-                outFile << "    \"MeshFile\": \"" << meshFileName << "\"\n";
+            outFile << "      \"Indices\": [";
+            for (size_t j = 0; j < mesh.indices().size(); ++j) {
+                outFile << mesh.indices()[j];
+                if (j < mesh.indices().size() - 1) outFile << ",";
             }
-            catch (const std::exception& e) {
-                Console::Instance().Log("Failed to save mesh for GameObject " + go.getName() + ": " + e.what());
-            }
+            outFile << "]\n";
+            outFile << "    }\n";
         }
         else {
-            outFile << "    \"MeshFile\": null\n";
+            outFile << "    \"Mesh\": null\n";
         }
 
         outFile << "  }";
@@ -172,7 +175,6 @@ void SceneManager::saveScene(const std::string& filePath) {
     Console::Instance().Log("Scene saved to " + filePath);
 }
 
-
 void SceneManager::loadScene(const std::string& filePath) {
     std::ifstream inFile(filePath, std::ios::in);
     if (!inFile) {
@@ -181,10 +183,6 @@ void SceneManager::loadScene(const std::string& filePath) {
     }
 
     gameObjectsOnScene.clear();
-
-    // Set up the directory for meshes relative to the Assets folder
-    std::string sceneDir = getFileDirectory(filePath);
-    std::string meshDir = sceneDir + "/Meshes";
 
     std::string line;
     while (std::getline(inFile, line)) {
@@ -228,48 +226,44 @@ void SceneManager::loadScene(const std::string& filePath) {
             go.AddComponent<TransformComponent>()->transform() = transform;
 
             // Parse Mesh
-            Console::Instance().Log("Checking line for Mesh_: " + line);
-            if (line.find("\"Mesh_\":") != std::string::npos) {
-                Console::Instance().Log("Mesh line found: " + line);
-            }
+            std::getline(inFile, line);
+            if (line.find("\"Mesh\":") != std::string::npos) {
+                auto mesh = std::make_shared<Mesh>();
+                std::vector<glm::vec3> vertices;
+                std::vector<unsigned int> indices;
 
-            if (line.find("\"Mesh_\":") != std::string::npos) {
-                Console::Instance().Log("Mesh line detected: " + line);
-
-                std::string meshFileName = line.substr(line.find(":") + 2);
-                meshFileName.erase(meshFileName.find_last_of("\""));
-
-                // Construct the path to the Meshes folder inside the Assets directory
-                std::string projectRoot = std::filesystem::current_path().string();
-                std::string meshFilePath = projectRoot + "/Assets/Meshes/" + meshFileName;
-
-                Console::Instance().Log("Attempting to load mesh file: " + meshFilePath);
-
-                // Check if the mesh file exists and load it
-                if (std::filesystem::exists(meshFilePath)) {
-                    try {
-                        GameObject loadedMeshGO = ModelImporter::loadCustomFormat(meshFilePath);
-                        if (loadedMeshGO.hasMesh()) {
-                            go.setMesh(loadedMeshGO.mesh_ptr());
-                            Console::Instance().Log("Mesh loaded successfully: " + meshFilePath);
-                        }
-                        else {
-                            Console::Instance().Log("Warning: Loaded GameObject has no mesh: " + meshFilePath);
+                while (std::getline(inFile, line) && line.find("}") == std::string::npos) {
+                    if (line.find("\"Vertices\":") != std::string::npos) {
+                        std::istringstream iss(line.substr(line.find("[") + 1));
+                        glm::vec3 vertex;
+                        char delim;
+                        while (iss >> vertex.x >> delim >> vertex.y >> delim >> vertex.z) {
+                            vertices.push_back(vertex);
+                            if (iss.peek() == ',') iss.ignore();
                         }
                     }
-                    catch (const std::exception& e) {
-                        Console::Instance().Log("Error loading mesh: " + std::string(e.what()));
+                    else if (line.find("\"Indices\":") != std::string::npos) {
+                        std::istringstream iss(line.substr(line.find("[") + 1));
+                        unsigned int index;
+                        char delim;
+                        while (iss >> index) {
+                            indices.push_back(index);
+                            if (iss.peek() == ',') iss.ignore();
+                        }
                     }
                 }
-                else {
-                    Console::Instance().Log("Mesh file not found: " + meshFilePath);
-                }
+
+                mesh->load(vertices.data(), vertices.size(), indices.data(), indices.size());
+                go.setMesh(mesh);
             }
-			gameObjectsOnScene.push_back(go);
-		}
+
+            gameObjectsOnScene.push_back(go);
+        }
     }
 
     inFile.close();
     Console::Instance().Log("Scene loaded from " + filePath);
 }
+
+
 
