@@ -33,6 +33,11 @@ private:
 
 public:
 
+    template <typename T>
+    bool hasComponent() const {
+        return components.find(std::type_index(typeid(T))) != components.end();
+    }
+
     std::shared_ptr<Mesh> mesh_ptr() const {
         return _mesh_ptr;
     }

@@ -8,6 +8,10 @@
 #include "MyGameEngine/Texture.h"
 #include "BasicShapesManager.h"
 
+#include "MyGameEngine/CameraComponent.h"
+#include "MyGameEngine/Camera.h"
+#include "MyGameEngine/TransformComponent.h"
+
 #include "SceneManager.h"
 #include <filesystem>
 #include <string>
@@ -142,6 +146,16 @@ void SceneManager::saveScene(const std::string& filePath) {
             << transform.extractEulerAngles(transform.mat()).z << "]\n";
         outFile << "    },\n";
 
+        if (go.hasComponent<CameraComponent>()) {
+            auto camera = go.GetComponent<CameraComponent>()->camera();
+            outFile << "    \"Camera\": {\n";
+            outFile << "      \"FOV\": " << camera.fov << ",\n";
+            outFile << "      \"Aspect\": " << camera.aspect << ",\n";
+            outFile << "      \"zNear\": " << camera.zNear << ",\n";
+            outFile << "      \"zFar\": " << camera.zFar << "\n";
+            outFile << "    },\n";
+        }
+
         if (go.hasMesh()) {
             outFile << "    \"Mesh\": \"BinaryDataStart\"\n"; // Indicate binary section
             const auto& mesh = go.mesh();
@@ -219,6 +233,24 @@ void SceneManager::loadScene(const std::string& filePath) {
                 }
             }
             go.AddComponent<TransformComponent>()->transform() = transform;
+
+            if (line.find("\"Camera\":") != std::string::npos) {
+                auto cameraComponent = go.AddComponent<CameraComponent>();
+                while (std::getline(inFile, line) && line.find("}") == std::string::npos) {
+                    if (line.find("\"FOV\":") != std::string::npos) {
+                        cameraComponent->camera().fov = std::stod(line.substr(line.find(":") + 1));
+                    }
+                    else if (line.find("\"Aspect\":") != std::string::npos) {
+                        cameraComponent->camera().aspect = std::stod(line.substr(line.find(":") + 1));
+                    }
+                    else if (line.find("\"zNear\":") != std::string::npos) {
+                        cameraComponent->camera().zNear = std::stod(line.substr(line.find(":") + 1));
+                    }
+                    else if (line.find("\"zFar\":") != std::string::npos) {
+                        cameraComponent->camera().zFar = std::stod(line.substr(line.find(":") + 1));
+                    }
+                }
+            }
 
             // Parse Mesh
             std::getline(inFile, line);
