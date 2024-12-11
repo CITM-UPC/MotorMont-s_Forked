@@ -19,8 +19,7 @@ private:
     float pitch = 0.0;
     float roll = 0.0;
 
-    // Puntero al padre
-    Transform* parent = nullptr;
+   
 
 public:
     const auto& mat() const { return _mat; }
@@ -55,8 +54,4 @@ public:
     Transform operator*(const mat4& other) { return Transform(_mat * other); }
     Transform operator*(const Transform& other) { return Transform(_mat * other._mat); }
 
-    // Métodos para manejar el padre
-    void setParent(Transform* newParent) { parent = newParent; }
-    Transform* getParent() const { return parent; }
-    mat4 getWorldMatrix() const;
 };

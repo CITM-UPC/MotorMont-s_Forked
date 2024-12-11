@@ -26,10 +26,10 @@ private:
     std::unordered_map<std::type_index, std::shared_ptr<Component>> components;
     mutable std::type_index cachedComponentType;
     mutable std::shared_ptr<Component> cachedComponent;
-    std::vector<std::shared_ptr<GameObject>> children_;
-    std::shared_ptr<GameObject> parent_;
+   
 
-    int uuid;
+    int uuid = 0;
+    static int nextID;
 
 public:
 
@@ -40,14 +40,9 @@ public:
     bool hasCheckerTexture = false;
 
     // Métodos para acceder y modificar propiedades
-    Transform worldTransform() const {
-        if (parent_) {
-            return parent_->worldTransform() * GetComponent<TransformComponent>()->transform();
-        }
-        else {
-            return GetComponent<TransformComponent>()->transform();
-        }
-    }
+    
+    const auto& transform() const { return GetComponent<TransformComponent>()->transform(); }
+    auto& transform() { return GetComponent<TransformComponent>()->transform(); }
 
     const auto& color() const { return _color; }
     auto& color() { return _color; }
@@ -60,6 +55,14 @@ public:
 
     const std::string& getName() const { return name; }
     void setName(const std::string& newName) { name = newName; }
+
+    bool operator==(const GameObject& other) const {
+        // Comparar los objetos por el nombre, o cualquier criterio único
+        return this->name == other.name;
+    }
+    bool operator!=(const GameObject& other) const {
+        return !(*this == other);
+    }
 
     // Métodos para añadir, obtener y eliminar componentes
     template <typename T, typename... Args>
@@ -78,6 +81,8 @@ public:
     void SetName(const std::string& name);
 
     // Transformación global del objeto
+
+    Transform worldTransform() const { return isRoot() ? GetComponent<TransformComponent>()->transform() : parent->worldTransform() * GetComponent<TransformComponent>()->transform(); }
 
 
     // Cálculo de las cajas de colisión
@@ -100,14 +105,22 @@ public:
     void setActive(bool active) { _active = active; }
     bool isActive() const { return _active; }
 
-    // Métodos para cambiar y obtener el padre del GameObject
-    void SetParent(std::shared_ptr<GameObject> newParent);
-    std::shared_ptr<GameObject> GetParent() const;
-    void addChild(std::shared_ptr<GameObject> child);
-    void removeChild(GameObject& child);
-    const std::vector<std::shared_ptr<GameObject>>& children() const;
-
     void initializeCheckerTexture();
+
+
+    // Métodos de jerarquía
+    void setParent(GameObject* newParent);                  // Establece el padre de este objeto
+    void addChild(GameObject* child);                      // Añade un hijo a este objeto
+    void removeChild(GameObject* child);                   // Elimina un hijo de este objeto
+    bool hasChildren() const;                              // Devuelve true si tiene hijos
+    const std::vector<GameObject*>& getChildren() const;   // Devuelve los hijos de este objeto
+
+    // Métodos para obtener información del objeto
+    GameObject* getParent() const;  // Devuelve el padre del objeto
+
+private:
+    GameObject* parent = nullptr;         // Padre del objeto
+    std::vector<GameObject*> children;    // Hijos del objeto
 
 
 

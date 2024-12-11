@@ -99,14 +99,7 @@ void Transform::setScale(const glm::vec3& scale) {
     _mat[3] = vec4(currentPos, 1.0f);
 }
 
-mat4 Transform::getWorldMatrix() const {
-    if (parent) {
-        return parent->getWorldMatrix() * _mat;
-    }
-    else {
-        return _mat;
-    }
-}
+
 
 void Transform::alignCamera(const vec3& worldUp) {
     vec3 fwd = glm::normalize(_fwd);

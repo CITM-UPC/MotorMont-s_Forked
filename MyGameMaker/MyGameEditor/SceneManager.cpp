@@ -56,39 +56,7 @@ void SceneManager::spawnBakerHouse()
     SceneManager::gameObjectsOnScene.push_back(go);
 }
 
-void SceneManager::spawnParentedObjects()
-{
-    // Crear el objeto padre
-    auto parentObject = std::make_shared<GameObject>("ParentObject");
-    auto parentMesh = BasicShapesManager::MakeTriangleMesh(1.0);
-    parentObject->setMesh(parentMesh);
 
-    // Asegúrate de obtener el componente TransformComponent y luego acceder a Transform
-    auto parentTransformComponent = parentObject->GetComponent<TransformComponent>();
-    if (parentTransformComponent) {
-        parentTransformComponent->transform().translate(glm::vec3(0, 0, 2)); // Posición en z = 2
-    }
-
-    // Crear el objeto hijo
-    auto childObject = std::make_shared<GameObject>("ChildObject");
-    auto childMesh = BasicShapesManager::MakeTriangleMesh(0.5);
-    childObject->setMesh(childMesh);
-
-    // Asegúrate de obtener el componente TransformComponent y luego acceder a Transform
-    auto childTransformComponent = childObject->GetComponent<TransformComponent>();
-    if (childTransformComponent) {
-        childTransformComponent->transform().translate(glm::vec3(0, 0, 2.4)); // Posición en z = 2.4
-    }
-
-    // Parentar el objeto hijo al objeto padre
-    parentObject->addChild(childObject);
-
-    // Añadir el objeto padre a la escena
-    SceneManager::gameObjectsOnScene.push_back(*parentObject);
-
-    // Añadir el objeto hijo a la escena (opcional, si quieres que aparezca en la lista de objetos de la escena)
-    SceneManager::gameObjectsOnScene.push_back(*childObject);
-}
 
 void SceneManager::LoadGameObject(const std::string& filePath) {
     auto mesh = std::make_shared<Mesh>();
@@ -160,7 +128,7 @@ void SceneManager::saveScene(const std::string& filePath) {
 
         outFile << "  {\n";
         outFile << "    \"UID\": " << go.getUUID() << ",\n";
-        outFile << "    \"ParentUID\": " << (go.GetParent() ? go.GetParent()->getUUID() : -1) << ",\n";
+       // outFile << "    \"ParentUID\": " << (go.getParent() ? go.getParent()->getUUID() : -1) << ",\n";
         outFile << "    \"Name\": \"" << go.getName() << "\",\n";
         outFile << "    \"Transform\": {\n";
         outFile << "      \"Position\": [" << transform.pos().x << ", " << transform.pos().y << ", " << transform.pos().z << "],\n";

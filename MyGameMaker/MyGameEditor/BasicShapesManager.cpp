@@ -86,24 +86,27 @@ std::shared_ptr<Mesh> BasicShapesManager::MakeCubeMesh(double size) {
 }
 
 void BasicShapesManager::createFigure(int figureType, std::vector<GameObject>& gameObjects, double size, glm::vec3 mousePosition) {
-    std::shared_ptr<GameObject> parent = std::shared_ptr<GameObject>(SceneManager::selectedObject, [](GameObject*) {});
-    std::shared_ptr<GameObject> go = nullptr;
+    GameObject* parent = SceneManager::selectedObject;
+    GameObject* go = nullptr;
 
     if (parent) {
-        go = parent->emplaceChild();
+        go = &parent->emplaceChild();
 
-        // Convertir la posición del ratón al espacio local del padre
+        // Convert transform to local space
         glm::mat4 parentWorldInverse = glm::inverse(parent->worldTransform().mat());
         glm::vec4 localPosition = parentWorldInverse * glm::vec4(mousePosition, 1.0f);
 
-        go->GetComponent<TransformComponent>()->transform().translate(glm::vec3(localPosition));
+
+        go->transform().translate(glm::vec3(localPosition));
         go->setName("GameObject (" + std::to_string(gameObjects.size() + 32) + ")");
     }
+
     else {
+
         gameObjects.emplace_back();
-        go = std::make_shared<GameObject>(gameObjects.back());
-        go->AddComponent<TransformComponent>();
-        go->GetComponent<TransformComponent>()->transform().translate(mousePosition);
+        go = &gameObjects.back();
+        go->transform().translate(vec3(mousePosition));
+
         go->setName("GameObject (" + std::to_string(gameObjects.size()) + ")");
     }
 

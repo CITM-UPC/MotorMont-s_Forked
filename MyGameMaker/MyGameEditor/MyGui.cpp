@@ -327,28 +327,44 @@ void MyGUI::ShowHierarchy()
             }
 
             // Funcionalidad de arrastrar y soltar
-            if (ImGui::BeginDragDropSource())
-            {
-                ImGui::SetDragDropPayload("DND_GAMEOBJECT", &go, sizeof(std::shared_ptr<GameObject>));
-                ImGui::Text("%s", go.getName().c_str());
+            if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
+                GameObject* goPtr = &go; // Asegúrate de que estás pasando un puntero válido
+                ImGui::SetDragDropPayload("GAMEOBJECT", &goPtr, sizeof(GameObject*)); // El payload debe contener el puntero
+                ImGui::Text("Dragging %s", go.getName().c_str());
                 ImGui::EndDragDropSource();
             }
 
+
+            // Hacer que este objeto sea un "drop target"
             if (ImGui::BeginDragDropTarget()) {
-                if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_GAMEOBJECT")) {
-                    IM_ASSERT(payload->DataSize == sizeof(std::shared_ptr<GameObject>));
-                    std::shared_ptr<GameObject> droppedGo = *(std::shared_ptr<GameObject>*)payload->Data;
-                    if (droppedGo && droppedGo.get() != &go) {
-                        // Eliminar la relación de padre anterior si existe
-                        if (auto currentParent = droppedGo->GetParent()) {
-                            currentParent->removeChild(*droppedGo);
+                if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("GAMEOBJECT")) {
+                    IM_ASSERT(payload->DataSize == sizeof(GameObject*)); // Verifica el tamaño del payload
+                    GameObject* draggedObject = *(GameObject**)payload->Data;
+
+                    if (draggedObject == nullptr) {
+                        std::cout << "Error: Dragged object is null!" << std::endl;
+                    }
+                    else {
+                        std::cout << "Dragged object: " << draggedObject->getName() << std::endl;
+                        // Aquí se maneja el emparentamiento
+                        if (draggedObject != &go) {
+                            draggedObject->setParent(&go);
+                            go.addChild(draggedObject);
+                            (std::remove(SceneManager::gameObjectsOnScene.begin(), SceneManager::gameObjectsOnScene.end(), *draggedObject));
                         }
-                        // Establecer la nueva relación de padre-hijo
-                        go.addChild(droppedGo);
-                        droppedGo->SetParent(std::make_shared<GameObject>(go));
                     }
                 }
+
                 ImGui::EndDragDropTarget();
+            }
+
+            // Añadir un desplazamiento visual para mostrar jerarquías
+            if (go.hasChildren()) {
+                ImGui::Indent();
+                for (auto& child : go.getChildren()) {
+                    ImGui::Text("  %s", child->getName().c_str());
+                }
+                ImGui::Unindent();
             }
         }
 
@@ -371,6 +387,8 @@ void MyGUI::renderInspector() {
     }
 
     if (persistentSelectedObject) {
+        ImGui::Text("ID: %d", persistentSelectedObject->getUUID());
+
         if (ImGui::CollapsingHeader("Transform")) {
             Transform& transform = persistentSelectedObject->GetComponent<TransformComponent>()->transform();
 
@@ -445,14 +463,7 @@ void MyGUI::handleEvent(const SDL_Event& event) {
 
         ImGui_ImplSDL2_ProcessEvent(&event);
     }
-    if (event.type == SDL_MOUSEBUTTONDOWN) {
-        // Supongamos que `droppedGo` es un `std::shared_ptr<GameObject>` válido
-        std::shared_ptr<GameObject> droppedGo = std::make_shared<GameObject>("DroppedObject");
-        if (draggedObject) {
-            draggedObject->addChild(droppedGo);
-        }
-    }
-
+    
 }
 
 void MyGUI::handleDeleteKey() {
