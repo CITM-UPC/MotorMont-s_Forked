@@ -33,6 +33,10 @@ private:
 
 public:
 
+    std::shared_ptr<Mesh> mesh_ptr() const {
+        return _mesh_ptr;
+    }
+
     void setUUID(int id) { uuid = id; }
     int getUUID() const { return uuid; }
 

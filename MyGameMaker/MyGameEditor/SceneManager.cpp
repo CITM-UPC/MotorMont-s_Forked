@@ -121,6 +121,10 @@ void SceneManager::saveScene(const std::string& filePath) {
         return;
     }
 
+    std::string sceneDir = getFileDirectory(filePath);
+    std::string meshDir = sceneDir + "/Meshes";
+    std::filesystem::create_directories(meshDir);
+
     outFile << "{\n\"GameObjects\": [\n";
     for (size_t i = 0; i < gameObjectsOnScene.size(); ++i) {
         const auto& go = gameObjectsOnScene[i];
@@ -128,7 +132,6 @@ void SceneManager::saveScene(const std::string& filePath) {
 
         outFile << "  {\n";
         outFile << "    \"UID\": " << go.getUUID() << ",\n";
-       // outFile << "    \"ParentUID\": " << (go.getParent() ? go.getParent()->getUUID() : -1) << ",\n";
         outFile << "    \"Name\": \"" << go.getName() << "\",\n";
         outFile << "    \"Transform\": {\n";
         outFile << "      \"Position\": [" << transform.pos().x << ", " << transform.pos().y << ", " << transform.pos().z << "],\n";
@@ -138,14 +141,23 @@ void SceneManager::saveScene(const std::string& filePath) {
         outFile << "      \"Rotation\": [" << transform.extractEulerAngles(transform.mat()).x << ", "
             << transform.extractEulerAngles(transform.mat()).y << ", "
             << transform.extractEulerAngles(transform.mat()).z << "]\n";
-        outFile << "    }\n";
+        outFile << "    },\n";
+
+        // Save mesh if exists
+        if (go.hasMesh()) {
+            std::string meshFileName = "Mesh_" + std::to_string(go.getUUID()) + ".custom";
+            std::string meshFilePath = meshDir + "/" + meshFileName;
+            ModelImporter::saveAsCustomFormat(go, meshFilePath);
+            outFile << "    \"MeshFile\": \"" << meshFileName << "\"\n";
+        }
+
         outFile << "  }";
         if (i != gameObjectsOnScene.size() - 1) outFile << ",";
         outFile << "\n";
     }
     outFile << "]\n}";
-    outFile.close();
 
+    outFile.close();
     Console::Instance().Log("Scene saved to " + filePath);
 }
 
@@ -157,6 +169,7 @@ void SceneManager::loadScene(const std::string& filePath) {
     }
 
     gameObjectsOnScene.clear();
+    std::string sceneDir = getFileDirectory(filePath);
 
     std::string line;
     while (std::getline(inFile, line)) {
@@ -199,10 +212,28 @@ void SceneManager::loadScene(const std::string& filePath) {
             }
             go.AddComponent<TransformComponent>()->transform() = transform;
 
+            if (line.find("\"MeshFile\":") != std::string::npos) {
+                std::string meshFileName = line.substr(line.find(":") + 2);
+                meshFileName.erase(meshFileName.find_last_of("\""));
+                std::string meshFilePath = sceneDir + "/Meshes/" + meshFileName;
+
+                // Load the custom format to retrieve the mesh
+                GameObject loadedGameObject = ModelImporter::loadCustomFormat(meshFilePath);
+
+                // Use the shared pointer directly
+                if (loadedGameObject.hasMesh()) {
+                    go.setMesh(loadedGameObject.mesh_ptr());
+                }
+                else {
+                    Console::Instance().Log("Error: Loaded GameObject from file has no mesh: " + meshFilePath);
+                }
+            }
+
+
             gameObjectsOnScene.push_back(go);
         }
     }
-    inFile.close();
 
+    inFile.close();
     Console::Instance().Log("Scene loaded from " + filePath);
 }

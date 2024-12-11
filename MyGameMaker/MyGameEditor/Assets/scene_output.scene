@@ -1,0 +1,53 @@
+{
+"GameObjects": [
+  {
+    "UID": 1,
+    "Name": "TestCamera",
+    "Transform": {
+      "Position": [0, 0, 0],
+      "Scale": [1, 1, 1],
+      "Rotation": [-0, 0, 0]
+    },
+  },
+  {
+    "UID": 2,
+    "Name": "GameObject (1)",
+    "Transform": {
+      "Position": [0, 0, 7],
+      "Scale": [1, 1, 1],
+      "Rotation": [-0, 0, 0]
+    },
+    "MeshFile": "Mesh_2.custom"
+  },
+  {
+    "UID": 3,
+    "Name": "GameObject (3)",
+    "Transform": {
+      "Position": [0, 0, 0],
+      "Scale": [1, 1, 1],
+      "Rotation": [-0, 0, 0]
+    },
+    "MeshFile": "Mesh_3.custom"
+  },
+  {
+    "UID": 4,
+    "Name": "GameObject (4)",
+    "Transform": {
+      "Position": [0, 0, 0],
+      "Scale": [1, 1, 1],
+      "Rotation": [-0, 0, 0]
+    },
+    "MeshFile": "Mesh_4.custom"
+  },
+  {
+    "UID": 5,
+    "Name": "GameObject (5)",
+    "Transform": {
+      "Position": [0, 0, 0],
+      "Scale": [1, 1, 1],
+      "Rotation": [-0, 0, 0]
+    },
+    "MeshFile": "Mesh_5.custom"
+  }
+]
+}
