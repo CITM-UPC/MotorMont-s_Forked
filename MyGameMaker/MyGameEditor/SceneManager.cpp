@@ -115,15 +115,16 @@ void SceneManager::LoadCustomModel(const std::string& filePath) {
 }
 
 // SceneManager.cpp
-
 void SceneManager::saveScene(const std::string& filePath) {
-    std::ofstream outFile(filePath, std::ios::out);
+    std::ofstream outFile(filePath, std::ios::binary);
     if (!outFile) {
         Console::Instance().Log("Failed to open file for saving scene: " + filePath);
         return;
     }
 
+    // Write scene metadata (start as text or binary marker)
     outFile << "{\n\"GameObjects\": [\n";
+
     for (size_t i = 0; i < gameObjectsOnScene.size(); ++i) {
         const auto& go = gameObjectsOnScene[i];
         const auto& transform = go.GetComponent<TransformComponent>()->transform();
@@ -141,25 +142,18 @@ void SceneManager::saveScene(const std::string& filePath) {
             << transform.extractEulerAngles(transform.mat()).z << "]\n";
         outFile << "    },\n";
 
-        // Embed mesh data directly in the scene file
         if (go.hasMesh()) {
+            outFile << "    \"Mesh\": \"BinaryDataStart\"\n"; // Indicate binary section
             const auto& mesh = go.mesh();
-            outFile << "    \"Mesh\": {\n";
-            outFile << "      \"Vertices\": [";
-            for (size_t j = 0; j < mesh.vertices().size(); ++j) {
-                const auto& v = mesh.vertices()[j];
-                outFile << "[" << v.x << "," << v.y << "," << v.z << "]";
-                if (j < mesh.vertices().size() - 1) outFile << ",";
-            }
-            outFile << "],\n";
 
-            outFile << "      \"Indices\": [";
-            for (size_t j = 0; j < mesh.indices().size(); ++j) {
-                outFile << mesh.indices()[j];
-                if (j < mesh.indices().size() - 1) outFile << ",";
-            }
-            outFile << "]\n";
-            outFile << "    }\n";
+            // Write binary mesh data
+            uint32_t vertexCount = mesh.vertices().size();
+            uint32_t indexCount = mesh.indices().size();
+
+            outFile.write(reinterpret_cast<const char*>(&vertexCount), sizeof(vertexCount));
+            outFile.write(reinterpret_cast<const char*>(&indexCount), sizeof(indexCount));
+            outFile.write(reinterpret_cast<const char*>(mesh.vertices().data()), vertexCount * sizeof(glm::vec3));
+            outFile.write(reinterpret_cast<const char*>(mesh.indices().data()), indexCount * sizeof(unsigned int));
         }
         else {
             outFile << "    \"Mesh\": null\n";
@@ -169,14 +163,15 @@ void SceneManager::saveScene(const std::string& filePath) {
         if (i != gameObjectsOnScene.size() - 1) outFile << ",";
         outFile << "\n";
     }
-    outFile << "]\n}";
 
+    outFile << "]\n}";
     outFile.close();
+
     Console::Instance().Log("Scene saved to " + filePath);
 }
 
 void SceneManager::loadScene(const std::string& filePath) {
-    std::ifstream inFile(filePath, std::ios::in);
+    std::ifstream inFile(filePath, std::ios::binary);
     if (!inFile) {
         Console::Instance().Log("Failed to open file for loading scene: " + filePath);
         return;
@@ -227,31 +222,18 @@ void SceneManager::loadScene(const std::string& filePath) {
 
             // Parse Mesh
             std::getline(inFile, line);
-            if (line.find("\"Mesh\":") != std::string::npos) {
+            if (line.find("\"Mesh\": \"BinaryDataStart\"") != std::string::npos) {
                 auto mesh = std::make_shared<Mesh>();
-                std::vector<glm::vec3> vertices;
-                std::vector<unsigned int> indices;
 
-                while (std::getline(inFile, line) && line.find("}") == std::string::npos) {
-                    if (line.find("\"Vertices\":") != std::string::npos) {
-                        std::istringstream iss(line.substr(line.find("[") + 1));
-                        glm::vec3 vertex;
-                        char delim;
-                        while (iss >> vertex.x >> delim >> vertex.y >> delim >> vertex.z) {
-                            vertices.push_back(vertex);
-                            if (iss.peek() == ',') iss.ignore();
-                        }
-                    }
-                    else if (line.find("\"Indices\":") != std::string::npos) {
-                        std::istringstream iss(line.substr(line.find("[") + 1));
-                        unsigned int index;
-                        char delim;
-                        while (iss >> index) {
-                            indices.push_back(index);
-                            if (iss.peek() == ',') iss.ignore();
-                        }
-                    }
-                }
+                uint32_t vertexCount, indexCount;
+                inFile.read(reinterpret_cast<char*>(&vertexCount), sizeof(vertexCount));
+                inFile.read(reinterpret_cast<char*>(&indexCount), sizeof(indexCount));
+
+                std::vector<glm::vec3> vertices(vertexCount);
+                std::vector<unsigned int> indices(indexCount);
+
+                inFile.read(reinterpret_cast<char*>(vertices.data()), vertexCount * sizeof(glm::vec3));
+                inFile.read(reinterpret_cast<char*>(indices.data()), indexCount * sizeof(unsigned int));
 
                 mesh->load(vertices.data(), vertices.size(), indices.data(), indices.size());
                 go.setMesh(mesh);
@@ -264,6 +246,7 @@ void SceneManager::loadScene(const std::string& filePath) {
     inFile.close();
     Console::Instance().Log("Scene loaded from " + filePath);
 }
+
 
 
 
