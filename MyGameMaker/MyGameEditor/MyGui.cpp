@@ -271,6 +271,7 @@ void MyGUI::deleteFile(const std::string& filePath) {
     }
 }
 
+
 void MyGUI::ShowAssetsWindow() {
     ImGui::SetNextWindowSize(ImVec2(680, 200), ImGuiCond_Always);
     ImGui::SetNextWindowPos(ImVec2(300, ImGui::GetIO().DisplaySize.y - 200), ImGuiCond_Always);
@@ -281,6 +282,7 @@ void MyGUI::ShowAssetsWindow() {
     static std::string selectedFile;
     static std::string selectedFilePath;
     static bool showHierarchyPopup = false;
+    static bool showDeleteConfirmation = false; // Flag to show the delete confirmation dialog
 
     // Ensure the Library directory exists
     if (!std::filesystem::exists(libraryDirectory)) {
@@ -348,7 +350,29 @@ void MyGUI::ShowAssetsWindow() {
                 }
             }
             if (ImGui::MenuItem("Delete")) {
+                showDeleteConfirmation = true; // Trigger delete confirmation window
+            }
+            ImGui::EndPopup();
+        }
+
+        // Confirmation window for deletion
+        if (showDeleteConfirmation) {
+            ImGui::OpenPopup("Delete Confirmation");
+        }
+
+        if (ImGui::BeginPopupModal("Delete Confirmation", &showDeleteConfirmation, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::Text("Are you sure you want to delete this asset?");
+            ImGui::Separator();
+
+            if (ImGui::Button("Yes")) {
                 deleteFile(selectedFilePath);
+                selectedFile.clear();
+                selectedFilePath.clear();
+                showDeleteConfirmation = false;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("No")) {
+                showDeleteConfirmation = false;
             }
             ImGui::EndPopup();
         }
@@ -387,6 +411,7 @@ void MyGUI::ShowAssetsWindow() {
 
     ImGui::End();
 }
+
 
 
 void MyGUI::ShowSpawnFigures(bool* p_open) {
