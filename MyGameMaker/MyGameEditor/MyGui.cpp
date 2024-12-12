@@ -275,30 +275,41 @@ void MyGUI::ShowAssetsWindow() {
 
     ImGui::Begin("Assets");
 
-    static std::string baseDirectory = "Assets";
+    static std::filesystem::path libraryDirectory = "Assets/Library";
     static std::string selectedFile;
     static std::string selectedFilePath;
     static bool showHierarchyPopup = false;
 
-    // Check if the directory exists
-    if (!std::filesystem::exists(baseDirectory)) {
-        ImGui::Text("Error: Assets directory not found at %s", baseDirectory.c_str());
-        ImGui::End();
-        return;
+    // Ensure the Library directory exists
+    if (!std::filesystem::exists(libraryDirectory)) {
+        std::filesystem::create_directories(libraryDirectory);
     }
 
-    // Safely iterate through the directory
+    // Clone files from the Assets folder to the Library folder
     try {
-        for (const auto& entry : std::filesystem::directory_iterator(baseDirectory)) {
-            std::string fileName = entry.path().filename().string();
-            std::string filePath = entry.path().string();
-            bool isModelFileResult = this->isModelFile(filePath);
-            bool isImageFileResult = this->isImageFile(filePath);
-
-            if (entry.is_directory()) {
-                ImGui::Text("[Folder] %s", fileName.c_str());
+        for (const auto& entry : std::filesystem::directory_iterator("Assets")) {
+            if (entry.is_regular_file()) {
+                auto targetPath = libraryDirectory / entry.path().filename();
+                if (!std::filesystem::exists(targetPath)) {
+                    std::filesystem::copy(entry.path(), targetPath, std::filesystem::copy_options::overwrite_existing);
+                }
             }
-            else if (entry.is_regular_file()) {
+        }
+    }
+    catch (const std::filesystem::filesystem_error& e) {
+        ImGui::Text("Error: Unable to prepare the library directory.");
+        ImGui::Text("%s", e.what());
+    }
+
+    // Safely iterate through the Library directory
+    try {
+        for (const auto& entry : std::filesystem::directory_iterator(libraryDirectory)) {
+            if (entry.is_regular_file()) {
+                std::string fileName = entry.path().filename().string();
+                std::string filePath = entry.path().string();
+                bool isModelFileResult = this->isModelFile(filePath);
+                bool isImageFileResult = this->isImageFile(filePath);
+
                 if (ImGui::Selectable(fileName.c_str(), selectedFile == fileName)) {
                     selectedFile = fileName;
                     selectedFilePath = filePath;
@@ -365,12 +376,13 @@ void MyGUI::ShowAssetsWindow() {
         }
     }
     catch (const std::filesystem::filesystem_error& e) {
-        ImGui::Text("Error: Unable to access assets directory.");
+        ImGui::Text("Error: Unable to access library directory.");
         ImGui::Text("%s", e.what());
     }
 
     ImGui::End();
 }
+
 
 
 
