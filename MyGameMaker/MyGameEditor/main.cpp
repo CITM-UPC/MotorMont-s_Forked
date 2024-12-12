@@ -226,7 +226,7 @@ void handleFileDrop(const std::string& filePath, glm::mat4 projection, glm::mat4
     SDL_GetMouseState(&mouseX, &mouseY);
 
     try {
-        if (extension == "obj" || extension == "fbx" || extension == "dae") {
+        if (extension == "obj" || extension == "fbx" || extension == "dae" || extension == "FBX") {
             // Existing model handling code
             SceneManager::LoadGameObject(filePath);
             auto* newObject = SceneManager::getGameObject(SceneManager::gameObjectsOnScene.size() - 1);
@@ -256,22 +256,35 @@ void handleFileDrop(const std::string& filePath, glm::mat4 projection, glm::mat4
             }
         }
         else if (extension == "png" || extension == "jpg" || extension == "bmp" || extension == "tga") {
-            // Load conventional image and save as custom
-            auto image = ImageImporter::loadFromFile(filePath);
-            if (image) {
-                std::string customFilePath = "Library/CustomImages/" + SceneManager::getFileNameWithoutExtension(filePath) + ".custom";
-                ImageImporter::saveAsCustomImage(image, customFilePath);
-                Console::Instance().Log("Image converted to .custom format and saved successfully.");
+            // New: Load and apply texture to the selected game object
+            auto imageTexture = std::make_shared<Image>();
+            imageTexture->loadTexture(filePath);
+
+            if (SceneManager::selectedObject) {
+                SceneManager::selectedObject->setTextureImage(imageTexture);
+                Console::Instance().Log("Texture applied to the selected game object.");
             }
             else {
-                Console::Instance().Log("Failed to load or convert image.");
+                Console::Instance().Log("No selected game object to apply the texture.");
             }
+
+            // Optional: Save as custom format
+            std::string customFilePath = "Library/CustomImages/" + SceneManager::getFileNameWithoutExtension(filePath) + ".custom";
+            ImageImporter::saveAsCustomImage(imageTexture, customFilePath);
+            Console::Instance().Log("Image converted to .custom format and saved successfully.");
         }
         else if (extension == "customimg") {
-            // Load custom image
-            auto image = ImageImporter::loadCustomImage(filePath);
-            if (image) {
-                Console::Instance().Log(".custom image loaded successfully.");
+            // New: Load and apply custom image as texture
+            auto imageTexture = ImageImporter::loadCustomImage(filePath);
+
+            if (imageTexture) {
+                if (SceneManager::selectedObject) {
+                    SceneManager::selectedObject->setTextureImage(imageTexture);
+                    Console::Instance().Log(".custom image applied to the selected game object.");
+                }
+                else {
+                    Console::Instance().Log("No selected game object to apply the texture.");
+                }
             }
             else {
                 Console::Instance().Log("Failed to load .custom image.");
@@ -285,6 +298,8 @@ void handleFileDrop(const std::string& filePath, glm::mat4 projection, glm::mat4
         Console::Instance().Log(std::string("Error handling file: ") + e.what());
     }
 }
+
+
 
 
 
