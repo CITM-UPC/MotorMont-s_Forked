@@ -146,14 +146,14 @@ void MyGUI::ShowMainMenuBar() {
             ImGui::EndMenu();
         }
 
-        if (ImGui::BeginMenu("Help")) {
-            if (ImGui::MenuItem("About")) {
-                const char* url = "https://github.com/CITM-UPC/MotorMont-s_Forked";
-                SDL_OpenURL(url);
-            }
-
-            
-        }
+        //if (ImGui::BeginMenu("Help")) {
+        //    if (ImGui::MenuItem("About")) {
+        //        const char* url = "https://github.com/CITM-UPC/MotorMont-s_Forked";
+        //        SDL_OpenURL(url);
+        //    }
+        //
+        //    
+        //}
         if (ImGui::BeginMenu("View")) {
             if (ImGui::RadioButton("Console", !show_assets_window)) {
                 show_assets_window = false; // Show Console
