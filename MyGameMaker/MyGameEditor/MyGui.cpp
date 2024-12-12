@@ -139,7 +139,6 @@ void MyGUI::ShowHelpMenu() {
 
 
 void MyGUI::ShowMainMenuBar() {
-
     if (show_metrics_window) {
         ShowMetricsWindow(&show_metrics_window);
     }
@@ -185,22 +184,6 @@ void MyGUI::ShowMainMenuBar() {
             ImGui::EndMenu();
         }
 
-        if (ImGui::BeginMenu("Playback")) {
-            if (!isPlaying) {
-                if (ImGui::MenuItem("Play")) {
-                    SceneManager::startPlayback();
-                    isPlaying = true;
-                }
-            }
-            else {
-                if (ImGui::MenuItem("Stop")) {
-                    SceneManager::stopPlayback();
-                    isPlaying = false;
-                }
-            }
-            ImGui::EndMenu();
-        }
-
         ShowHelpMenu();
 
         if (ImGui::BeginMenu("View")) {
@@ -211,6 +194,21 @@ void MyGUI::ShowMainMenuBar() {
                 show_assets_window = true; // Show Assets
             }
             ImGui::EndMenu();
+        }
+
+        // Colocar los botones de Play y Stop en el medio de la barra de menú
+        ImGui::SameLine(ImGui::GetWindowWidth() / 2 - 50);
+        if (!isPlaying) {
+            if (ImGui::Button("Play")) {
+                SceneManager::startPlayback();
+                isPlaying = true;
+            }
+        }
+        else {
+            if (ImGui::Button("Stop")) {
+                SceneManager::stopPlayback();
+                isPlaying = false;
+            }
         }
 
         ImGui::EndMainMenuBar();
