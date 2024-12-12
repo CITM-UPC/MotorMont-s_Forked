@@ -25,20 +25,23 @@ How to use the UI
 - Select Scene to save and load scenes in a custom .scene format
 - Select Help to visit our GitHub page
 - Select View to alter between console and assets Windows
+- Select Play to play the scene, Stop to stop the scene (stop button will appear once you hit play)
 - When left clicking a GameObject, it is selected, use the inspector on the right
+- Drag a GameObject on top of another one in the Hierarchy parent
 
 How to use the Assets Window
 
 - Left click to select an asset
-- Right click to open the options of the selected asset
-- Each selected asset can be deleted (both from the assets window and the assets folder)
-- Models, when selected, can be imported to the scene
-- Texture import is not yet implemented
+- Right click with an asset selected to delete or import said asset
+- If importing a model, it will spawn textureless in 0, 0, 0.
+- If importing a texture, you'll have to select which GameObject you want to apply the Texture to.
+- Note that Assets folder is not being modified. When executing the code, it will clone all the assets inside the Library folder and use those. 
+- When an asset is deleted, the one from the Library folder is deleted as well
 
 NOTES
 
-- Texture import is created (ImageImporter), but not implemented.
-- Parenting Works but creates a "clone" (it displays twice in the Hierarchy), but if the parent is edited, the child follows.
+- For texture import, outside of the one in the Assets Window, you'll have to select a GameObject, then drag the texture into the scene to apply it.
+- Parenting Works but creates a "clone" (it displays twice in the Hierarchy), outside of the visual artifact, it works.
 - Street Environment is not loaded
 - When Loading a scene, camera values are saved correctly (check the .scene file with notebook), but the frustum planes don't follow when moving the camera GameObject (the GameObject is moving, check by pressing F to focus once moved).
-- Start - Pause - Stop not implemented
+- When Saving/Loading a scene, the texture values are not saved, you need to reimport the textures manually.
