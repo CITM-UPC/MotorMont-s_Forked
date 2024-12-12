@@ -16,7 +16,8 @@ How to use the engine
 - Right click + E - Down the camera
 - Right click + Shift + AWSD - fast fps camera movement
 - Right click + Alt - Orbit selected object
-- F - Focus on the selected object
+- F - Focus on the selected GameObject
+- Left click to select a GameObject
 
 How to use the UI
 
@@ -36,7 +37,7 @@ How to use the Assets Window
 - If importing a model, it will spawn textureless in 0, 0, 0.
 - If importing a texture, you'll have to select which GameObject you want to apply the Texture to.
 - Note that Assets folder is not being modified. When executing the code, it will clone all the assets inside the Library folder and use those. 
-- When an asset is deleted, the one from the Library folder is deleted as well
+- When an asset is deleted from the Assets Window, the one from the Library folder is deleted as well.
 
 NOTES
 
@@ -45,3 +46,8 @@ NOTES
 - Street Environment is not loaded
 - When Loading a scene, camera values are saved correctly (check the .scene file with notebook), but the frustum planes don't follow when moving the camera GameObject (the GameObject is moving, check by pressing F to focus once moved).
 - When Saving/Loading a scene, the texture values are not saved, you need to reimport the textures manually.
+
+EXTRAS 
+
+- Asset import to the scene using right click on the Assets Window
+- Super nice UI for visual clarity and confirmations
