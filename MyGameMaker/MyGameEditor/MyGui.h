@@ -20,7 +20,7 @@ public:
     void ShowMainMenuBar();
     void ShowHelpMenu();
     void ConsoleWindow();
-
+    bool isImageFile(const std::string& filePath);
 
     void ShowSpawnFigures(bool* p_open);
     void ShowMetricsWindow(bool* p_open);
@@ -35,7 +35,6 @@ private:
 
     void deleteFile(const std::string& filePath);
     bool isModelFile(const std::string& filePath);
-    bool isImageFile(const std::string& filePath);
 
     void handleModelImport(const std::string& filePath, const std::string& extension);
 
