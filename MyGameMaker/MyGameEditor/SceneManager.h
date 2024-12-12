@@ -20,10 +20,13 @@ public:
 	static std::string getFileDirectory(const std::string& filePath);
 	static std::string getFileNameWithoutExtension(const std::string& filePath);
 
-	static void saveScene(const std::string& filePath); 
-	static void loadScene(const std::string& filePath); 
+	static void saveScene(const std::string& filePath);
+	static void loadScene(const std::string& filePath);
 	static void startPlayback();
 	static void stopPlayback();
+	static void restoreSceneState(const std::string& filePath);
+	static void saveSceneState(const std::string& filePath);
+
 
 
 public: 
@@ -39,6 +42,8 @@ private:
 
 
 	static std::vector<GameObject> savedSceneState;
+	static bool isPlaying;
+
 
 };
 

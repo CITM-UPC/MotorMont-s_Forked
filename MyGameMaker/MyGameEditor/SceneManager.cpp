@@ -23,36 +23,36 @@
 
 namespace fs = std::filesystem;
 
+
 std::vector<GameObject> SceneManager::gameObjectsOnScene;
 std::vector<GameObject> SceneManager::savedSceneState;
 
 std::vector<Transform> SceneManager::initialTransforms;
 
 GameObject* SceneManager::selectedObject = nullptr;
+bool SceneManager::isPlaying = false;
 
-void SceneManager::saveSceneState() {
-    savedSceneState = gameObjectsOnScene;
-    initialTransforms.clear();
-    for (const auto& gameObject : gameObjectsOnScene) {
-        initialTransforms.push_back(gameObject.transform());
-    }
+
+void SceneManager::restoreSceneState(const std::string& filePath) {
+    loadScene(filePath);
+    Console::Instance().Log("Scene state restored from " + filePath);
 }
 
-void SceneManager::restoreSceneState() {
-    gameObjectsOnScene = savedSceneState;
-    for (size_t i = 0; i < gameObjectsOnScene.size(); ++i) {
-        gameObjectsOnScene[i].transform() = initialTransforms[i];
-    }
+void SceneManager::saveSceneState(const std::string& filePath) {
+    saveScene(filePath);
+    Console::Instance().Log("Scene state saved to " + filePath);
 }
 
 void SceneManager::startPlayback() {
-    saveSceneState();
-    // Aquí puedes añadir cualquier lógica adicional para iniciar la reproducción
+    saveSceneState("temp_scene_state.scene");
+    isPlaying = true;
+    Console::Instance().Log("Playback started.");
 }
 
 void SceneManager::stopPlayback() {
-    restoreSceneState();
-    // Aquí puedes añadir cualquier lógica adicional para detener la reproducción
+    restoreSceneState("temp_scene_state.scene");
+    isPlaying = false;
+    Console::Instance().Log("Playback stopped.");
 }
 
 std::string SceneManager::getFileDirectory(const std::string& filePath) {
@@ -62,9 +62,6 @@ std::string SceneManager::getFileDirectory(const std::string& filePath) {
 std::string SceneManager::getFileNameWithoutExtension(const std::string& filePath) {
     return std::filesystem::path(filePath).stem().string();
 }
-
-
-
 
 bool fileExists(const std::string& path) {
     std::ifstream file(path);
