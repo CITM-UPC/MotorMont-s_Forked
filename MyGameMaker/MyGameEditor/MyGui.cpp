@@ -280,6 +280,7 @@ void MyGUI::ShowAssetsWindow() {
     static std::string baseDirectory = "Assets";
     static std::string selectedFile;
     static std::string selectedFilePath;
+    static bool showHierarchyPopup = false;
 
     // Check if the directory exists
     if (!std::filesystem::exists(baseDirectory)) {
@@ -293,33 +294,23 @@ void MyGUI::ShowAssetsWindow() {
         for (const auto& entry : std::filesystem::directory_iterator(baseDirectory)) {
             std::string fileName = entry.path().filename().string();
             std::string filePath = entry.path().string();
-            bool isModelFile = entry.is_regular_file() &&
-                (entry.path().extension() == ".obj" ||
-                    entry.path().extension() == ".fbx" ||
-                    entry.path().extension() == ".dae" ||
-                    entry.path().extension() == ".custom");
-            bool isImageFile = entry.is_regular_file() &&
-                (entry.path().extension() == ".png" ||
-                    entry.path().extension() == ".jpg" ||
-                    entry.path().extension() == ".bmp" ||
-                    entry.path().extension() == ".tga");
+            bool isModelFileResult = this->isModelFile(filePath);
+            bool isImageFileResult = this->isImageFile(filePath);
 
             if (entry.is_directory()) {
                 ImGui::Text("[Folder] %s", fileName.c_str());
             }
             else if (entry.is_regular_file()) {
-                // Highlight if selected
                 if (ImGui::Selectable(fileName.c_str(), selectedFile == fileName)) {
                     selectedFile = fileName;
                     selectedFilePath = filePath;
                 }
 
-                // Label files for clarity
-                if (isModelFile) {
+                if (isModelFileResult) {
                     ImGui::SameLine();
                     ImGui::Text("[Model]");
                 }
-                else if (isImageFile) {
+                else if (isImageFileResult) {
                     ImGui::SameLine();
                     ImGui::Text("[Image]");
                 }
@@ -332,13 +323,45 @@ void MyGUI::ShowAssetsWindow() {
         }
 
         if (ImGui::BeginPopup("FileContextMenu")) {
-            if (isModelFile(selectedFilePath)) {
+            if (this->isModelFile(selectedFilePath)) {
                 if (ImGui::MenuItem("Import Model")) {
                     handleModelImport(selectedFilePath, std::filesystem::path(selectedFilePath).extension().string());
                 }
             }
+            if (this->isImageFile(selectedFilePath)) {
+                if (ImGui::MenuItem("Import Texture")) {
+                    showHierarchyPopup = true; // Show hierarchy selection popup
+                }
+            }
             if (ImGui::MenuItem("Delete")) {
                 deleteFile(selectedFilePath);
+            }
+            ImGui::EndPopup();
+        }
+
+        // Popup for selecting a GameObject to apply the texture
+        if (showHierarchyPopup) {
+            ImGui::OpenPopup("Select GameObject");
+        }
+
+        if (ImGui::BeginPopupModal("Select GameObject", &showHierarchyPopup)) {
+            ImGui::Text("Select a GameObject to apply the texture:");
+            ImGui::Separator();
+
+            for (auto& go : SceneManager::gameObjectsOnScene) {
+                if (ImGui::Selectable(go.getName().c_str())) {
+                    auto imageTexture = std::make_shared<Image>();
+                    imageTexture->loadTexture(selectedFilePath);
+
+                    go.setTextureImage(imageTexture);
+
+                    Console::Instance().Log("Texture applied to " + go.getName());
+                    showHierarchyPopup = false;
+                }
+            }
+
+            if (ImGui::Button("Cancel")) {
+                showHierarchyPopup = false;
             }
             ImGui::EndPopup();
         }
