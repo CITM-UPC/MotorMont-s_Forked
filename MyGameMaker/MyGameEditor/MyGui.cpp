@@ -6,6 +6,7 @@
 #include "Console.h"
 #include <memory>
 #include <filesystem>
+#include <unordered_set>
 
 #include "MyGameEngine/ModelImporter.h"
 #include "MyGameEngine/ImageImporter.h"
@@ -33,6 +34,8 @@ bool show_hardware_window = false;
 bool show_software_window = false;
 
 bool show_spawn_figures_window = false;
+
+static std::unordered_set<std::string> clonedFiles;
 
 MyGUI::MyGUI(SDL_Window* window, void* context) {
     IMGUI_CHECKVERSION();
@@ -268,7 +271,6 @@ void MyGUI::deleteFile(const std::string& filePath) {
     }
 }
 
-
 void MyGUI::ShowAssetsWindow() {
     ImGui::SetNextWindowSize(ImVec2(680, 200), ImGuiCond_Always);
     ImGui::SetNextWindowPos(ImVec2(300, ImGui::GetIO().DisplaySize.y - 200), ImGuiCond_Always);
@@ -285,13 +287,16 @@ void MyGUI::ShowAssetsWindow() {
         std::filesystem::create_directories(libraryDirectory);
     }
 
-    // Clone files from the Assets folder to the Library folder
+    // Clone files from the Assets folder to the Library folder only once
     try {
         for (const auto& entry : std::filesystem::directory_iterator("Assets")) {
             if (entry.is_regular_file()) {
+                std::string fileName = entry.path().filename().string();
                 auto targetPath = libraryDirectory / entry.path().filename();
-                if (!std::filesystem::exists(targetPath)) {
+
+                if (clonedFiles.find(fileName) == clonedFiles.end()) {
                     std::filesystem::copy(entry.path(), targetPath, std::filesystem::copy_options::overwrite_existing);
+                    clonedFiles.insert(fileName); // Mark as cloned
                 }
             }
         }
@@ -382,8 +387,6 @@ void MyGUI::ShowAssetsWindow() {
 
     ImGui::End();
 }
-
-
 
 
 void MyGUI::ShowSpawnFigures(bool* p_open) {
