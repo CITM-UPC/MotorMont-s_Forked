@@ -81,7 +81,7 @@ MyGUI::~MyGUI() {
 
 void MyGUI::handleModelImport(const std::string& filePath, const std::string& extension) {
     try {
-        if (extension == ".obj" || extension == ".fbx" || extension == ".dae") {
+        if (extension == ".obj" || extension == ".fbx" || extension == ".dae" || extension == ".FBX") {
             SceneManager::LoadGameObject(filePath);
             Console::Instance().Log("Model imported successfully: " + filePath);
         }
@@ -245,7 +245,7 @@ void MyGUI::ConsoleWindow() {
 
 bool MyGUI::isModelFile(const std::string& filePath) {
     std::string extension = std::filesystem::path(filePath).extension().string();
-    return extension == ".obj" || extension == ".fbx" || extension == ".dae" || extension == ".custom";
+    return extension == ".obj" || extension == ".fbx" || extension == ".dae" || extension == ".custom" || extension == ".FBX";
 }
 
 bool MyGUI::isImageFile(const std::string& filePath) {
