@@ -43,4 +43,6 @@ private:
     GameObject* draggedObject = nullptr; // Objeto arrastrado
 
     bool show_assets_window = false;
+    bool isPlaying = false; // Estado de reproducción
 };
+

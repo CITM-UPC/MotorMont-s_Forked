@@ -22,10 +22,23 @@ public:
 
 	static void saveScene(const std::string& filePath); 
 	static void loadScene(const std::string& filePath); 
+	static void startPlayback();
+	static void stopPlayback();
 
 
 public: 
 	static std::vector<GameObject> gameObjectsOnScene;
 	static GameObject* selectedObject;
+	
+
+private:
+
+	static void saveSceneState();
+	static void restoreSceneState();
+	static std::vector<Transform> initialTransforms;
+
+
+	static std::vector<GameObject> savedSceneState;
+
 };
 

@@ -185,6 +185,22 @@ void MyGUI::ShowMainMenuBar() {
             ImGui::EndMenu();
         }
 
+        if (ImGui::BeginMenu("Playback")) {
+            if (!isPlaying) {
+                if (ImGui::MenuItem("Play")) {
+                    SceneManager::startPlayback();
+                    isPlaying = true;
+                }
+            }
+            else {
+                if (ImGui::MenuItem("Stop")) {
+                    SceneManager::stopPlayback();
+                    isPlaying = false;
+                }
+            }
+            ImGui::EndMenu();
+        }
+
         ShowHelpMenu();
 
         if (ImGui::BeginMenu("View")) {
@@ -200,6 +216,10 @@ void MyGUI::ShowMainMenuBar() {
         ImGui::EndMainMenuBar();
     }
 }
+
+
+
+
 
 
 void MyGUI::ConsoleWindow() {

@@ -157,3 +157,13 @@ bool GameObject::hasChildren() const {
 const std::vector<GameObject*>& GameObject::getChildren() const {
     return children;
 }
+
+GameObject* GameObject::getParent() const {
+    return parent;
+}
+void GameObject::initializeCheckerTexture() {
+    if (!hasCreatedCheckerTexture) {
+        CheckerTexture(hasCreatedCheckerTexture);
+        hasCreatedCheckerTexture = true;
+    }
+}

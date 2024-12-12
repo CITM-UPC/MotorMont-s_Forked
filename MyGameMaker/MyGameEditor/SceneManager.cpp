@@ -23,6 +23,38 @@
 
 namespace fs = std::filesystem;
 
+std::vector<GameObject> SceneManager::gameObjectsOnScene;
+std::vector<GameObject> SceneManager::savedSceneState;
+
+std::vector<Transform> SceneManager::initialTransforms;
+
+GameObject* SceneManager::selectedObject = nullptr;
+
+void SceneManager::saveSceneState() {
+    savedSceneState = gameObjectsOnScene;
+    initialTransforms.clear();
+    for (const auto& gameObject : gameObjectsOnScene) {
+        initialTransforms.push_back(gameObject.transform());
+    }
+}
+
+void SceneManager::restoreSceneState() {
+    gameObjectsOnScene = savedSceneState;
+    for (size_t i = 0; i < gameObjectsOnScene.size(); ++i) {
+        gameObjectsOnScene[i].transform() = initialTransforms[i];
+    }
+}
+
+void SceneManager::startPlayback() {
+    saveSceneState();
+    // Aquí puedes añadir cualquier lógica adicional para iniciar la reproducción
+}
+
+void SceneManager::stopPlayback() {
+    restoreSceneState();
+    // Aquí puedes añadir cualquier lógica adicional para detener la reproducción
+}
+
 std::string SceneManager::getFileDirectory(const std::string& filePath) {
     return std::filesystem::path(filePath).parent_path().string();
 }
@@ -31,8 +63,7 @@ std::string SceneManager::getFileNameWithoutExtension(const std::string& filePat
     return std::filesystem::path(filePath).stem().string();
 }
 
-std::vector<GameObject> SceneManager::gameObjectsOnScene;
-GameObject* SceneManager::selectedObject = nullptr;
+
 
 
 bool fileExists(const std::string& path) {

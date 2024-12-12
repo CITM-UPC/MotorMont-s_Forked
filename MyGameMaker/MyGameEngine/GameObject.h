@@ -130,6 +130,8 @@ public:
 private:
     GameObject* parent = nullptr;         // Padre del objeto
     std::vector<GameObject*> children;    // Hijos del objeto
+    std::shared_ptr<TransformComponent> transformComponent;
+
 
 
 
