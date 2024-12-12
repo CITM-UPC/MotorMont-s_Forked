@@ -99,8 +99,47 @@ void MyGUI::handleModelImport(const std::string& filePath, const std::string& ex
     }
 }
 
+bool show_about_window = false;
+
+void MyGUI::ShowHelpMenu() {
+    if (ImGui::BeginMenu("Help")) {
+        if (ImGui::MenuItem("About")) {
+            show_about_window = true;
+        }
+        ImGui::EndMenu();
+    }
+
+    if (show_about_window) {
+
+        static bool initialized = false;
+        if (!initialized) {
+            ImVec2 windowSize = ImGui::GetIO().DisplaySize;
+            ImVec2 initialSize(400.0f, 200.0f);
+            ImVec2 initialPos = ImVec2(
+                (windowSize.x - initialSize.x) * 0.5f,
+                (windowSize.y - initialSize.y) * 0.5f
+            );
+            ImGui::SetNextWindowPos(initialPos, ImGuiCond_FirstUseEver);
+            ImGui::SetNextWindowSize(initialSize, ImGuiCond_FirstUseEver);
+            initialized = true;
+        }
+
+        if (ImGui::Begin("About", &show_about_window, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::Text("Motor Montes v1.0, forked from the Freakiest of Engines");
+
+            if (ImGui::Button("Visit GitHub")) {
+                SDL_OpenURL("https://github.com/CITM-UPC/MotorMont-s_Forked");
+            }
+
+            ImGui::End();
+        }
+    }
+}
+
+
 
 void MyGUI::ShowMainMenuBar() {
+
     if (show_metrics_window) {
         ShowMetricsWindow(&show_metrics_window);
     }
@@ -146,14 +185,8 @@ void MyGUI::ShowMainMenuBar() {
             ImGui::EndMenu();
         }
 
-        //if (ImGui::BeginMenu("Help")) {
-        //    if (ImGui::MenuItem("About")) {
-        //        const char* url = "https://github.com/CITM-UPC/MotorMont-s_Forked";
-        //        SDL_OpenURL(url);
-        //    }
-        //
-        //    
-        //}
+        ShowHelpMenu();
+
         if (ImGui::BeginMenu("View")) {
             if (ImGui::RadioButton("Console", !show_assets_window)) {
                 show_assets_window = false; // Show Console
@@ -167,6 +200,7 @@ void MyGUI::ShowMainMenuBar() {
         ImGui::EndMainMenuBar();
     }
 }
+
 
 void MyGUI::ConsoleWindow() {
     ImGui::SetNextWindowSize(ImVec2(680, 200), ImGuiCond_Always);

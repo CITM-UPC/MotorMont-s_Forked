@@ -18,7 +18,9 @@ public:
     void handleEvent(const SDL_Event& event);
 
     void ShowMainMenuBar();
+    void ShowHelpMenu();
     void ConsoleWindow();
+
 
     void ShowSpawnFigures(bool* p_open);
     void ShowMetricsWindow(bool* p_open);
