@@ -7,8 +7,10 @@
 #include <memory>
 #include <filesystem>
 
-
+#include "MyGameEngine/ModelImporter.h"
+#include "MyGameEngine/ImageImporter.h"
 #include <imgui.h>
+#include "MyGameEditor/SceneManager.h"
 
 
 #include <imgui_impl_sdl2.h>
@@ -77,6 +79,27 @@ MyGUI::~MyGUI() {
 	ImGui::DestroyContext();
 }
 
+void MyGUI::handleModelImport(const std::string& filePath, const std::string& extension) {
+    try {
+        if (extension == ".obj" || extension == ".fbx" || extension == ".dae") {
+            SceneManager::LoadGameObject(filePath);
+            Console::Instance().Log("Model imported successfully: " + filePath);
+        }
+        else if (extension == ".custom") {
+            auto importedModel = ModelImporter::loadCustomFormat(filePath);
+            SceneManager::gameObjectsOnScene.push_back(importedModel);
+            Console::Instance().Log("Custom model imported successfully: " + filePath);
+        }
+        else {
+            Console::Instance().Log("Unsupported model format: " + extension);
+        }
+    }
+    catch (const std::exception& e) {
+        Console::Instance().Log("Error importing model: " + std::string(e.what()));
+    }
+}
+
+
 void MyGUI::ShowMainMenuBar() {
     if (show_metrics_window) {
         ShowMetricsWindow(&show_metrics_window);
@@ -129,14 +152,14 @@ void MyGUI::ShowMainMenuBar() {
                 SDL_OpenURL(url);
             }
 
-            if (ImGui::BeginMenu("View")) {
-                if (ImGui::RadioButton("Console", !show_assets_window)) {
-                    show_assets_window = false; // Show Console
-                }
-                if (ImGui::RadioButton("Assets", show_assets_window)) {
-                    show_assets_window = true; // Show Assets
-                }
-                ImGui::EndMenu();
+            
+        }
+        if (ImGui::BeginMenu("View")) {
+            if (ImGui::RadioButton("Console", !show_assets_window)) {
+                show_assets_window = false; // Show Console
+            }
+            if (ImGui::RadioButton("Assets", show_assets_window)) {
+                show_assets_window = true; // Show Assets
             }
             ImGui::EndMenu();
         }
@@ -168,6 +191,32 @@ void MyGUI::ConsoleWindow() {
     ImGui::End();
 }
 
+bool MyGUI::isModelFile(const std::string& filePath) {
+    std::string extension = std::filesystem::path(filePath).extension().string();
+    return extension == ".obj" || extension == ".fbx" || extension == ".dae" || extension == ".custom";
+}
+
+bool MyGUI::isImageFile(const std::string& filePath) {
+    std::string extension = std::filesystem::path(filePath).extension().string();
+    return extension == ".png" || extension == ".jpg" || extension == ".bmp" || extension == ".tga";
+}
+
+void MyGUI::deleteFile(const std::string& filePath) {
+    try {
+        if (std::filesystem::exists(filePath)) {
+            std::filesystem::remove(filePath);
+            Console::Instance().Log("File deleted: " + filePath);
+        }
+        else {
+            Console::Instance().Log("File not found: " + filePath);
+        }
+    }
+    catch (const std::filesystem::filesystem_error& e) {
+        Console::Instance().Log("Error deleting file: " + std::string(e.what()));
+    }
+}
+
+
 void MyGUI::ShowAssetsWindow() {
     ImGui::SetNextWindowSize(ImVec2(680, 200), ImGuiCond_Always);
     ImGui::SetNextWindowPos(ImVec2(300, ImGui::GetIO().DisplaySize.y - 200), ImGuiCond_Always);
@@ -175,6 +224,8 @@ void MyGUI::ShowAssetsWindow() {
     ImGui::Begin("Assets");
 
     static std::string baseDirectory = "Assets";
+    static std::string selectedFile;
+    static std::string selectedFilePath;
 
     // Check if the directory exists
     if (!std::filesystem::exists(baseDirectory)) {
@@ -186,13 +237,56 @@ void MyGUI::ShowAssetsWindow() {
     // Safely iterate through the directory
     try {
         for (const auto& entry : std::filesystem::directory_iterator(baseDirectory)) {
+            std::string fileName = entry.path().filename().string();
+            std::string filePath = entry.path().string();
+            bool isModelFile = entry.is_regular_file() &&
+                (entry.path().extension() == ".obj" ||
+                    entry.path().extension() == ".fbx" ||
+                    entry.path().extension() == ".dae" ||
+                    entry.path().extension() == ".custom");
+            bool isImageFile = entry.is_regular_file() &&
+                (entry.path().extension() == ".png" ||
+                    entry.path().extension() == ".jpg" ||
+                    entry.path().extension() == ".bmp" ||
+                    entry.path().extension() == ".tga");
+
             if (entry.is_directory()) {
-                ImGui::Text("[Folder] %s", entry.path().filename().string().c_str());
+                ImGui::Text("[Folder] %s", fileName.c_str());
             }
             else if (entry.is_regular_file()) {
-                std::string extension = entry.path().extension().string();
-                ImGui::Text("[File] %s (%s)", entry.path().filename().string().c_str(), extension.c_str());
+                // Highlight if selected
+                if (ImGui::Selectable(fileName.c_str(), selectedFile == fileName)) {
+                    selectedFile = fileName;
+                    selectedFilePath = filePath;
+                }
+
+                // Label files for clarity
+                if (isModelFile) {
+                    ImGui::SameLine();
+                    ImGui::Text("[Model]");
+                }
+                else if (isImageFile) {
+                    ImGui::SameLine();
+                    ImGui::Text("[Image]");
+                }
             }
+        }
+
+        // Show right-click context menu for selected files
+        if (!selectedFile.empty() && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
+            ImGui::OpenPopup("FileContextMenu");
+        }
+
+        if (ImGui::BeginPopup("FileContextMenu")) {
+            if (isModelFile(selectedFilePath)) {
+                if (ImGui::MenuItem("Import Model")) {
+                    handleModelImport(selectedFilePath, std::filesystem::path(selectedFilePath).extension().string());
+                }
+            }
+            if (ImGui::MenuItem("Delete")) {
+                deleteFile(selectedFilePath);
+            }
+            ImGui::EndPopup();
         }
     }
     catch (const std::filesystem::filesystem_error& e) {
@@ -202,7 +296,6 @@ void MyGUI::ShowAssetsWindow() {
 
     ImGui::End();
 }
-
 
 
 

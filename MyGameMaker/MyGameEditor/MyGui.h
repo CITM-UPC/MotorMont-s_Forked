@@ -30,6 +30,13 @@ public:
     void ShowAssetsWindow();
 
 private:
+
+    void deleteFile(const std::string& filePath);
+    bool isModelFile(const std::string& filePath);
+    bool isImageFile(const std::string& filePath);
+
+    void handleModelImport(const std::string& filePath, const std::string& extension);
+
     void handleDeleteKey(); // Nueva función para manejar la tecla "Suprimir"
     GameObject* draggedObject = nullptr; // Objeto arrastrado
 
